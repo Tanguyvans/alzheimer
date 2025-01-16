@@ -1,0 +1,16 @@
+ADNI_NII
+ADNI_processed
+Task04_Hippocampus
+env
+.env
+*.gz
+*.nii
+*.nii.gz
+*.npy
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.tif
