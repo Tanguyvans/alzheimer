@@ -1,6 +1,8 @@
 ADNI_NII
 ADNI_processed
 Task04_Hippocampus
+mni_tmeplate
+output
 env
 .env
 *.gz
@@ -14,3 +16,4 @@ env
 *.bmp
 *.tiff
 *.tif
+
