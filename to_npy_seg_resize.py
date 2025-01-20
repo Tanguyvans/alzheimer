@@ -387,7 +387,7 @@ def main():
         'npy_seg_dir': os.path.join(BASE_DIR, "output/npy_seg"),
         'register_dir': os.path.join(BASE_DIR, "output/register"),
         'template_path': os.path.join(BASE_DIR, "mni_template/mni_icbm152_nlin_sym_09a_nifti/mni_icbm152_nlin_sym_09a/mni_icbm152_t1_tal_nlin_sym_09a.nii"),
-        'input_path': os.path.join(BASE_DIR, "normal_3.nii.gz")  # Chemin vers votre fichier
+        'input_path': os.path.join(BASE_DIR, "extracted_volume.nii.gz")  # Chemin vers votre fichier
     }
 
     # Create output directories

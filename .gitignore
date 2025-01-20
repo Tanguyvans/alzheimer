@@ -17,3 +17,5 @@ env
 *.tiff
 *.tif
 
+*.csv
+models/

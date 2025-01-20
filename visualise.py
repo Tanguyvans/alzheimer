@@ -27,8 +27,8 @@ img2 = ax2.imshow(data[:, y_pos, :], cmap='gray')
 img3 = ax3.imshow(data[x_pos, :, :], cmap='gray')
 
 ax1.set_title('Vue axiale')
-ax2.set_title('Vue sagittale')
-ax3.set_title('Vue coronale')
+ax2.set_title('Vue coronale')
+ax3.set_title('Vue sagittale')
 
 # Ajouter les sliders
 ax_slider = plt.axes([0.1, 0.1, 0.65, 0.03])
