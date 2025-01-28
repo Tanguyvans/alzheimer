@@ -14,13 +14,13 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 # Configuration
 class Config:
-    BATCH_SIZE = 2
-    EPOCHS = 3
+    BATCH_SIZE = 16
+    EPOCHS = 20
     LEARNING_RATE = 0.001
     DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     NUM_WORKERS = 4
-    DATA_PATH = "npy_seg/"
-    CSV_PATH = "db.csv"
+    DATA_PATH = "npy_seg_2/"
+    CSV_PATH = "dataset_MRI_cohort1_updated.csv"
     MODEL_SAVE_PATH = "./models"
     
 # Dataset class
@@ -69,11 +69,27 @@ class ResNet3DClassifier(nn.Module):
                                        stride=(1, 2, 2), padding=(1, 3, 3),
                                        bias=False)
         
+        # Ajout d'un AdaptiveAvgPool3d avant la couche fully connected
+        self.adaptive_pool = nn.AdaptiveAvgPool3d((1, 1, 1))
+        
         # Modify final FC layer
         self.resnet.fc = nn.Linear(self.resnet.fc.in_features, num_classes)
         
     def forward(self, x):
-        return self.resnet(x)
+        # Extraire les features avec ResNet
+        x = self.resnet.stem(x)
+        x = self.resnet.layer1(x)
+        x = self.resnet.layer2(x)
+        x = self.resnet.layer3(x)
+        x = self.resnet.layer4(x)
+        
+        # Adaptive pooling pour obtenir une taille fixe
+        x = self.adaptive_pool(x)
+        
+        # Flatten et classification
+        x = torch.flatten(x, 1)
+        x = self.resnet.fc(x)
+        return x
 
 def train_epoch(model, dataloader, criterion, optimizer, device):
     model.train()

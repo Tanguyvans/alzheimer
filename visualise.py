@@ -5,7 +5,7 @@ from matplotlib.widgets import Slider
 
 # Charger le fichier
 #img = nib.load('normal.nii.gz')
-img = nib.load('output/register/normal/hippocampus/extracted_volume.nii.gz')
+img = nib.load('output/register/normal/normal_stripped.nii.gz')
 data = img.get_fdata()
 
 # Afficher les dimensions

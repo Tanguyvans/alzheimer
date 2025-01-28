@@ -17,6 +17,7 @@ import nilearn.image
 import nilearn.plotting
 import json
 import nibabel as nib
+import subprocess
 
 # Add logger configuration
 logger = logging.getLogger(__name__)
@@ -282,13 +283,16 @@ def segment_hippocampus(input_image_path, output_folder):
     return left_hippo_path, right_hippo_path
 
 def extract_hippocampus_slices(left_hippo_path, right_hippo_path, input_path, output_dir):
-    """Extract a 3D volume containing 50 coronal slices centered on hippocampus."""
+    """Extract a 3D volume containing 20 coronal slices centered on hippocampus with 192x192 resolution."""
     print("\n=== Starting Hippocampus Slice Extraction ===")
     os.makedirs(output_dir, exist_ok=True)
     
+    # Load images
     input_img = nib.load(input_path)
     left_hippo = nib.load(left_hippo_path).get_fdata()
     right_hippo = nib.load(right_hippo_path).get_fdata()
+    
+    print(f"Input shape before processing: {input_img.get_fdata().shape}")
     
     # Get dimensions
     _, n_coronal, _ = left_hippo.shape
@@ -296,44 +300,206 @@ def extract_hippocampus_slices(left_hippo_path, right_hippo_path, input_path, ou
     # Find slices containing hippocampus
     left_slices = set([i for i in range(n_coronal) if np.any(left_hippo[:, i, :])])
     right_slices = set([i for i in range(n_coronal) if np.any(right_hippo[:, i, :])])
-    hippo_slices = sorted(list(left_slices.union(right_slices)))
     
-    # Calculate center and extract 50 slices
+    # Combine slices from both hippocampi
+    hippo_slices = sorted(list(left_slices.union(right_slices)))
+    print(f"Found {len(hippo_slices)} slices containing hippocampus")
+    
+    # Calculate center of hippocampus region
     center_slice = hippo_slices[len(hippo_slices)//2]
-    total_slices_needed = 50
-    start_slice = max(0, center_slice - (total_slices_needed//2))
+    
+    # Prendre 20 coupes centrées sur l'hippocampe
+    total_slices_needed = 20
+    half_window = total_slices_needed // 2
+    
+    start_slice = max(0, center_slice - half_window)
+    end_slice = min(n_coronal, start_slice + total_slices_needed)
+    
+    # Ajuster si on atteint les bords
+    if end_slice == n_coronal:
+        start_slice = max(0, n_coronal - total_slices_needed)
+    elif start_slice == 0:
+        end_slice = min(n_coronal, total_slices_needed)
     
     # Create final slice list
     final_slices = list(range(start_slice, min(start_slice + total_slices_needed, n_coronal)))
+    print(f"Selected {len(final_slices)} central slices")
     
     # Extract relevant slices
     image_extracted = input_img.get_fdata()[:, final_slices, :]
+    hippo_mask_extracted = left_hippo[:, final_slices, :] + right_hippo[:, final_slices, :]
+    print(f"Extracted volume shape: {image_extracted.shape}")
     
-    # Save as new NIfTI
+    # Resize to 192x20x192 (résolution plus élevée)
+    target_shape = (128, 50, 128)
+    
+    # Convert to ANTs image for resizing
+    extracted_ants = ants.from_numpy(image_extracted)
+    resized_ants = ants.resample_image(
+        extracted_ants,
+        target_shape,
+        use_voxels=True,
+        interp_type=1
+    )
+    resized_array = resized_ants.numpy()
+    
+    # Resize hippocampus mask
+    hippo_mask_ants = ants.from_numpy(hippo_mask_extracted)
+    resized_mask = ants.resample_image(
+        hippo_mask_ants,
+        target_shape,
+        use_voxels=True,
+        interp_type=0  # Nearest neighbor for mask
+    )
+    resized_mask_array = resized_mask.numpy()
+    
+    print(f"Final resized shape: {resized_array.shape}")
+    
+    # Vérifier que l'hippocampe est bien visible dans les coupes
+    hippo_intensity = np.mean(resized_array[resized_mask_array > 0])
+    print(f"Average hippocampus intensity in selected slices: {hippo_intensity:.2f}")
+    
+    # Create new NIfTI image
     new_affine = input_img.affine.copy()
     new_affine[1, 3] = new_affine[1, 3] + (final_slices[0] * new_affine[1, 1])
     
-    extracted_nifti = nib.Nifti1Image(image_extracted, new_affine, input_img.header)
+    extracted_nifti = nib.Nifti1Image(resized_array, new_affine, input_img.header)
     output_path = os.path.join(output_dir, 'extracted_volume.nii.gz')
     nib.save(extracted_nifti, output_path)
     
-    return output_path
+    # Save slice information
+    slice_info = {
+        'total_original_slices': n_coronal,
+        'original_hippo_slices': hippo_slices,
+        'selected_slices': final_slices,
+        'center_slice': center_slice,
+        'total_extracted_slices': len(final_slices),
+        'final_shape': [int(x) for x in resized_array.shape],
+        'average_hippo_intensity': float(hippo_intensity)
+    }
+    
+    with open(os.path.join(output_dir, 'slice_info.json'), 'w') as f:
+        json.dump(slice_info, f, indent=4)
+    
+    return output_path, slice_info
+
+def enhance_image_quality(image):
+    """Amélioration spécifique pour la détection d'Alzheimer.
+    
+    This function enhances the quality of brain MRI images specifically for Alzheimer's detection by:
+    1. Applying N4 bias field correction with aggressive parameters to remove intensity non-uniformity
+    2. Denoising the image using a Gaussian noise model to reduce noise
+    3. Performing adaptive intensity normalization to standardize intensities
+    4. Enhancing contrast to better visualize brain atrophy
+    
+    Args:
+        image: An ANTs image object containing the brain MRI scan
+        
+    Returns:
+        enhanced: An ANTs image object with enhanced quality
+    """
+    logger.info("Enhancing image quality for Alzheimer's detection...")
+    
+    # 1. Correction de biais N4 (plus agressive)
+    n4 = ants.n4_bias_field_correction(
+        image,
+        shrink_factor=2,  # Plus précis
+        convergence={'iters': [50, 50, 50, 50], 'tol': 1e-7},  # Plus d'itérations
+        spline_param=200  # Meilleure correction locale
+    )
+    
+    # 2. Débruitage (optionnel)
+    denoised = ants.denoise_image(n4, noise_model='Gaussian')
+    
+    # 3. Normalisation d'intensité adaptative
+    normalized = ants.iMath(denoised, "Normalize")
+    
+    # 4. Amélioration du contraste pour mieux voir l'atrophie
+    enhanced = ants.iMath(normalized, "Sharpen")
+    
+    return enhanced
+
+def extract_brain_features(image):
+    """Extraction de caractéristiques morphométriques."""
+    logger.info("Extracting brain features...")
+    features = {}
+    
+    # Volume total du cerveau
+    brain_mask = ants.get_mask(image)
+    features['brain_volume'] = float(np.sum(brain_mask.numpy()))
+    
+    # Intensité moyenne et écart-type
+    brain_data = image.numpy() * brain_mask.numpy()
+    features['mean_intensity'] = float(np.mean(brain_data[brain_data > 0]))
+    features['std_intensity'] = float(np.std(brain_data[brain_data > 0]))
+    
+    # Asymétrie gauche-droite
+    mid_slice = brain_data.shape[2] // 2
+    left_half = brain_data[:, :, :mid_slice]
+    right_half = brain_data[:, :, mid_slice:]
+    features['asymmetry_index'] = float(np.abs(np.mean(left_half) - np.mean(right_half)))
+    
+    return features
+
+def skull_stripping(input_path, output_path):
+    """Remove skull using HD-BET (High-Definition Brain Extraction Tool).
+    
+    Args:
+        input_path: Path to input NIfTI image
+        output_path: Path where to save the skull-stripped image
+        
+    Returns:
+        str: Path to the skull-stripped image
+    """
+    logger.info("Performing skull stripping using HD-BET...")
+    
+    try:
+        # HD-BET command avec les bons arguments
+        # -i: fichier d'entrée
+        # -o: fichier de sortie
+        # -device cpu: utilise le CPU (changer en 'cuda' si GPU disponible)
+        # --disable_tta: désactive le test time augmentation pour plus de vitesse
+        cmd = f"hd-bet -i {input_path} -o {output_path} -device cpu --disable_tta"
+        
+        # Exécuter HD-BET
+        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+        
+        if process.returncode != 0:
+            raise Exception(f"HD-BET failed with error: {stderr.decode()}")
+            
+        # HD-BET ajoute '_bet' au nom du fichier
+        actual_output = output_path.replace('.nii.gz', '_bet.nii.gz')
+        if os.path.exists(actual_output):
+            os.rename(actual_output, output_path)
+            
+        logger.info(f"Skull stripping completed. Output saved to: {output_path}")
+        return output_path
+        
+    except Exception as e:
+        logger.error(f"Error during skull stripping: {str(e)}")
+        raise
 
 def main():
     """Main pipeline for processing ADNI MRI data."""
     config = {
         'root_dir': BASE_DIR,
         'input_dir': os.path.join(BASE_DIR),
-        'output_dir': os.path.join(BASE_DIR, "output"),
-        'processed_dir': os.path.join(BASE_DIR, "output/processed"),
-        'registered_dir': os.path.join(BASE_DIR, "output/registered"),
-        'resized_dir': os.path.join(BASE_DIR, "output/resized"),
-        'hippo_dir': os.path.join(BASE_DIR, "output/hippocampus"),
-        'visualization_dir': os.path.join(BASE_DIR, "output/visualization"),
-        'npy_dir': os.path.join(BASE_DIR, "output/npy"),
-        'npy_seg_dir': os.path.join(BASE_DIR, "output/npy_seg"),
+        'output_dir': os.path.join(BASE_DIR, "output_tanguy_small"),
+        'processed_dir': os.path.join(BASE_DIR, "output_tanguy_small/processed"),
+        'registered_dir': os.path.join(BASE_DIR, "output_tanguy_small/registered"),
+        'enhanced_dir': os.path.join(BASE_DIR, "output_tanguy_small/enhanced"), 
+        'skull_strip': os.path.join(BASE_DIR, "output_tanguy_small/skull_strip"),
+        'features_dir': os.path.join(BASE_DIR, "output_tanguy_small/features"), 
+        'resized_dir': os.path.join(BASE_DIR, "output_tanguy_small/resized"),
+        'hippo_dir': os.path.join(BASE_DIR, "output_tanguy_small/hippocampus"),
+        'visualization_dir': os.path.join(BASE_DIR, "output_tanguy_small/visualization"),
+        'npy_dir': os.path.join(BASE_DIR, "output_tanguy_small/npy"),
+        'npy_seg_dir': os.path.join(BASE_DIR, "output_tanguy_small/npy_seg"),
         'template_path': os.path.join(BASE_DIR, "mni_template/mni_icbm152_nlin_sym_09a_nifti/mni_icbm152_nlin_sym_09a/mni_icbm152_t1_tal_nlin_sym_09a.nii"),
-        'csv_path': os.path.join(BASE_DIR, "dataset_MRI_cohort1.csv")
+        'csv_path': os.path.join(BASE_DIR, "dataset_MRI_cohort1.csv"),
+        'enhance_quality': True,
+        'extract_features': True
     }
 
     # Create output directories
@@ -348,6 +514,8 @@ def main():
     processed_nifti = {}
     registered_files = {}
     npy_files = {}
+    npy_seg_files = {}
+    npy_skullskip_seg_files = {}  # Added dictionary for skull-stripped NPY files
 
     for _, row in df.iterrows():
         try:
@@ -403,52 +571,93 @@ def main():
                 logger.info(f"Registered file already exists for {adni_id}")
                 registered_files[adni_id] = {'path': registered_path}
 
-            # Step 3: Resize
-            resized_path = os.path.join(config['resized_dir'], f"{adni_id}.nii.gz")
-            if not os.path.exists(resized_path):
-                logger.info(f"Resizing image for {adni_id}")
-                resized_path = resize_to_mni_resolution(registered_path, resized_path)
+            # Step 3: Image Enhancement (nouveau)
+            enhanced_path = os.path.join(config['enhanced_dir'], f"{adni_id}.nii.gz")
+            if config['enhance_quality'] and not os.path.exists(enhanced_path):
+                logger.info(f"Enhancing image quality for {adni_id}")
+                img = ants.image_read(registered_path)
+                enhanced_img = enhance_image_quality(img)
+                ants.image_write(enhanced_img, enhanced_path)
+                current_path = enhanced_path
+            else:
+                current_path = registered_path
 
-            # Step 4: Hippocampus segmentation
+            # Step 4: Skull Stripping (nouveau)
+            stripped_path = os.path.join(config['enhanced_dir'], f"{adni_id}_stripped.nii.gz")
+            if not os.path.exists(stripped_path):
+                logger.info(f"Performing skull stripping for {adni_id}")
+                # Créer un fichier temporaire pour HD-BET
+                temp_output = os.path.join(config['enhanced_dir'], "temp.nii.gz")
+                stripped_path = skull_stripping(current_path, temp_output)
+                
+                # Renommer avec l'ADNI ID
+                final_stripped_path = os.path.join(config['enhanced_dir'], f"{adni_id}_stripped.nii.gz")
+                if os.path.exists(temp_output):
+                    os.rename(temp_output, final_stripped_path)
+                    stripped_path = final_stripped_path
+                
+                current_path = stripped_path
+
+            # Step 4: Feature Extraction (nouveau)
+            features_path = os.path.join(config['features_dir'], f"{adni_id}.json")
+            if config['extract_features'] and not os.path.exists(features_path):
+                logger.info(f"Extracting brain features for {adni_id}")
+                img = ants.image_read(current_path)
+                features = extract_brain_features(img)
+                with open(features_path, 'w') as f:
+                    json.dump(features, f, indent=4)
+
+            # Step 5: Hippocampus Segmentation
             hippo_dir = os.path.join(config['hippo_dir'], adni_id)
+            os.makedirs(hippo_dir, exist_ok=True)
+            
             extracted_path = os.path.join(hippo_dir, 'extracted_volume.nii.gz')
             if not os.path.exists(extracted_path):
                 logger.info(f"Processing hippocampus for {adni_id}")
-                left_hippo, right_hippo = segment_hippocampus(resized_path, hippo_dir)
-                extracted_path = extract_hippocampus_slices(
+                left_hippo, right_hippo = segment_hippocampus(current_path, hippo_dir)
+                extracted_path, slice_info = extract_hippocampus_slices(
                     left_hippo,
                     right_hippo,
-                    resized_path,
+                    current_path,
                     hippo_dir
                 )
 
-            # Step 5: Convert to NPY (full brain)
+            # Step 6: Convert to NPY (full brain and hippocampus)
             if not existing['npy']:
                 logger.info(f"Converting full brain to NPY for {adni_id}")
-                try:
-                    npy_path = os.path.join(config['npy_dir'], f"{adni_id}.npy")
-                    image = LoadImage(dtype=np.float32, image_only=True)(resized_path)
-                    image_dict = {"image": image}
-                    image_dict = EnsureChannelFirstd(keys="image")(image_dict)
-                    image_dict = Orientationd(keys="image", axcodes="RAS")(image_dict)
-                    np.save(npy_path, image_dict["image"])
-                    npy_files[adni_id] = npy_path
-                except Exception as e:
-                    logger.error(f"NPY conversion failed for {adni_id}: {str(e)}")
-                    continue
+                npy_path = os.path.join(config['npy_dir'], f"{adni_id}.npy")
+                image = LoadImage(dtype=np.float32, image_only=True)(current_path)
+                image_dict = {"image": image}
+                image_dict = EnsureChannelFirstd(keys="image")(image_dict)
+                image_dict = Orientationd(keys="image", axcodes="RAS")(image_dict)
+                np.save(npy_path, image_dict["image"])
+                npy_files[adni_id] = npy_path
 
-            # Step 6: Convert hippocampus to NPY
-            npy_seg_path = os.path.join(config['npy_seg_dir'], f"{adni_id}.npy")
-            if not os.path.exists(npy_seg_path) and os.path.exists(extracted_path):
+            # Convert hippocampus to NPY
+            npy_seg_path = os.path.join(config['npy_seg_dir'], f"{adni_id}_hippo.npy")
+            os.makedirs(os.path.dirname(npy_seg_path), exist_ok=True)
+            
+            if not os.path.exists(npy_seg_path):
                 logger.info(f"Converting hippocampus to NPY for {adni_id}")
-                try:
-                    image = LoadImage(dtype=np.float32, image_only=True)(extracted_path)
+                image = LoadImage(dtype=np.float32, image_only=True)(extracted_path)
+                image_dict = {"image": image}
+                image_dict = EnsureChannelFirstd(keys="image")(image_dict)
+                image_dict = Orientationd(keys="image", axcodes="RAS")(image_dict)
+                np.save(npy_seg_path, image_dict["image"])
+                npy_seg_files[adni_id] = npy_seg_path
+
+            # Convert skull-stripped hippocampus to NPY
+            npy_skullskip_seg_path = os.path.join(config['npy_seg_dir'], f"{adni_id}_hippo_skullstripped.npy")
+            if not os.path.exists(npy_skullskip_seg_path):
+                logger.info(f"Converting skull-stripped hippocampus to NPY for {adni_id}")
+                stripped_hippo_path = os.path.join(hippo_dir, 'extracted_volume_stripped.nii.gz')
+                if os.path.exists(stripped_hippo_path):
+                    image = LoadImage(dtype=np.float32, image_only=True)(stripped_hippo_path)
                     image_dict = {"image": image}
                     image_dict = EnsureChannelFirstd(keys="image")(image_dict)
                     image_dict = Orientationd(keys="image", axcodes="RAS")(image_dict)
-                    np.save(npy_seg_path, image_dict["image"])
-                except Exception as e:
-                    logger.error(f"Hippocampus NPY conversion failed for {adni_id}: {str(e)}")
+                    np.save(npy_skullskip_seg_path, image_dict["image"])
+                    npy_skullskip_seg_files[adni_id] = npy_skullskip_seg_path
 
         except Exception as e:
             logger.error(f"Error processing {adni_id}: {str(e)}")
@@ -459,7 +668,9 @@ def main():
     df['processed_path'] = df['adni_id'].apply(lambda x: processed_nifti.get(x, ''))
     df['registered_path'] = df['adni_id'].apply(lambda x: registered_files.get(x, {}).get('path', ''))
     df['npy_path'] = df['adni_id'].apply(lambda x: npy_files.get(x, ''))
-    
+    df['npy_seg_path'] = df['adni_id'].apply(lambda x: npy_seg_files.get(x, ''))
+    df['npy_skullskip_seg_path'] = df['adni_id'].apply(lambda x: npy_skullskip_seg_files.get(x, ''))
+
     # Add registration metrics if available
     df['registration_ssim'] = df['adni_id'].apply(
         lambda x: registered_files.get(x, {}).get('metrics', {}).get('ssim', None)
@@ -467,9 +678,9 @@ def main():
     df['registration_mse'] = df['adni_id'].apply(
         lambda x: registered_files.get(x, {}).get('metrics', {}).get('mse', None)
     )
-    
+
     # Save updated CSV
-    updated_csv_path = os.path.join(config['root_dir'], "dataset_MRI_cohort1_updated.csv")
+    updated_csv_path = os.path.join(config['root_dir'], "ds_tanguy_small_updated.csv")
     df.to_csv(updated_csv_path, index=False)
     logger.info(f"Updated CSV saved to {updated_csv_path}")
 
