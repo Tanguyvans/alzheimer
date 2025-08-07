@@ -15,40 +15,45 @@ This is a medical image analysis project for Alzheimer's disease and Multiple Sc
 
 ## Core Pipeline Architecture
 
-### Stage 1: DICOM to NIfTI Conversion
-- `ms-1-dicom-nifti.py` - Standard T1 sequence conversion
-- `dicom_flair_nifti_d2.py` - FLAIR sequence conversion
+### Clean Preprocessing Pipeline (`preprocessing/`)
+The main preprocessing pipeline provides a clean 4-step workflow:
 
-### Stage 2: Preprocessing & Registration
-- `ms-1-register-python-skull.py` - MNI template registration
-- `ms-1-nifti-enhanced.py` - N4 bias correction and enhancement
-- `to_npy_seg_resize.py` - Complete preprocessing pipeline with skull stripping, hippocampus segmentation, and volume extraction
+1. **DICOM to NIfTI Conversion** - Convert medical scans to standard format
+2. **N4 Bias Correction** - Remove intensity artifacts  
+3. **MNI Registration** - Register to standard brain template
+4. **Skull Stripping** - Extract brain-only images using SynthStrip
 
-### Stage 3: Machine Learning Classification
+### Legacy Analysis Scripts
 - `train_resnet3d.py` - 3D ResNet for Alzheimer's classification using hippocampus volumes (192x20x192 resolution)
-
-### Stage 4: Lesion Analysis (MS Research)
 - `ms-2-flames-segmentation.py` - FLAMeS (nnUNet) lesion segmentation
 - `ms-volume.py` - Lesion volume quantification
 
 ## Key Development Commands
 
-**Note**: This project uses a Python virtual environment in `/env/`. No standard requirements.txt exists.
+**Note**: This project uses a Python virtual environment in `/env/`.
 
 ```bash
 # Activate virtual environment
 source env/bin/activate
 
-# Run complete preprocessing pipeline
-python to_npy_seg_resize.py
+# Ensure dependencies are up to date
+pip install --upgrade python-dateutil
+
+# Run complete preprocessing pipeline (ADNI data example)
+python3 preprocessing/pipeline.py \
+  --input ADNI \
+  --output ADNI_processed \
+  --template mni_template/mni_icbm152_nlin_sym_09a_nifti/mni_icbm152_nlin_sym_09a/mni_icbm152_t1_tal_nlin_sym_09a.nii
+
+# Run individual preprocessing steps
+python3 preprocessing/pipeline.py --input ADNI --output ADNI_processed --template [template] --step dicom
+python3 preprocessing/pipeline.py --nifti-input ADNI_processed/01_nifti --output ADNI_processed --template [template] --step process
+python3 preprocessing/pipeline.py --nifti-input ADNI_processed/01_nifti --output ADNI_processed --template [template] --step skull
 
 # Train Alzheimer's classification model
 python train_resnet3d.py
 
-# Process DICOM to NIfTI conversion
-python ms-1-dicom-nifti.py
-
-# Visualize processing results
+# Visualize results
 python visualize_processing_results.py
 ```
 

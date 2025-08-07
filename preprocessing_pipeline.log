@@ -1,0 +1,82 @@
+2025-08-07 23:36:58,155 - INFO - ================================================================================
+2025-08-07 23:36:58,155 - INFO - STARTING COMPLETE PREPROCESSING PIPELINE
+2025-08-07 23:36:58,155 - INFO - ================================================================================
+2025-08-07 23:36:58,155 - INFO - ============================================================
+2025-08-07 23:36:58,155 - INFO - STEP 1: DICOM TO NIFTI CONVERSION
+2025-08-07 23:36:58,155 - INFO - ============================================================
+2025-08-07 23:36:58,156 - INFO - Processing 2 patient directories
+2025-08-07 23:36:58,156 - INFO - Found 180 DICOM files
+2025-08-07 23:36:58,716 - INFO - Successfully converted 180 DICOM files to ADNI_clean/01_nifti/137_S_1426_MP-RAGE_2007-09-07_12_03_12.0_I72082_72082.nii.gz
+2025-08-07 23:36:58,717 - INFO - Found 180 DICOM files
+2025-08-07 23:36:59,270 - INFO - Successfully converted 180 DICOM files to ADNI_clean/01_nifti/137_S_1426_MP-RAGE_2008-10-30_10_26_01.0_I124659_124659.nii.gz
+2025-08-07 23:36:59,271 - INFO - Found 180 DICOM files
+2025-08-07 23:36:59,830 - INFO - Successfully converted 180 DICOM files to ADNI_clean/01_nifti/137_S_1426_MP-RAGE_2008-04-10_13_02_23.0_I102024_102024.nii.gz
+2025-08-07 23:36:59,831 - INFO - Found 180 DICOM files
+2025-08-07 23:37:00,406 - INFO - Successfully converted 180 DICOM files to ADNI_clean/01_nifti/137_S_1414_MP-RAGE_2009-03-11_09_10_38.0_I138349_138349.nii.gz
+2025-08-07 23:37:00,407 - INFO - Found 180 DICOM files
+2025-08-07 23:37:00,965 - INFO - Successfully converted 180 DICOM files to ADNI_clean/01_nifti/137_S_1414_MP-RAGE_2008-02-26_11_57_53.0_I92752_92752.nii.gz
+2025-08-07 23:37:00,965 - INFO - DICOM conversion completed: 5 files created in 0.05 minutes
+2025-08-07 23:37:00,965 - INFO - ============================================================
+2025-08-07 23:37:00,965 - INFO - STEP 2: N4 BIAS CORRECTION + MNI REGISTRATION
+2025-08-07 23:37:00,965 - INFO - ============================================================
+2025-08-07 23:37:01,070 - INFO - Starting N4 + MNI registration for 137_S_1426_MP-RAGE_2007-09-07_12_03_12.0_I72082_72082
+2025-08-07 23:37:01,211 - INFO - Starting N4 bias field correction for 137_S_1426_MP-RAGE_2007-09-07_12_03_12.0_I72082_72082
+2025-08-07 23:38:22,908 - INFO - N4 bias field correction completed for 137_S_1426_MP-RAGE_2007-09-07_12_03_12.0_I72082_72082
+2025-08-07 23:38:22,909 - INFO - Starting MNI registration for 137_S_1426_MP-RAGE_2007-09-07_12_03_12.0_I72082_72082
+2025-08-07 23:38:50,921 - INFO - Successfully saved processed image to ADNI_clean/02_processed/137_S_1426_MP-RAGE_2007-09-07_12_03_12.0_I72082_72082_processed.nii.gz
+2025-08-07 23:38:50,928 - INFO - Starting N4 + MNI registration for 137_S_1426_MP-RAGE_2008-10-30_10_26_01.0_I124659_124659
+2025-08-07 23:38:51,066 - INFO - Starting N4 bias field correction for 137_S_1426_MP-RAGE_2008-10-30_10_26_01.0_I124659_124659
+2025-08-07 23:46:03,238 - INFO - ============================================================
+2025-08-07 23:46:03,238 - INFO - STEP 2: N4 BIAS CORRECTION + MNI REGISTRATION
+2025-08-07 23:46:03,238 - INFO - ============================================================
+2025-08-07 23:46:03,239 - INFO - Found 5 NIfTI files to process
+2025-08-07 23:46:03,239 - INFO - Starting N4 + MNI registration for 137_S_1426_MP-RAGE_2008-04-10_13_02_23.0_I102024_102024
+2025-08-07 23:46:03,384 - INFO - Starting N4 bias field correction for 137_S_1426_MP-RAGE_2008-04-10_13_02_23.0_I102024_102024
+2025-08-07 23:47:24,835 - INFO - N4 bias field correction completed for 137_S_1426_MP-RAGE_2008-04-10_13_02_23.0_I102024_102024
+2025-08-07 23:47:24,835 - INFO - Starting MNI registration for 137_S_1426_MP-RAGE_2008-04-10_13_02_23.0_I102024_102024
+2025-08-07 23:47:52,649 - INFO - Successfully saved processed image to ADNI_clean/02_processed/137_S_1426_MP-RAGE_2008-04-10_13_02_23.0_I102024_102024_processed.nii.gz
+2025-08-07 23:47:52,654 - INFO - Starting N4 + MNI registration for 137_S_1414_MP-RAGE_2009-03-11_09_10_38.0_I138349_138349
+2025-08-07 23:47:52,796 - INFO - Starting N4 bias field correction for 137_S_1414_MP-RAGE_2009-03-11_09_10_38.0_I138349_138349
+2025-08-07 23:49:14,484 - INFO - N4 bias field correction completed for 137_S_1414_MP-RAGE_2009-03-11_09_10_38.0_I138349_138349
+2025-08-07 23:49:14,485 - INFO - Starting MNI registration for 137_S_1414_MP-RAGE_2009-03-11_09_10_38.0_I138349_138349
+2025-08-07 23:49:41,967 - INFO - Successfully saved processed image to ADNI_clean/02_processed/137_S_1414_MP-RAGE_2009-03-11_09_10_38.0_I138349_138349_processed.nii.gz
+2025-08-07 23:49:41,969 - INFO - Starting N4 + MNI registration for 137_S_1414_MP-RAGE_2008-02-26_11_57_53.0_I92752_92752
+2025-08-07 23:49:42,110 - INFO - Starting N4 bias field correction for 137_S_1414_MP-RAGE_2008-02-26_11_57_53.0_I92752_92752
+2025-08-07 23:53:12,998 - INFO - ============================================================
+2025-08-07 23:53:12,998 - INFO - STEP 3: SKULL STRIPPING
+2025-08-07 23:53:12,998 - INFO - ============================================================
+2025-08-07 23:53:12,998 - INFO - Setting up SynthStrip Docker environment...
+2025-08-07 23:53:13,068 - INFO - Docker version: Docker version 27.4.0, build bde2b89
+2025-08-07 23:53:13,270 - INFO - Docker daemon is running
+2025-08-07 23:53:13,271 - INFO - Pulling SynthStrip Docker image...
+2025-08-07 23:53:16,865 - INFO - Successfully pulled SynthStrip Docker image
+2025-08-07 23:53:16,866 - INFO - SynthStrip Docker environment ready
+2025-08-07 23:53:16,893 - INFO - Docker version: Docker version 27.4.0, build bde2b89
+2025-08-07 23:53:16,967 - INFO - Docker daemon is running
+2025-08-07 23:53:16,968 - INFO - Pulling SynthStrip Docker image...
+2025-08-07 23:53:18,165 - INFO - Successfully pulled SynthStrip Docker image
+2025-08-07 23:53:18,167 - INFO - Found 3 enhanced files to skull strip
+2025-08-07 23:53:18,167 - INFO - Starting SynthStrip skull stripping for 137_S_1426_MP-RAGE_2007-09-07_12_03_12.0_I72082_72082_processed
+2025-08-07 23:53:53,252 - INFO - Successfully skull-stripped 137_S_1426_MP-RAGE_2007-09-07_12_03_12.0_I72082_72082_processed
+2025-08-07 23:53:53,252 - INFO - Starting SynthStrip skull stripping for 137_S_1414_MP-RAGE_2009-03-11_09_10_38.0_I138349_138349_processed
+2025-08-07 23:54:10,934 - INFO - ============================================================
+2025-08-07 23:54:10,935 - INFO - STEP 3: SKULL STRIPPING
+2025-08-07 23:54:10,935 - INFO - ============================================================
+2025-08-07 23:54:10,935 - INFO - Setting up SynthStrip Docker environment...
+2025-08-07 23:54:10,961 - INFO - Docker version: Docker version 27.4.0, build bde2b89
+2025-08-07 23:54:11,280 - INFO - Docker daemon is running
+2025-08-07 23:54:11,281 - INFO - Pulling SynthStrip Docker image...
+2025-08-07 23:54:12,546 - INFO - Successfully pulled SynthStrip Docker image
+2025-08-07 23:54:12,546 - INFO - SynthStrip Docker environment ready
+2025-08-07 23:54:12,573 - INFO - Docker version: Docker version 27.4.0, build bde2b89
+2025-08-07 23:54:12,683 - INFO - Docker daemon is running
+2025-08-07 23:54:12,683 - INFO - Pulling SynthStrip Docker image...
+2025-08-07 23:54:13,766 - INFO - Successfully pulled SynthStrip Docker image
+2025-08-07 23:54:13,767 - INFO - Found 3 enhanced files to skull strip
+2025-08-07 23:54:13,767 - INFO - Skull-stripped file already exists: ADNI_clean/03_skull_stripped/137_S_1426_MP-RAGE_2007-09-07_12_03_12.0_I72082_72082_processed_skull_stripped.nii.gz
+2025-08-07 23:54:13,767 - INFO - Starting SynthStrip skull stripping for 137_S_1414_MP-RAGE_2009-03-11_09_10_38.0_I138349_138349_processed
+2025-08-07 23:54:49,943 - INFO - Successfully skull-stripped 137_S_1414_MP-RAGE_2009-03-11_09_10_38.0_I138349_138349_processed
+2025-08-07 23:54:49,944 - INFO - Starting SynthStrip skull stripping for 137_S_1426_MP-RAGE_2008-04-10_13_02_23.0_I102024_102024_processed
+2025-08-07 23:55:22,675 - INFO - Successfully skull-stripped 137_S_1426_MP-RAGE_2008-04-10_13_02_23.0_I102024_102024_processed
+2025-08-07 23:55:22,676 - INFO - Skull stripping complete: 3 successful, 0 failed
+2025-08-07 23:55:22,676 - INFO - Skull stripping completed: 3 successful, 0 failed in 1.20 minutes

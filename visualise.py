@@ -7,7 +7,7 @@ from matplotlib.widgets import Slider
 #img = nib.load('normal.nii.gz')
 #img = nib.load('/Users/tanguyvans/Desktop/umons/code/alzheimer/new_irm_output/SEP-MRI-001_T0_6f1.nii.gz')
 #img = nib.load('/Users/tanguyvans/Desktop/umons/code/alzheimer/new_irm_output/SEP-MRI-001_T1_be7d.nii.gz')
-img = nib.load('/Users/tanguyvans/Desktop/umons/code/alzheimer/ms-1-mask-full/SEP-MRI-001_T0_6f1_registered_n4_BrainMask.nii.gz')
+img = nib.load('ADNI_clean/02_processed/137_S_1414_MP-RAGE_2009-03-11_09_10_38.0_I138349_138349_processed.nii.gz')
 
 data = img.get_fdata()
 
