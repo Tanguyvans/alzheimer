@@ -220,7 +220,11 @@ def check_existing_files(config, adni_id):
     existing = {
         'processed': os.path.exists(os.path.join(config['processed_dir'], f"{adni_id}.nii.gz")),
         'registered': os.path.exists(os.path.join(config['registered_dir'], f"{adni_id}.nii.gz")),
-        'npy': os.path.exists(os.path.join(config['npy_dir'], f"{adni_id}.npy"))
+        'enhanced': os.path.exists(os.path.join(config['enhanced_dir'], f"{adni_id}.nii.gz")),
+        'stripped': os.path.exists(os.path.join(config['skull_strip_dir'], f"{adni_id}.nii.gz")),
+        'npy_enhanced': os.path.exists(os.path.join(config['npy_enhanced_dir'], f"{adni_id}.npy")),
+        'npy_stripped': os.path.exists(os.path.join(config['npy_stripped_dir'], f"{adni_id}.npy")),
+        'npy_seg': os.path.exists(os.path.join(config['npy_seg_dir'], f"{adni_id}.npy"))
     }
     return existing
 
@@ -488,13 +492,12 @@ def main():
         'output_dir': os.path.join(BASE_DIR, "output_tanguy_small"),
         'processed_dir': os.path.join(BASE_DIR, "output_tanguy_small/processed"),
         'registered_dir': os.path.join(BASE_DIR, "output_tanguy_small/registered"),
-        'enhanced_dir': os.path.join(BASE_DIR, "output_tanguy_small/enhanced"), 
-        'skull_strip': os.path.join(BASE_DIR, "output_tanguy_small/skull_strip"),
-        'features_dir': os.path.join(BASE_DIR, "output_tanguy_small/features"), 
-        'resized_dir': os.path.join(BASE_DIR, "output_tanguy_small/resized"),
+        'enhanced_dir': os.path.join(BASE_DIR, "output_tanguy_small/enhanced"),
+        'skull_strip_dir': os.path.join(BASE_DIR, "output_tanguy_small/skull_strip"),
+        'features_dir': os.path.join(BASE_DIR, "output_tanguy_small/features"),
         'hippo_dir': os.path.join(BASE_DIR, "output_tanguy_small/hippocampus"),
-        'visualization_dir': os.path.join(BASE_DIR, "output_tanguy_small/visualization"),
-        'npy_dir': os.path.join(BASE_DIR, "output_tanguy_small/npy"),
+        'npy_enhanced_dir': os.path.join(BASE_DIR, "output_tanguy_small/npy_enhanced"),
+        'npy_stripped_dir': os.path.join(BASE_DIR, "output_tanguy_small/npy_stripped"),
         'npy_seg_dir': os.path.join(BASE_DIR, "output_tanguy_small/npy_seg"),
         'template_path': os.path.join(BASE_DIR, "mni_template/mni_icbm152_nlin_sym_09a_nifti/mni_icbm152_nlin_sym_09a/mni_icbm152_t1_tal_nlin_sym_09a.nii"),
         'csv_path': os.path.join(BASE_DIR, "dataset_MRI_cohort1.csv"),
@@ -582,21 +585,11 @@ def main():
             else:
                 current_path = registered_path
 
-            # Step 4: Skull Stripping (nouveau)
-            stripped_path = os.path.join(config['enhanced_dir'], f"{adni_id}_stripped.nii.gz")
+            # Step 4: Skull Stripping
+            stripped_path = os.path.join(config['skull_strip_dir'], f"{adni_id}.nii.gz")
             if not os.path.exists(stripped_path):
                 logger.info(f"Performing skull stripping for {adni_id}")
-                # Créer un fichier temporaire pour HD-BET
-                temp_output = os.path.join(config['enhanced_dir'], "temp.nii.gz")
-                stripped_path = skull_stripping(current_path, temp_output)
-                
-                # Renommer avec l'ADNI ID
-                final_stripped_path = os.path.join(config['enhanced_dir'], f"{adni_id}_stripped.nii.gz")
-                if os.path.exists(temp_output):
-                    os.rename(temp_output, final_stripped_path)
-                    stripped_path = final_stripped_path
-                
-                current_path = stripped_path
+                stripped_path = skull_stripping(current_path, stripped_path)
 
             # Step 4: Feature Extraction (nouveau)
             features_path = os.path.join(config['features_dir'], f"{adni_id}.json")
@@ -622,16 +615,34 @@ def main():
                     hippo_dir
                 )
 
-            # Step 6: Convert to NPY (full brain and hippocampus)
-            if not existing['npy']:
-                logger.info(f"Converting full brain to NPY for {adni_id}")
-                npy_path = os.path.join(config['npy_dir'], f"{adni_id}.npy")
-                image = LoadImage(dtype=np.float32, image_only=True)(current_path)
-                image_dict = {"image": image}
-                image_dict = EnsureChannelFirstd(keys="image")(image_dict)
-                image_dict = Orientationd(keys="image", axcodes="RAS")(image_dict)
-                np.save(npy_path, image_dict["image"])
-                npy_files[adni_id] = npy_path
+            # Step 6: Convert to NPY (enhanced and skull-stripped versions)
+            if not existing['npy_enhanced'] or not existing['npy_stripped']:
+                # Enhanced version
+                if not existing['npy_enhanced']:
+                    logger.info(f"Converting enhanced brain to NPY for {adni_id}")
+                    enhanced_npy_path = os.path.join(config['npy_enhanced_dir'], f"{adni_id}.npy")
+                    os.makedirs(config['npy_enhanced_dir'], exist_ok=True)
+                    image = LoadImage(dtype=np.float32, image_only=True)(current_path)
+                    image_dict = {"image": image}
+                    image_dict = EnsureChannelFirstd(keys="image")(image_dict)
+                    image_dict = Orientationd(keys="image", axcodes="RAS")(image_dict)
+                    np.save(enhanced_npy_path, image_dict["image"])
+                    
+                # Skull-stripped version
+                if not existing['npy_stripped']:
+                    logger.info(f"Converting skull-stripped brain to NPY for {adni_id}")
+                    stripped_npy_path = os.path.join(config['npy_stripped_dir'], f"{adni_id}.npy")
+                    os.makedirs(config['npy_stripped_dir'], exist_ok=True)
+                    image = LoadImage(dtype=np.float32, image_only=True)(stripped_path)
+                    image_dict = {"image": image}
+                    image_dict = EnsureChannelFirstd(keys="image")(image_dict)
+                    image_dict = Orientationd(keys="image", axcodes="RAS")(image_dict)
+                    np.save(stripped_npy_path, image_dict["image"])
+                    
+                npy_files[adni_id] = {
+                    'enhanced': enhanced_npy_path,
+                    'stripped': stripped_npy_path
+                }
 
             # Convert hippocampus to NPY
             npy_seg_path = os.path.join(config['npy_seg_dir'], f"{adni_id}_hippo.npy")
@@ -665,13 +676,17 @@ def main():
 
     # Update DataFrame with new paths
     df['adni_id'] = df['mri_path'].apply(get_adni_id_from_path)
+    # NIfTI paths
     df['processed_path'] = df['adni_id'].apply(lambda x: processed_nifti.get(x, ''))
     df['registered_path'] = df['adni_id'].apply(lambda x: registered_files.get(x, {}).get('path', ''))
-    df['npy_path'] = df['adni_id'].apply(lambda x: npy_files.get(x, ''))
+    df['enhanced_path'] = df['adni_id'].apply(lambda x: os.path.join(config['enhanced_dir'], f"{x}.nii.gz"))
+    df['skull_stripped_path'] = df['adni_id'].apply(lambda x: os.path.join(config['skull_strip_dir'], f"{x}.nii.gz"))
+    df['hippo_path'] = df['adni_id'].apply(lambda x: os.path.join(config['hippo_dir'], x, 'extracted_volume.nii.gz'))
+    # NPY paths
+    df['npy_enhanced_path'] = df['adni_id'].apply(lambda x: npy_files.get(x, {}).get('enhanced', ''))
+    df['npy_stripped_path'] = df['adni_id'].apply(lambda x: npy_files.get(x, {}).get('stripped', ''))
     df['npy_seg_path'] = df['adni_id'].apply(lambda x: npy_seg_files.get(x, ''))
-    df['npy_skullskip_seg_path'] = df['adni_id'].apply(lambda x: npy_skullskip_seg_files.get(x, ''))
-
-    # Add registration metrics if available
+    # Metrics
     df['registration_ssim'] = df['adni_id'].apply(
         lambda x: registered_files.get(x, {}).get('metrics', {}).get('ssim', None)
     )

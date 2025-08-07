@@ -5,7 +5,10 @@ from matplotlib.widgets import Slider
 
 # Charger le fichier
 #img = nib.load('normal.nii.gz')
-img = nib.load('output/register/normal/normal_stripped.nii.gz')
+#img = nib.load('/Users/tanguyvans/Desktop/umons/code/alzheimer/new_irm_output/SEP-MRI-001_T0_6f1.nii.gz')
+#img = nib.load('/Users/tanguyvans/Desktop/umons/code/alzheimer/new_irm_output/SEP-MRI-001_T1_be7d.nii.gz')
+img = nib.load('/Users/tanguyvans/Desktop/umons/code/alzheimer/ms-1-mask-full/SEP-MRI-001_T0_6f1_registered_n4_BrainMask.nii.gz')
+
 data = img.get_fdata()
 
 # Afficher les dimensions

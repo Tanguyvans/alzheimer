@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 # Add BASE_DIR constant
-BASE_DIR = ""
+BASE_DIR = "/Volumes/KINGSTON/CHU_nifti/test"
 
 def get_adni_id_from_path(path):
     """Extract ADNI ID (I##### format) from path."""
@@ -551,47 +551,60 @@ def skull_stripping(input_path, output_path):
         output_path: Path where to save the skull-stripped image
         
     Returns:
-        str: Path to the skull-stripped image
+        tuple: (skull_stripped_path, brain_mask_path)
     """
     logger.info("Performing skull stripping using HD-BET...")
     
     try:
-        # HD-BET command avec les bons arguments
-        # -i: fichier d'entrée
-        # -o: fichier de sortie
-        # -device cpu: utilise le CPU (changer en 'cuda' si GPU disponible)
-        # --disable_tta: désactive le test time augmentation pour plus de vitesse
-        cmd = f"hd-bet -i {input_path} -o {output_path} -device cpu --disable_tta"
-        
-        # Exécuter HD-BET
-        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        logger.info("Generating brain stripped & mask...")
+        cmd2 = f"hd-bet -i {input_path} -o {output_path} -device cpu --disable_tta --save_bet_mask"
+        process = subprocess.Popen(cmd2, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
-        
         if process.returncode != 0:
-            raise Exception(f"HD-BET failed with error: {stderr.decode()}")
-            
-        # HD-BET ajoute '_bet' au nom du fichier
-        actual_output = output_path.replace('.nii.gz', '_bet.nii.gz')
-        if os.path.exists(actual_output):
-            os.rename(actual_output, output_path)
+            raise Exception(f"HD-BET (mask) failed with error: {stderr.decode()}")
             
         logger.info(f"Skull stripping completed. Output saved to: {output_path}")
+        logger.info(f"Brain mask saved to: {output_path}")
         return output_path
-        
+            
     except Exception as e:
         logger.error(f"Error during skull stripping: {str(e)}")
         raise
 
+def apply_brain_mask(image_path, mask_path, output_path):
+    """Apply brain mask to an image.
+    
+    Args:
+        image_path: Path to input image
+        mask_path: Path to brain mask
+        output_path: Path to save masked image
+    """
+    logger.info("Applying brain mask to image...")
+    
+    # Load image and mask using ANTs
+    image = ants.image_read(image_path)
+    mask = ants.image_read(mask_path)
+    
+    # Apply mask
+    masked_image = image * mask
+    
+    # Save result
+    ants.image_write(masked_image, output_path)
+    logger.info(f"Masked image saved to: {output_path}")
+    
+    return output_path
+
 def main():
     """Pipeline for processing a single NIfTI image."""
     config = {
+
         'root_dir': BASE_DIR,
         'output_dir': os.path.join(BASE_DIR, "output"),
         'npy_dir': os.path.join(BASE_DIR, "output/npy"),
         'npy_seg_dir': os.path.join(BASE_DIR, "output/npy_seg"),
         'register_dir': os.path.join(BASE_DIR, "output/register"),
-        'template_path': os.path.join(BASE_DIR, "mni_template/mni_icbm152_nlin_sym_09a_nifti/mni_icbm152_nlin_sym_09a/mni_icbm152_t1_tal_nlin_sym_09a.nii"),
-        'input_path': os.path.join(BASE_DIR, "normal_1.nii.gz"),
+        'template_path': os.path.join("mni_template/mni_icbm152_nlin_sym_09a_nifti/mni_icbm152_nlin_sym_09a/mni_icbm152_t1_tal_nlin_sym_09a.nii"),
+        'input_path': os.path.join(BASE_DIR, "CS_T1W_TSE.nii.gz"),
         
         # Flags pour les features optionnelles
         'enhance_quality': True,      # Amélioration de la qualité
