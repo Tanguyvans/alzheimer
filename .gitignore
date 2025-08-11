@@ -10,7 +10,6 @@ env
 *.nii
 *.nii.gz
 *.npy
-*.png
 *.jpg
 *.jpeg
 *.gif
