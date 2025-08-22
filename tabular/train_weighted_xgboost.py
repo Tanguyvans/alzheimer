@@ -20,7 +20,7 @@ def load_and_preprocess_data():
     """Load and preprocess ADNI data"""
     
     # Load data
-    df = pd.read_csv('/Users/tanguyvans/Desktop/umons/alzheimer/ADNIDenoise/adni_clinical_features.csv')
+    df = pd.read_csv('/Users/tanguyvans/Desktop/umons/alzheimer/ADNIDenoise/AD_CN_clinical_data.csv')
     print(f"Loaded ADNI clinical data: {df.shape}")
     
     print("\\nOriginal class distribution:")
@@ -30,11 +30,25 @@ def load_and_preprocess_data():
     group_map = {"AD": 1, "CN": 0, "MCI": 0}
     df['Group'] = df['Group'].map(group_map)
     
-    # Convert categorical to numeric
-    df['PTGENDER'] = df['PTGENDER'].replace(['Female','Male'], [0,1])
+    # Handle missing values first
+    print("\nMissing values before preprocessing:")
+    print(df.isnull().sum()[df.isnull().sum() > 0])
     
-    # Label encode other categoricals
-    categorical_cols = ['PTETHCAT', 'PTRACCAT', 'APOE Genotype']
+    # Fill missing values with median for numeric, mode for categorical
+    for col in df.select_dtypes(include=[np.number]).columns:
+        if df[col].isnull().sum() > 0:
+            df[col] = df[col].fillna(df[col].median())
+    
+    for col in df.select_dtypes(include=['object']).columns:
+        if df[col].isnull().sum() > 0:
+            df[col] = df[col].fillna(df[col].mode()[0] if len(df[col].mode()) > 0 else 'Unknown')
+    
+    # PTGENDER is already numeric (1.0 for male, other for female)
+    # Convert to binary: 1 for male, 0 for female
+    df['PTGENDER'] = (df['PTGENDER'] == 1.0).astype(int)
+    
+    # Label encode other categoricals if they exist
+    categorical_cols = ['PTETHCAT', 'PTRACCAT']
     for col in categorical_cols:
         if col in df.columns:
             le = LabelEncoder()
@@ -151,18 +165,39 @@ def main():
     # Load data
     df = load_and_preprocess_data()
     
-    # Prepare features and target
-    feature_cols = ["PTGENDER", "AGE", "PTEDUCAT", "PTETHCAT", "PTRACCAT", 
-                   "APOE4", "MMSE", "APOE Genotype"]
+    # Prepare features and target - EXCLUDING MMSCORE to see other important features
+    available_feature_cols = ["PTGENDER", "PTDOBYY", "PTEDUCAT", "PTRACCAT", 
+                             "VSWEIGHT", "VSHEIGHT", "TRAASCOR", "TRABSCOR",
+                             "CATANIMSC", "CLOCKSCOR", "BNTTOTAL", "DSPANFOR", "DSPANBAC"]
+    
+    # available_feature_cols = ["PTGENDER", "PTDOBYY", "PTEDUCAT", "PTRACCAT", 
+    #                         "VSWEIGHT", "VSHEIGHT", "MMSCORE", "TRAASCOR", "TRABSCOR",
+    #                         "CATANIMSC", "CLOCKSCOR", "BNTTOTAL", "DSPANFOR", "DSPANBAC"]
+
+
+    print("\\nEXCLUDING MMSCORE to analyze other predictive features")
+    
+    # Filter to only include columns that exist in the dataset
+    feature_cols = [col for col in available_feature_cols if col in df.columns]
+    print(f"\nUsing {len(feature_cols)} features: {feature_cols}")
     
     X = df[feature_cols].values
     y = df['Group'].values
     
-    # Train/test split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=42)
+    # Train/validation/test split (60/20/20)
+    X_temp, X_test, y_temp, y_test = train_test_split(X, y, test_size=0.20, random_state=42, stratify=y)
+    X_train, X_val, y_train, y_val = train_test_split(X_temp, y_temp, test_size=0.25, random_state=42, stratify=y_temp)
     
-    print(f"\\nTrain set: {X_train.shape}")
-    print(f"Test set: {X_test.shape}")
+    print(f"\\nDataset splits:")
+    print(f"Train set: {X_train.shape} ({len(y_train)/len(y)*100:.1f}%)")
+    print(f"Validation set: {X_val.shape} ({len(y_val)/len(y)*100:.1f}%)")
+    print(f"Test set: {X_test.shape} ({len(y_test)/len(y)*100:.1f}%)")
+    
+    # Check class distribution in each split
+    print(f"\\nClass distribution:")
+    print(f"Train: CN={np.sum(y_train==0)}, AD={np.sum(y_train==1)}")
+    print(f"Val:   CN={np.sum(y_val==0)}, AD={np.sum(y_val==1)}")
+    print(f"Test:  CN={np.sum(y_test==0)}, AD={np.sum(y_test==1)}")
     
     # Calculate class imbalance
     n_nonAD = np.sum(y_train == 0)
@@ -174,14 +209,14 @@ def main():
     print(f"AD: {n_AD} samples")  
     print(f"Imbalance ratio: {imbalance_ratio:.2f}:1")
     
-    # Test different XGBoost weight configurations
+    # Test different XGBoost weight configurations with more trees and early stopping
     models = {
-        'XGBoost Default': XGBClassifier(n_estimators=100, random_state=42, eval_metric='logloss'),
-        'XGBoost Balanced': XGBClassifier(n_estimators=100, random_state=42, eval_metric='logloss',
+        'XGBoost Default': XGBClassifier(n_estimators=300, random_state=42, eval_metric='logloss'),
+        'XGBoost Balanced': XGBClassifier(n_estimators=300, random_state=42, eval_metric='logloss',
                                         scale_pos_weight=imbalance_ratio),
-        'XGBoost 2x Weight': XGBClassifier(n_estimators=100, random_state=42, eval_metric='logloss',
+        'XGBoost 2x Weight': XGBClassifier(n_estimators=300, random_state=42, eval_metric='logloss',
                                          scale_pos_weight=imbalance_ratio*2),
-        'XGBoost 3x Weight': XGBClassifier(n_estimators=100, random_state=42, eval_metric='logloss',
+        'XGBoost 3x Weight': XGBClassifier(n_estimators=300, random_state=42, eval_metric='logloss',
                                          scale_pos_weight=imbalance_ratio*3)
     }
     
@@ -192,46 +227,182 @@ def main():
         else:
             print(f"{name}: default (1.0)")
     
-    # Train and evaluate each model
+    # Train and evaluate each model with validation set
     results = {}
+    validation_results = {}
+    best_model_obj = None
+    best_f1 = 0
     
     for name, model in models.items():
         print(f"\\nTraining {name}...")
-        model.fit(X_train, y_train)
-        results[name] = evaluate_model(model, name, X_test, y_test)
+        
+        # Train with early stopping using validation set
+        model.fit(
+            X_train, y_train,
+            eval_set=[(X_train, y_train), (X_val, y_val)],
+            early_stopping_rounds=50,
+            verbose=False
+        )
+        
+        # Evaluate on validation set first
+        val_results = evaluate_model(model, f"{name} (Validation)", X_val, y_val)
+        validation_results[name] = val_results
+        
+        # Evaluate on test set
+        test_results = evaluate_model(model, f"{name} (Test)", X_test, y_test)
+        results[name] = test_results
+        
+        # Keep track of best model based on validation F1 score
+        if val_results['f1'] > best_f1:
+            best_f1 = val_results['f1']
+            best_model_obj = model
     
-    # Summary comparison
+    # Summary comparison - Validation Results
     print(f"\\n{'='*80}")
-    print("SUMMARY COMPARISON")
+    print("VALIDATION SET RESULTS")
     print(f"{'='*80}")
     
-    summary_df = pd.DataFrame(results).T
-    summary_df = summary_df.round(4)
-    
-    # Sort by F1 score (best balance of precision and recall for AD)
-    summary_df = summary_df.sort_values('f1', ascending=False)
+    val_summary_df = pd.DataFrame(validation_results).T
+    val_summary_df = val_summary_df.round(4)
+    val_summary_df = val_summary_df.sort_values('f1', ascending=False)
     
     print(f"{'Model':<18} {'Accuracy':<10} {'Precision':<10} {'Recall':<10} {'F1':<10} {'AD Detected':<12}")
     print("-" * 80)
-    for idx, (model_name, row) in enumerate(summary_df.iterrows()):
+    for idx, (model_name, row) in enumerate(val_summary_df.iterrows()):
         detected_pct = row['detected_ad']/row['total_ad']*100
         print(f"{model_name:<18} {row['accuracy']:<10.4f} {row['precision']:<10.4f} "
               f"{row['recall']:<10.4f} {row['f1']:<10.4f} {row['detected_ad']:.0f}/{row['total_ad']:.0f} ({detected_pct:.1f}%)")
+    
+    # Summary comparison - Test Results
+    print(f"\\n{'='*80}")
+    print("TEST SET RESULTS")
+    print(f"{'='*80}")
+    
+    test_summary_df = pd.DataFrame(results).T
+    test_summary_df = test_summary_df.round(4)
+    test_summary_df = test_summary_df.sort_values('f1', ascending=False)
+    
+    print(f"{'Model':<18} {'Accuracy':<10} {'Precision':<10} {'Recall':<10} {'F1':<10} {'AD Detected':<12}")
+    print("-" * 80)
+    for idx, (model_name, row) in enumerate(test_summary_df.iterrows()):
+        detected_pct = row['detected_ad']/row['total_ad']*100
+        print(f"{model_name:<18} {row['accuracy']:<10.4f} {row['precision']:<10.4f} "
+              f"{row['recall']:<10.4f} {row['f1']:<10.4f} {row['detected_ad']:.0f}/{row['total_ad']:.0f} ({detected_pct:.1f}%)")
+    
+    # Combined comparison table
+    print(f"\\n{'='*100}")
+    print("VALIDATION vs TEST PERFORMANCE COMPARISON")
+    print(f"{'='*100}")
+    print(f"{'Model':<18} {'Val F1':<8} {'Test F1':<8} {'Difference':<12} {'Overfitting?':<12}")
+    print("-" * 100)
+    for model_name in val_summary_df.index:
+        val_f1 = val_summary_df.loc[model_name, 'f1']
+        test_f1 = test_summary_df.loc[model_name, 'f1']
+        diff = val_f1 - test_f1
+        overfitting = "Yes" if diff > 0.05 else "No"
+        print(f"{model_name:<18} {val_f1:<8.4f} {test_f1:<8.4f} {diff:<12.4f} {overfitting:<12}")
+    
+    summary_df = test_summary_df  # Use test results for final summary
     
     # Plot comparison
     plot_comparison(results)
     
     # Save results
-    summary_df.to_csv('weighted_xgboost_results.csv')
+    test_summary_df.to_csv('weighted_xgboost_test_results.csv')
+    val_summary_df.to_csv('weighted_xgboost_validation_results.csv')
+    
+    # Create combined results file
+    combined_results = []
+    for model_name in val_summary_df.index:
+        val_row = val_summary_df.loc[model_name]
+        test_row = test_summary_df.loc[model_name]
+        combined_results.append({
+            'model': model_name,
+            'val_accuracy': val_row['accuracy'],
+            'val_precision': val_row['precision'],
+            'val_recall': val_row['recall'],
+            'val_f1': val_row['f1'],
+            'test_accuracy': test_row['accuracy'],
+            'test_precision': test_row['precision'],
+            'test_recall': test_row['recall'],
+            'test_f1': test_row['f1'],
+            'f1_difference': val_row['f1'] - test_row['f1'],
+            'overfitting': 'Yes' if (val_row['f1'] - test_row['f1']) > 0.05 else 'No'
+        })
+    
+    combined_df = pd.DataFrame(combined_results)
+    combined_df.to_csv('weighted_xgboost_combined_results.csv', index=False)
+    
+    # Feature importance analysis
+    if best_model_obj is not None:
+        print(f"\\n{'='*60}")
+        print("FEATURE IMPORTANCE ANALYSIS (Best Model)")
+        print(f"{'='*60}")
+        
+        # Get feature importance
+        feature_importance = best_model_obj.feature_importances_
+        feature_names = feature_cols
+        
+        # Create feature importance dataframe
+        importance_df = pd.DataFrame({
+            'feature': feature_names,
+            'importance': feature_importance
+        }).sort_values('importance', ascending=False)
+        
+        print("\\nTop 10 Most Important Features:")
+        print("-" * 40)
+        for i, (_, row) in enumerate(importance_df.head(10).iterrows(), 1):
+            print(f"{i:2d}. {row['feature']:<12} : {row['importance']:.4f}")
+        
+        # Save feature importance
+        importance_df.to_csv('feature_importance.csv', index=False)
+        print(f"\\nFeature importance saved to: feature_importance.csv")
+        
+        # Plot feature importance
+        plt.figure(figsize=(10, 6))
+        top_10 = importance_df.head(10)
+        plt.barh(top_10['feature'][::-1], top_10['importance'][::-1])
+        plt.xlabel('Feature Importance')
+        plt.title('Top 10 Most Important Features (XGBoost)')
+        plt.tight_layout()
+        plt.savefig('feature_importance_plot.png', dpi=300, bbox_inches='tight')
+        plt.show()
+        
+        # Plot confusion matrix for best model (on test set)
+        y_pred_best = best_model_obj.predict(X_test)
+        cm = confusion_matrix(y_test, y_pred_best)
+        
+        print(f"\\nConfusion Matrix Analysis (Test Set):")
+        print(f"Model selected based on validation F1 score: {best_f1:.4f}")
+        
+        plt.figure(figsize=(8, 6))
+        import seaborn as sns
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                   xticklabels=['CN (Control)', 'AD (Alzheimer)'],
+                   yticklabels=['CN (Control)', 'AD (Alzheimer)'])
+        plt.title('Confusion Matrix - Best XGBoost Model')
+        plt.ylabel('True Label')
+        plt.xlabel('Predicted Label')
+        
+        # Add percentage annotations
+        total = np.sum(cm)
+        for i in range(2):
+            for j in range(2):
+                plt.text(j+0.5, i+0.7, f'({cm[i,j]/total*100:.1f}%)', 
+                        ha='center', va='center', fontsize=10, color='red')
+        
+        plt.tight_layout()
+        plt.savefig('confusion_matrix_best_model.png', dpi=300, bbox_inches='tight')
+        plt.show()
     
     # Best model recommendation
     best_model = summary_df.index[0]
-    best_f1 = summary_df.iloc[0]['f1']
+    best_f1_score = summary_df.iloc[0]['f1']
     best_detected = summary_df.iloc[0]['detected_ad']
     best_total = summary_df.iloc[0]['total_ad']
     
     print(f"\\n✅ Best performing model: {best_model}")
-    print(f"   F1 Score: {best_f1:.4f}")
+    print(f"   F1 Score: {best_f1_score:.4f}")
     print(f"   AD Detection: {best_detected:.0f}/{best_total:.0f} cases ({best_detected/best_total*100:.1f}%)")
     print(f"\\nResults saved to: weighted_xgboost_results.csv")
 
