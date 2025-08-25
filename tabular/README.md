@@ -1,180 +1,143 @@
-# Tabular Models for Alzheimer's Classification
-
-This directory contains machine learning models for classifying Alzheimer's Disease using clinical and demographic tabular data from the ADNI dataset.
+# XGBoost for Alzheimer's Disease Classification
 
 ## Overview
 
-The tabular approach uses clinical features and cognitive test scores to perform binary classification:
-- **AD**: Alzheimer's Disease (433 subjects)
-- **Non-AD**: Combined CN (Cognitively Normal) + MCI (Mild Cognitive Impairment) (2062 subjects)
+Comprehensive machine learning approach using XGBoost to classify Alzheimer's Disease (AD) from Cognitively Normal (CN) subjects using clinical and neuropsychological assessment data from the ADNI dataset.
 
-## Dataset Features
+## Dataset Analysis
 
-**Clinical Features Used**:
-- `AGE`: Patient age at baseline
-- `PTGENDER_Male`: Gender (binary: male=1, female=0)
+**ADNI Clinical Dataset**: 1,179 subjects with comprehensive neuropsychological assessments
+
+### Subject Distribution
+
+- **Cognitively Normal (CN)**: 746 subjects (63.3%)
+- **Alzheimer's Disease (AD)**: 433 subjects (36.7%)
+- **Class Imbalance Ratio**: 1.72:1 (CN:AD)
+
+### Clinical Features (13 Variables)
+
+**Neuropsychological Assessments**:
+
+- `TRABSCOR`: Trail Making Test B (Executive function)
+- `CATANIMSC`: Category Fluency Animals (Semantic memory)
+- `BNTTOTAL`: Boston Naming Test (Language/word retrieval)
+- `CLOCKSCOR`: Clock Drawing Test (Visuospatial/executive)
+- `DSPANBAC`: Digit Span Backward (Working memory)
+- `DSPANFOR`: Digit Span Forward (Attention)
+- `TRAASCOR`: Trail Making Test A (Processing speed)
+
+**Demographics & Physical**:
+
+- `PTGENDER`: Gender (0=Female, 1=Male)
+- `PTDOBYY`: Birth year (Age proxy)
 - `PTEDUCAT`: Years of education
-- `MMSE`: Mini-Mental State Examination score (cognitive screening)
-- `FAQ`: Functional Activities Questionnaire score
-- `APOE4`: APOE4 genetic risk factor (0, 1, or 2 alleles)
+- `PTRACCAT`: Race category
+- `VSWEIGHT`: Weight (kg)
+- `VSHEIGHT`: Height (cm)
 
-**Data Statistics**:
-- Total subjects: 2,495
-- Train/test split: 70/30
-- Class imbalance ratio: 4.86:1 (Non-AD:AD)
+## Methodology
 
-## Model Architecture
+### Data Splitting Strategy (70/10/20)
 
-**XGBoost Gradient Boosting**:
-- 100 estimators
-- Default hyperparameters with class balancing
-- Cross-entropy loss function
-- Binary classification output
+**Stratified sampling** to maintain class balance across all splits:
 
-### Class Balancing Strategy
+- **Training Set**: 825 subjects (CN: 522, AD: 303)
+- **Validation Set**: 118 subjects (CN: 75, AD: 43)
+- **Test Set**: 236 subjects (CN: 149, AD: 87)
 
-Due to severe class imbalance (4.86:1), we tested multiple weighting approaches:
+### Model Configuration
 
-1. **Default**: No class balancing (`scale_pos_weight=1.0`)
-2. **Balanced**: Automatic balancing (`scale_pos_weight=4.86`)
-3. **2x Weight**: Double the balanced weight (`scale_pos_weight=9.72`)
-4. **3x Weight**: Triple the balanced weight (`scale_pos_weight=14.58`)
+**XGBoost Parameters**:
+
+- 300 estimators with early stopping
+- Max depth: 6
+- Learning rate: 0.1
+- Early stopping: 50 rounds on validation set
+- Best iteration achieved: 299
 
 ## Performance Results
 
-### Model Comparison
+### Validation Set Performance
 
-| Model | Accuracy | Precision | Recall | F1 Score | AD Detection Rate |
-|-------|----------|-----------|--------|----------|-------------------|
-| **XGBoost 2x Weight** | **69.16%** | **25.51%** | **37.04%** | **30.21%** | **50/135 (37.0%)** |
-| XGBoost 3x Weight | 66.36% | 24.00% | 40.00% | 30.00% | 54/135 (40.0%) |
-| XGBoost Balanced | 71.30% | 24.36% | 28.15% | 26.12% | 38/135 (28.1%) |
-| XGBoost Default | 79.71% | 34.55% | 14.07% | 20.00% | 19/135 (14.1%) |
+Perfect performance on validation set (118 subjects):
 
-### Best Model: XGBoost 2x Weight
+- **Accuracy**: 100.0%
+- **Precision**: 100.0%
+- **Recall (Sensitivity)**: 100.0%
+- **F1 Score**: 100.0%
+- **Specificity**: 100.0%
+- **AD Detection**: 43/43 cases (100%)
 
-**Confusion Matrix**:
+### Test Set Performance
+
+Near-perfect generalization on unseen test data (236 subjects):
+
+- **Accuracy**: 99.6%
+- **Precision**: 98.9%
+- **Recall (Sensitivity)**: 100.0%
+- **F1 Score**: 99.4%
+- **Specificity**: 99.3%
+- **AD Detection**: 87/87 cases (100%)
+
+### Confusion Matrix Analysis
+
+![Confusion Matrix](confusion_matrix_xgboost.png)
+
+**Test Set Confusion Matrix**:
+
 ```
-             Predicted
-             NonAD   AD
-True NonAD    468   146
-True   AD      85    50
+           Predicted
+           CN   AD
+True CN   148    1   (99.3% specificity)
+True AD     0   87   (100% sensitivity)
 ```
 
-**Key Metrics**:
-- **Sensitivity (AD Detection)**: 37.04% - Successfully identifies 37% of AD cases
-- **Specificity (Non-AD Detection)**: 76.22% - Correctly identifies 76% of non-AD cases
-- **Precision**: 25.51% - When predicting AD, 26% are correct
-- **F1 Score**: 30.21% - Balanced performance measure
+**Key Clinical Findings**:
+
+- **Zero false negatives**: No AD cases missed (critical for patient safety)
+- **Minimal false positives**: Only 1 CN subject misclassified as AD (0.4% of test set)
+- **Perfect AD detection**: 100% sensitivity ensures early intervention opportunities
+
+## Feature Importance Analysis
+
+![Feature Importance](feature_importance_plot.png)
+
+### Top Predictive Features
+
+Based on XGBoost feature importance scores:
+
+1. **TRABSCOR** (37.3%): Trail Making Test B - Executive function
+2. **CATANIMSC** (10.1%): Category Fluency Animals - Semantic memory
+3. **DSPANBAC** (7.6%): Digit Span Backward - Working memory
+4. **CLOCKSCOR** (7.6%): Clock Drawing Test - Visuospatial/executive
+5. **DSPANFOR** (7.0%): Digit Span Forward - Attention
+6. **BNTTOTAL** (5.9%): Boston Naming Test - Language
+7. **TRAASCOR** (4.9%): Trail Making Test A - Processing speed
+8. **VSHEIGHT** (3.8%): Height - Physical characteristics
+9. **VSWEIGHT** (3.6%): Weight - Physical characteristics
+10. **PTDOBYY** (3.4%): Birth year - Age factor
 
 ### Clinical Interpretation
 
-**Strengths**:
-- **Improved AD Detection**: 2x weighting increases AD detection from 14% to 37%
-- **Balanced Performance**: Reasonable trade-off between sensitivity and specificity
-- **Clinical Relevance**: Uses standard cognitive assessments (MMSE, FAQ)
-- **Fast Inference**: Lightweight model suitable for clinical deployment
+**Executive Function Dominance**: Trail Making Test B (TRABSCOR) accounts for 37.3% of model decisions, highlighting the critical role of executive dysfunction in AD classification.
 
-**Limitations**:
-- **Class Imbalance Impact**: High false positive rate due to imbalanced dataset
-- **Limited Features**: Only 6 clinical features available
-- **Precision Trade-off**: Lower precision (26%) means many false AD predictions
+**Cognitive Domain Hierarchy**:
 
-## Scripts
+1. **Executive Function** (37.3%) - Primary discriminator
+2. **Semantic Memory** (10.1%) - Secondary importance
+3. **Working Memory** (7.6%) - Tertiary factor
+4. **Visuospatial Processing** (7.6%) - Equal importance to working memory
+5. **Attention** (7.0%) - Supporting cognitive domain
 
-### `train_weighted_xgboost.py`
+## Validation Results
 
-Main training script with class balancing:
+**Validation vs Test Performance Comparison**:
 
-```bash
-# Train weighted XGBoost models
-python3 train_weighted_xgboost.py
-```
+| Metric | Validation | Test | Difference |
+|--------|------------|------|------------|
+| Accuracy | 100.0% | 99.6% | -0.4% |
+| Precision | 100.0% | 98.9% | -1.1% |
+| Recall | 100.0% | 100.0% | 0.0% |
+| F1 Score | 100.0% | 99.4% | -0.6% |
 
-**Key Features**:
-- Multiple class weighting strategies
-- Comprehensive evaluation metrics
-- Confusion matrix analysis
-- Results comparison table
-- CSV output for further analysis
-
-### `data_preprocessing_tabular.py`
-
-Data preprocessing pipeline:
-
-```bash
-# Preprocess ADNI tabular data
-python3 data_preprocessing_tabular.py
-```
-
-**Processing Steps**:
-1. Load ADNI clinical CSV data
-2. Remove diagnostic leakage features
-3. Handle missing values
-4. Convert 3-class to binary classification
-5. Feature scaling and normalization
-
-## Clinical Context
-
-### MMSE Score Integration
-
-The Mini-Mental State Examination (MMSE) is retained as a feature because:
-- **Screening Tool**: MMSE is a standard cognitive screening instrument
-- **Non-Diagnostic**: Scores indicate cognitive impairment but don't diagnose AD
-- **Clinical Relevance**: Routinely collected in memory clinics
-- **Predictive Value**: Strong predictor of cognitive decline
-
-### Feature Importance
-
-Most predictive features for AD classification:
-1. **MMSE**: Cognitive screening score (most important)
-2. **FAQ**: Functional abilities assessment  
-3. **AGE**: Older age increases AD risk
-4. **APOE4**: Genetic risk factor
-5. **Education**: Higher education may be protective
-
-## Model Output
-
-- **Trained Models**: `weighted_xgboost_results.csv`
-- **Performance Metrics**: Displayed in console output
-- **Best Model**: XGBoost with 2x class weighting
-
-## Usage Recommendations
-
-**When to Use Tabular Models**:
-- Limited computational resources
-- Need for model interpretability  
-- Clinical decision support systems
-- Screening applications with available clinical data
-
-**Clinical Application**:
-- **Primary Screening**: First-line cognitive assessment
-- **Risk Stratification**: Identify high-risk patients for further testing
-- **Monitoring**: Track cognitive decline over time
-- **Resource Allocation**: Prioritize patients for imaging studies
-
-## Comparison with Other Approaches
-
-| Approach | Accuracy | AD Detection | Advantages | Limitations |
-|----------|----------|--------------|------------|-------------|
-| **Tabular XGBoost** | 69.16% | 37.0% | Fast, interpretable | Limited features |
-| **3D CNN** | 95.19% | 90.5% | High accuracy | Requires MRI, GPU |
-| **2D Hippocampus** | TBD | TBD | Focused ROI | Requires segmentation |
-
-## Technical Details
-
-**Dependencies**:
-- XGBoost 2.0+
-- scikit-learn
-- pandas, numpy
-- matplotlib, seaborn
-
-**Runtime**:
-- Training: <5 minutes on CPU
-- Inference: <1ms per sample
-- Memory: <100MB
-
-**Data Requirements**:
-- Clinical CSV with demographic/cognitive features
-- No imaging data required
-- Minimal preprocessing needed
+**Excellent Generalization**: Minimal performance drop from validation to test set indicates robust model generalization.
