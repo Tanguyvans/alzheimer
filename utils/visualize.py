@@ -1,19 +1,23 @@
 import nibabel as nib
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.widgets import Slider
 
 # Charger le fichier
 #img = nib.load('normal.nii.gz')
 #img = nib.load('/Users/tanguyvans/Desktop/umons/code/alzheimer/new_irm_output/SEP-MRI-001_T0_6f1.nii.gz')
 #img = nib.load('/Users/tanguyvans/Desktop/umons/code/alzheimer/new_irm_output/SEP-MRI-001_T1_be7d.nii.gz')
-img = nib.load('/Users/tanguyvans/Desktop/umons/alzheimer/ADNIDenoise/28512_1_PET/scans/PET/resources/NIfTI-1/files/pet.nii.gz')
+img = nib.load('/Volumes/KINGSTON/ADNI_nifti/002_S_0413/MP-RAGE_REPEAT_2007-06-01_07_12_09.0_I55772_55772.nii.gz')
 
 data = img.get_fdata()
 
-# Afficher les dimensions
+# Afficher les dimensions et orientation
 print("Image shape:", data.shape)
 print("Image spacing:", img.header.get_zooms())
+print("Image orientation:", img.header.get_best_affine())
+
+# Get proper anatomical orientation
+# Most NIfTI files: RAS orientation (Right-Anterior-Superior)
+# Need to check the actual orientation and adjust accordingly
 
 # Créer la figure
 fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
@@ -24,10 +28,18 @@ z_pos = data.shape[2]//2
 y_pos = data.shape[1]//2
 x_pos = data.shape[0]//2
 
-# Afficher les images initiales
-img1 = ax1.imshow(data[:, :, z_pos], cmap='gray')
-img2 = ax2.imshow(data[:, y_pos, :], cmap='gray')
-img3 = ax3.imshow(data[x_pos, :, :], cmap='gray')
+# Correct anatomical orientation for medical images
+# Standard neurological convention: 
+# - Axial: horizontal slices (z-axis), looking from feet to head
+# - Coronal: front-to-back slices (y-axis), looking from front  
+# - Sagittal: left-to-right slices (x-axis), looking from side
+
+# Axial view: slice through z-axis (horizontal brain slices)
+img1 = ax1.imshow(data[:, :, z_pos].T, cmap='gray', origin='lower', aspect='equal')
+# Coronal view: slice through y-axis (front-back brain slices)  
+img2 = ax2.imshow(data[:, y_pos, :].T, cmap='gray', origin='lower', aspect='equal')
+# Sagittal view: slice through x-axis (left-right brain slices)
+img3 = ax3.imshow(data[x_pos, :, :], cmap='gray', origin='lower', aspect='equal')
 
 ax1.set_title('Vue axiale')
 ax2.set_title('Vue coronale')
@@ -39,8 +51,9 @@ slider = Slider(ax_slider, 'Coupe', 0, data.shape[2]-1, valinit=z_pos, valstep=1
 
 def update(val):
     pos = int(slider.val)
-    img1.set_array(data[:, :, pos])
-    img2.set_array(data[:, pos, :])
+    # Update with correct orientations
+    img1.set_array(data[:, :, pos].T)
+    img2.set_array(data[:, pos, :].T) 
     img3.set_array(data[pos, :, :])
     fig.canvas.draw_idle()
 

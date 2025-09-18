@@ -37,12 +37,15 @@ def convert_dicom_to_nifti(input_dir: str, output_dir: str, patient_id: str, tim
     Returns:
         List of output file paths created
     """
-    os.makedirs(output_dir, exist_ok=True)
+    # Create patient-specific subdirectory
+    patient_output_dir = os.path.join(output_dir, patient_id)
+    os.makedirs(patient_output_dir, exist_ok=True)
     
     # Find all DICOM files (both .dcm and .DCM extensions)
+    # Skip hidden files (starting with .) which are macOS metadata files
     dicom_files = []
     for filename in os.listdir(input_dir):
-        if filename.lower().endswith('.dcm'):
+        if filename.lower().endswith('.dcm') and not filename.startswith('.'):
             dicom_files.append(os.path.join(input_dir, filename))
     
     if not dicom_files:
@@ -51,32 +54,45 @@ def convert_dicom_to_nifti(input_dir: str, output_dir: str, patient_id: str, tim
     
     logger.info(f"Found {len(dicom_files)} DICOM files")
     
-    # For ADNI data, typically all files in a folder belong to the same series
-    # Sort files to ensure correct order
-    dicom_files.sort()
-    
     # Create output filename
     series_info = extract_id_from_filename(os.path.basename(dicom_files[0]))
     if series_info:
-        output_filename = f"{patient_id}_{timepoint}_{series_info}.nii.gz"
+        output_filename = f"{timepoint}_{series_info}.nii.gz"
     else:
-        output_filename = f"{patient_id}_{timepoint}.nii.gz"
+        output_filename = f"{timepoint}.nii.gz"
     
-    output_path = os.path.join(output_dir, output_filename)
+    output_path = os.path.join(patient_output_dir, output_filename)
     
     output_files = []
     
     try:
-        # Create a reader and set the file names
+        # Create a reader and let SimpleITK handle proper DICOM ordering
         reader = sitk.ImageSeriesReader()
-        reader.SetFileNames(dicom_files)
+        
+        # Use GetGDCMSeriesFileNames to get properly ordered DICOM files
+        # This reads DICOM headers and sorts by slice location/position
+        series_IDs = sitk.ImageSeriesReader.GetGDCMSeriesIDs(input_dir)
+        
+        if not series_IDs:
+            logger.warning(f"No DICOM series found in {input_dir}")
+            return []
+        
+        if len(series_IDs) > 1:
+            logger.info(f"Multiple series found in {input_dir}: {series_IDs}")
+            logger.info(f"Using first series: {series_IDs[0]}")
+        
+        # Get the properly ordered file names for the series
+        dicom_names = sitk.ImageSeriesReader.GetGDCMSeriesFileNames(input_dir, series_IDs[0])
+        reader.SetFileNames(dicom_names)
+        
+        logger.info(f"Ordered {len(dicom_names)} DICOM files by spatial position")
         
         # Read the image
         image = reader.Execute()
         
         # Write the NIfTI file (no axis permutation for standard DICOM)
         sitk.WriteImage(image, output_path)
-        logger.info(f"Successfully converted {len(dicom_files)} DICOM files to {output_path}")
+        logger.info(f"Successfully converted {len(dicom_names)} DICOM files to {output_path}")
         output_files.append(output_path)
         
     except Exception as e:
@@ -134,7 +150,9 @@ def convert_patient_directory(input_root: str, output_root: str, patient_id: str
                 date_path = os.path.join(sequence_path, date_dir)
                 
                 # Check if this directory contains DICOM files directly
-                dicom_files = [f for f in os.listdir(date_path) if f.lower().endswith('.dcm')]
+                # Skip hidden files (starting with .) which are macOS metadata files
+                dicom_files = [f for f in os.listdir(date_path) 
+                             if f.lower().endswith('.dcm') and not f.startswith('.')]
                 
                 if dicom_files:
                     # DICOM files found directly in date directory
@@ -149,7 +167,9 @@ def convert_patient_directory(input_root: str, output_root: str, patient_id: str
                         
                         for series_dir in series_dirs:
                             series_path = os.path.join(date_path, series_dir)
-                            series_dicom_files = [f for f in os.listdir(series_path) if f.lower().endswith('.dcm')]
+                            # Skip hidden files (starting with .) which are macOS metadata files
+                            series_dicom_files = [f for f in os.listdir(series_path) 
+                                                if f.lower().endswith('.dcm') and not f.startswith('.')]
                             
                             if series_dicom_files:
                                 timepoint = f"{sequence}_{date_dir}_{series_dir}"

@@ -21,3 +21,6 @@ env
 models/
 *.pth
 .pkl
+
+.csv
+__pycache__
