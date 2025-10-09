@@ -163,52 +163,26 @@ def main():
                 file_start = time.time()
                 
                 try:
-                    # Process single file with explicit error handling
-                    import subprocess
-                    import tempfile
-                    
-                    # Write a temporary processing script to isolate potential crashes
-                    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
-                        f.write(f"""
-import sys
-sys.path.append('./preprocessing')
-from image_enhancement import process_nifti_file
+                    # Process single file directly (no subprocess isolation)
+                    from preprocessing.image_enhancement import process_nifti_file
 
-success = process_nifti_file(
-    '{nifti_file}',
-    '{output_file}',
-    '{args.template}',
-    '{patient_id}_{filename.replace(".nii.gz", "")}'
-)
-print('SUCCESS' if success else 'FAILED')
-""")
-                        temp_script = f.name
-                    
-                    # Run in subprocess to isolate segmentation faults
-                    result = subprocess.run(
-                        ['python3', temp_script],
-                        capture_output=True,
-                        text=True,
-                        timeout=300  # 5 minute timeout per file
+                    success = process_nifti_file(
+                        nifti_file,
+                        output_file,
+                        args.template,
+                        f"{patient_id}_{filename.replace('.nii.gz', '')}"
                     )
-                    
-                    os.unlink(temp_script)
-                    
+
                     file_time = time.time() - file_start
-                    
-                    if 'SUCCESS' in result.stdout:
+
+                    if success:
                         progress['processed'].append(filename)
                         processed_count += 1
                         print(f"   ✅ Success ({file_time:.1f}s)")
                     else:
                         progress['failed'].append(filename)
                         print(f"   ❌ Failed")
-                        if result.stderr:
-                            print(f"      Error: {result.stderr[:100]}...")
-                            
-                except subprocess.TimeoutExpired:
-                    progress['failed'].append(filename)
-                    print(f"   ⏱️ Timeout (>5 minutes)")
+
                 except Exception as e:
                     progress['failed'].append(filename)
                     print(f"   ❌ Error: {str(e)[:100]}")

@@ -62,9 +62,14 @@ def convert_dicom_to_nifti(input_dir: str, output_dir: str, patient_id: str, tim
         output_filename = f"{timepoint}.nii.gz"
     
     output_path = os.path.join(patient_output_dir, output_filename)
-    
+
+    # Check if output file already exists
+    if os.path.exists(output_path):
+        logger.info(f"Output file already exists, skipping: {output_path}")
+        return [output_path]  # Return the existing file path
+
     output_files = []
-    
+
     try:
         # Create a reader and let SimpleITK handle proper DICOM ordering
         reader = sitk.ImageSeriesReader()

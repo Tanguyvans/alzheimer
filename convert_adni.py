@@ -47,7 +47,7 @@ def convert_mprage_sequences(input_dir, output_dir):
         
         for sequence in sequence_dirs:
             # Check if sequence name contains MPRAGE (case-insensitive)
-            if 'MPRAGE' not in sequence.upper() and 'MP-RAGE' not in sequence.upper():
+            if 'MPRAGE' not in sequence.upper() and 'MP-RAGE' not in sequence.upper() and 'MP_RAGE' not in sequence.upper():
                 skipped_sequences[sequence] += 1
                 continue
             
@@ -125,7 +125,7 @@ def convert_mprage_sequences(input_dir, output_dir):
     return all_output_files
 
 if __name__ == "__main__":
-    input_dir = "/Volumes/KINGSTON/ADNI_1"
+    input_dir = "/Volumes/KINGSTON/ADNI"
     output_dir = "/Volumes/KINGSTON/ADNI_nifti"
     
     print("="*50)
