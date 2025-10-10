@@ -16,6 +16,7 @@ env
 *.bmp
 *.tiff
 *.tif
+*.pyc
 
 *.csv
 models/

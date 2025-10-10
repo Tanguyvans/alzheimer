@@ -65,6 +65,7 @@ class DxsumAnalyzer:
         self.transition_details = []
         self.baseline_outcomes = {}
         self.mri_analysis = {}
+        self.fluctuation_patterns = {}
         
         # Ensure output directory exists
         os.makedirs(output_dir, exist_ok=True)
@@ -252,8 +253,9 @@ class DxsumAnalyzer:
                 'changed': len(set(diagnoses)) > 1,
                 'num_changes': len([i for i in range(len(diagnoses)-1) 
                                    if diagnoses[i] != diagnoses[i+1]]),
-                'progression': diagnoses[-1] > diagnoses[0],
-                'improvement': diagnoses[-1] < diagnoses[0]
+                'progression': len(set(diagnoses)) > 1 and diagnoses[-1] > diagnoses[0],
+                'improvement': len(set(diagnoses)) > 1 and diagnoses[-1] < diagnoses[0],
+                'fluctuated': len(set(diagnoses)) > 1 and diagnoses[-1] == diagnoses[0]
             }
             
             patient_trajectories[rid] = trajectory
@@ -281,6 +283,7 @@ class DxsumAnalyzer:
         changed = sum(1 for t in patient_trajectories.values() if t['changed'])
         progressed = sum(1 for t in patient_trajectories.values() if t['progression'])
         improved = sum(1 for t in patient_trajectories.values() if t['improvement'])
+        fluctuated = sum(1 for t in patient_trajectories.values() if t['fluctuated'])
         stable = total_patients - changed
         
         print(f"\n📊 Transition Summary:")
@@ -289,6 +292,7 @@ class DxsumAnalyzer:
         print(f"  Changed diagnosis: {changed} ({changed/total_patients*100:.1f}%)")
         print(f"    → Disease progression: {progressed} ({progressed/total_patients*100:.1f}%)")
         print(f"    → Improvement: {improved} ({improved/total_patients*100:.1f}%)")
+        print(f"    → Fluctuated (returned to baseline): {fluctuated} ({fluctuated/total_patients*100:.1f}%)")
         
         # Count specific transitions
         print(f"\n🔄 Transition Frequencies:")
@@ -322,6 +326,85 @@ class DxsumAnalyzer:
         self.transition_details = transition_details
         
         return patient_trajectories, transition_details
+    
+    def analyze_fluctuation_patterns(self) -> Dict:
+        """
+        Analyze detailed patterns for patients who fluctuated (returned to baseline).
+        
+        Returns:
+            Dict containing fluctuation pattern data
+        """
+        print("\n" + "=" * 80)
+        print("FLUCTUATION PATTERN ANALYSIS")
+        print("=" * 80)
+        
+        fluctuation_patterns = defaultdict(list)
+        
+        # Analyze each fluctuated patient
+        for rid, trajectory in self.patient_trajectories.items():
+            if trajectory['fluctuated']:
+                diagnoses = trajectory['diagnoses']
+                
+                # Create diagnosis path string
+                dx_labels = [self.DIAGNOSIS_MAP.get(dx, 'Unknown') for dx in diagnoses]
+                
+                # For pattern analysis, simplify to unique transitions
+                # e.g., [CN, CN, MCI, MCI, CN] -> "CN → MCI → CN"
+                simplified_path = [dx_labels[0]]
+                for i in range(1, len(dx_labels)):
+                    if dx_labels[i] != dx_labels[i-1]:
+                        simplified_path.append(dx_labels[i])
+                
+                pattern = " → ".join(simplified_path)
+                
+                fluctuation_patterns[pattern].append({
+                    'rid': rid,
+                    'ptid': trajectory['ptid'],
+                    'num_visits': trajectory['num_visits'],
+                    'full_path': dx_labels,
+                    'num_transitions': trajectory['num_changes']
+                })
+        
+        # Display results
+        print(f"\n📊 Fluctuation Patterns (Patients who returned to baseline):")
+        print(f"Total fluctuated patients: {sum(len(v) for v in fluctuation_patterns.values())}")
+        print("=" * 70)
+        
+        # Sort patterns by frequency
+        sorted_patterns = sorted(fluctuation_patterns.items(), 
+                                key=lambda x: len(x[1]), reverse=True)
+        
+        for pattern, patients in sorted_patterns:
+            count = len(patients)
+            avg_visits = np.mean([p['num_visits'] for p in patients])
+            print(f"\n{pattern}")
+            print(f"  Count: {count} patients")
+            print(f"  Average visits: {avg_visits:.1f}")
+            print(f"  Average transitions: {np.mean([p['num_transitions'] for p in patients]):.1f}")
+            
+            # Show a few example patient IDs
+            if count <= 3:
+                for p in patients:
+                    print(f"    • {p['ptid']} ({p['num_visits']} visits)")
+        
+        # Detailed breakdown by transition type
+        print(f"\n" + "=" * 70)
+        print("📊 Fluctuation by Baseline Diagnosis:")
+        print("=" * 70)
+        
+        cn_fluct = sum(len(patients) for pattern, patients in fluctuation_patterns.items() 
+                      if pattern.startswith('CN'))
+        mci_fluct = sum(len(patients) for pattern, patients in fluctuation_patterns.items() 
+                       if pattern.startswith('MCI'))
+        ad_fluct = sum(len(patients) for pattern, patients in fluctuation_patterns.items() 
+                      if pattern.startswith('AD'))
+        
+        print(f"  CN baseline fluctuations: {cn_fluct}")
+        print(f"  MCI baseline fluctuations: {mci_fluct}")
+        print(f"  AD baseline fluctuations: {ad_fluct}")
+        
+        self.fluctuation_patterns = dict(fluctuation_patterns)
+        return self.fluctuation_patterns
     
     def analyze_progression_by_baseline(self) -> Dict:
         """
@@ -566,12 +649,13 @@ class DxsumAnalyzer:
         ax5 = fig.add_subplot(gs[1, 2])
         progressed = sum(1 for t in self.patient_trajectories.values() if t['progression'])
         improved = sum(1 for t in self.patient_trajectories.values() if t['improvement'])
+        fluctuated = sum(1 for t in self.patient_trajectories.values() if t['fluctuated'])
         stable = sum(1 for t in self.patient_trajectories.values() if not t['changed'])
         
-        trajectory_data = [progressed, stable, improved]
+        trajectory_data = [progressed, stable, improved, fluctuated]
         trajectory_labels = [f'Progression\n({progressed})', f'Stable\n({stable})', 
-                           f'Improvement\n({improved})']
-        trajectory_colors = ['#ff6b6b', '#95e1d3', '#6bcf7f']
+                           f'Improvement\n({improved})', f'Fluctuated\n({fluctuated})']
+        trajectory_colors = ['#ff6b6b', '#95e1d3', '#6bcf7f', '#ffd93d']
         ax5.pie(trajectory_data, labels=trajectory_labels, autopct='%1.1f%%',
                colors=trajectory_colors, startangle=90)
         ax5.set_title('Disease Trajectory\n(Baseline to Final)', fontweight='bold')
@@ -784,13 +868,15 @@ class DxsumAnalyzer:
             changed = sum(1 for t in self.patient_trajectories.values() if t['changed'])
             progressed = sum(1 for t in self.patient_trajectories.values() if t['progression'])
             improved = sum(1 for t in self.patient_trajectories.values() if t['improvement'])
+            fluctuated = sum(1 for t in self.patient_trajectories.values() if t['fluctuated'])
             stable = total_patients - changed
             
             f.write("### Overall Trajectory Summary\n\n")
             f.write(f"- **Stable diagnosis:** {stable} ({stable/total_patients*100:.1f}%)\n")
             f.write(f"- **Changed diagnosis:** {changed} ({changed/total_patients*100:.1f}%)\n")
             f.write(f"  - Disease progression: {progressed} ({progressed/total_patients*100:.1f}%)\n")
-            f.write(f"  - Improvement: {improved} ({improved/total_patients*100:.1f}%)\n\n")
+            f.write(f"  - Improvement: {improved} ({improved/total_patients*100:.1f}%)\n")
+            f.write(f"  - Fluctuated (returned to baseline): {fluctuated} ({fluctuated/total_patients*100:.1f}%)\n\n")
             
             f.write("### Transition Frequencies\n\n")
             f.write("| Transition | Count | Percentage |\n")
@@ -803,6 +889,40 @@ class DxsumAnalyzer:
             for transition, count in transition_counts.most_common():
                 percentage = (count / len(self.transition_details)) * 100 if self.transition_details else 0
                 f.write(f"| {transition} | {count} | {percentage:.1f}% |\n")
+            
+            # 4b. Fluctuation Pattern Analysis
+            if self.fluctuation_patterns:
+                f.write("\n### Detailed Fluctuation Patterns\n\n")
+                f.write("**Patients who changed diagnosis but returned to baseline:**\n\n")
+                
+                total_fluctuated = sum(len(patients) for patients in self.fluctuation_patterns.values())
+                f.write(f"Total fluctuated patients: **{total_fluctuated}**\n\n")
+                
+                # Sort patterns by frequency
+                sorted_patterns = sorted(self.fluctuation_patterns.items(), 
+                                        key=lambda x: len(x[1]), reverse=True)
+                
+                f.write("| Pattern | Count | Avg Visits | Avg Transitions |\n")
+                f.write("|---------|-------|------------|----------------|\n")
+                
+                for pattern, patients in sorted_patterns:
+                    count = len(patients)
+                    avg_visits = np.mean([p['num_visits'] for p in patients])
+                    avg_transitions = np.mean([p['num_transitions'] for p in patients])
+                    f.write(f"| {pattern} | {count} | {avg_visits:.1f} | {avg_transitions:.1f} |\n")
+                
+                # Breakdown by baseline
+                cn_fluct = sum(len(patients) for pattern, patients in self.fluctuation_patterns.items() 
+                              if pattern.startswith('CN'))
+                mci_fluct = sum(len(patients) for pattern, patients in self.fluctuation_patterns.items() 
+                               if pattern.startswith('MCI'))
+                ad_fluct = sum(len(patients) for pattern, patients in self.fluctuation_patterns.items() 
+                              if pattern.startswith('AD'))
+                
+                f.write("\n**Fluctuation by Baseline Diagnosis:**\n\n")
+                f.write(f"- **CN baseline:** {cn_fluct} patients fluctuated\n")
+                f.write(f"- **MCI baseline:** {mci_fluct} patients fluctuated\n")
+                f.write(f"- **AD baseline:** {ad_fluct} patients fluctuated\n\n")
             
             # 5. Progression by Baseline
             f.write("\n## 5. Progression Analysis by Baseline Diagnosis\n\n")
@@ -935,6 +1055,7 @@ class DxsumAnalyzer:
         self.analyze_basic_stats()
         self.analyze_diagnosis_distribution()
         self.analyze_transitions()
+        self.analyze_fluctuation_patterns()
         self.analyze_progression_by_baseline()
         
         # Analyze MRI data if available

@@ -2,7 +2,7 @@
 
 **Analysis of dxsum.csv**
 
-**Generated:** 2025-10-10 00:16:47  
+**Generated:** 2025-10-10 08:56:18  
 **Data source:** `/Users/tanguyvans/Desktop/umons/alzheimer/dxsum.csv`
 
 ---
@@ -62,6 +62,7 @@
 - **Changed diagnosis:** 610 (26.4%)
   - Disease progression: 477 (20.6%)
   - Improvement: 77 (3.3%)
+  - Fluctuated (returned to baseline): 56 (2.4%)
 
 ### Transition Frequencies
 
@@ -73,6 +74,29 @@
 | AD → MCI | 34 | 4.3% |
 | CN → AD | 11 | 1.4% |
 | AD → CN | 2 | 0.3% |
+
+### Detailed Fluctuation Patterns
+
+**Patients who changed diagnosis but returned to baseline:**
+
+Total fluctuated patients: **56**
+
+| Pattern | Count | Avg Visits | Avg Transitions |
+|---------|-------|------------|----------------|
+| MCI → CN → MCI | 23 | 8.8 | 2.0 |
+| CN → MCI → CN | 18 | 7.8 | 2.0 |
+| MCI → AD → MCI | 10 | 6.3 | 2.0 |
+| AD → MCI → AD | 2 | 4.0 | 2.0 |
+| MCI → CN → MCI → CN → MCI | 1 | 10.0 | 4.0 |
+| CN → MCI → CN → MCI → CN | 1 | 8.0 | 4.0 |
+| MCI → AD → MCI → CN → MCI | 1 | 12.0 | 4.0 |
+
+**Fluctuation by Baseline Diagnosis:**
+
+- **CN baseline:** 19 patients fluctuated
+- **MCI baseline:** 35 patients fluctuated
+- **AD baseline:** 2 patients fluctuated
+
 
 ## 5. Progression Analysis by Baseline Diagnosis
 
