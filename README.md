@@ -1,34 +1,58 @@
-# Alzheimer's Disease Classification Using 3D CNNs
+# Alzheimer's Disease Research Project
 
-This repository contains a deep learning pipeline for classifying brain MRI scans into three categories:
-- **AD** (Alzheimer's Disease)
-- **MCI** (Mild Cognitive Impairment) 
-- **CN** (Cognitively Normal)
+Comprehensive neuroimaging and machine learning pipeline for Alzheimer's disease classification and MCI progression prediction using ADNI dataset.
 
-## 🧠 Dataset
+## Project Overview
 
-The project uses the **ADNIDenoise** dataset containing 2,495 preprocessed brain MRI scans:
-- **AD**: 433 scans
-- **CN**: 746 scans
-- **MCI**: 1,316 scans
+This project combines medical image processing with machine learning to:
 
-All images are already skull-stripped and registered to MNI space.
+1. **Preprocess Brain MRI Scans** - DICOM to NIfTI conversion, bias correction, registration, and skull stripping
+2. **Extract Clinical Features** - Neuropsychological assessments and cognitive test scores
+3. **Classify CN vs AD** - Binary classification using XGBoost (99.6% accuracy)
+4. **Predict MCI Direction** - Classify MCI patients as CN-like (stable) or AD-like (at risk)
 
-## 📊 Results
+## Dataset
 
-Our 3D ResNet model achieved excellent performance:
+**ADNI (Alzheimer's Disease Neuroimaging Initiative)**
+
+- **Total**: 1,980 MRI scans from 1,472 unique patients
+- **CN (Cognitively Normal)**: 859 scans (564 patients)
+- **MCI (Mild Cognitive Impairment)**: 845 scans (681 patients)
+- **AD (Alzheimer's Disease)**: 276 scans (234 patients)
+
+## Project Structure
 
 ```
-Overall Accuracy: 95.19%
-
-Class-wise Performance:
-              precision    recall  f1-score   support
-          AD       0.96      0.90      0.93        84
-          CN       0.94      0.96      0.95       153
-         MCI       0.95      0.96      0.96       262
+alzheimer/
+├── docs/                              # Documentation
+│   ├── ALZHEIMER_RESEARCH_GROUPS.md  # Group classifications and results
+│   ├── TABULAR_README.md             # XGBoost implementation guide
+│   └── TABULAR_METRICS_GUIDE.md      # Metrics and features explained
+│
+├── data/                              # Clinical and tabular data
+│   ├── AD_CN_clinical_data.csv       # Clean training data (CN vs AD)
+│   └── clinical_data_all_groups.csv  # Full dataset (CN, MCI, AD)
+│
+├── preprocessing/                     # MRI preprocessing pipeline
+│   ├── dicom_to_nifti.py             # DICOM conversion
+│   ├── image_enhancement.py          # N4 bias correction
+│   ├── registration.py               # MNI template registration
+│   └── skull_stripping.py            # Brain extraction (SynthStrip)
+│
+├── tabular/                           # Tabular ML analysis
+│   └── xgboost/                      # XGBoost implementation
+│       ├── train.py                  # Train CN vs AD classifier
+│       └── run.py                    # Predict MCI direction
+│
+└── outputs/                           # Organized outputs
+    └── tabular/
+        ├── models/                    # Trained models
+        ├── predictions/               # CSV predictions
+        ├── visualizations/            # Charts and plots
+        └── reports/                   # Analysis reports
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -37,120 +61,100 @@ Class-wise Performance:
 source env/bin/activate
 
 # Ensure dependencies are installed
-pip install torch torchvision nibabel numpy pandas scikit-learn matplotlib tqdm
+pip install xgboost scikit-learn pandas numpy matplotlib seaborn
 ```
 
-### 1. Data Preprocessing
-
-First, analyze and prepare your dataset:
+### Train XGBoost Model
 
 ```bash
-python data_preprocessing_3class.py
+cd tabular/xgboost
+python3 train.py
 ```
 
-This script will:
-- Analyze the dataset structure and scan properties
-- Create metadata files for all three classes
-- Generate train/validation splits (80/20)
-- Create sample visualizations
-- Output: `metadata_3class.csv`, `train_split.csv`, `val_split.csv`
+**Output**: Model achieves 99.6% accuracy on CN vs AD classification
 
-### 2. Training the Model
-
-Train the 3D ResNet model:
+### Predict MCI Direction
 
 ```bash
-python train_3class_classification.py
+cd tabular/xgboost
+python3 run.py
 ```
 
-Training details:
-- **Architecture**: 3D ResNet with residual connections
-- **Input size**: 96×96×96 voxels (memory-efficient)
-- **Batch size**: 8
-- **Optimizer**: AdamW with learning rate scheduling
-- **Training time**: ~50 epochs
+**Output**: Classifies 845 MCI patients as CN-like (60%) or AD-like (40%)
 
-The script will:
-- Train the model with automatic validation
-- Save the best model as `best_ad_mci_cn_model.pth`
-- Generate training curves and confusion matrix
-- Display detailed classification metrics
+## Key Results
 
-### 3. Using the Trained Model
+### Binary Classification (CN vs AD)
 
-To load and use the trained model:
+- **Accuracy**: 99.6%
+- **Precision**: 98.9%
+- **Recall**: 100% (perfect AD detection)
+- **F1 Score**: 99.4%
 
-```python
-import torch
-from train_3class_classification import ResNet3D
+### MCI Progression Prediction
 
-# Load model
-model = ResNet3D(num_classes=3, input_channels=1)
-checkpoint = torch.load('best_ad_mci_cn_model.pth')
-model.load_state_dict(checkpoint['model_state_dict'])
-model.eval()
+- **CN-like (Stable)**: 509/845 patients (60.2%)
+- **AD-like (At Risk)**: 336/845 patients (39.8%)
 
-# Model is ready for inference
-```
+### Top Predictive Features
 
-## 📁 Project Structure
+1. **TRABSCOR** (37.3%) - Trail Making Test B (executive function)
+2. **CATANIMSC** (10.1%) - Category fluency (semantic memory)
+3. **DSPANBAC** (7.6%) - Digit span backward (working memory)
 
-```
-alzheimer/
-├── ADNIDenoise/            # Main dataset
-│   ├── AD/                 # Alzheimer's Disease scans
-│   ├── CN/                 # Cognitively Normal scans
-│   └── MCI/                # Mild Cognitive Impairment scans
-├── preprocessing/          # Preprocessing pipeline modules
-├── mni_template/           # MNI brain template for registration
-├── train_3class_classification.py    # Main training script
-├── data_preprocessing_3class.py      # Data preparation script
-├── best_ad_mci_cn_model.pth         # Trained model weights
-├── confusion_matrix_3class.png       # Results visualization
-└── training_curves_3class.png        # Training history
+## Documentation
 
-```
+Detailed documentation in `docs/`:
 
-## 🔧 Advanced Usage
+- **[ALZHEIMER_RESEARCH_GROUPS.md](docs/ALZHEIMER_RESEARCH_GROUPS.md)** - Research group classifications, dataset statistics, and implementation results
+- **[TABULAR_README.md](docs/TABULAR_README.md)** - XGBoost implementation guide, dataset analysis, and feature importance
+- **[TABULAR_METRICS_GUIDE.md](docs/TABULAR_METRICS_GUIDE.md)** - Comprehensive metrics guide and clinical features
 
-### Custom Training Configuration
+## Preprocessing Pipeline
 
-Edit the hyperparameters in `train_3class_classification.py`:
+Located in `preprocessing/`:
 
-```python
-# Hyperparameters
-batch_size = 8          # Increase if you have more GPU memory
-num_epochs = 50         # Number of training epochs
-learning_rate = 1e-4    # Initial learning rate
-target_size = (96, 96, 96)  # Input volume size
-```
+1. **DICOM to NIfTI** - Convert medical scans to standard format
+2. **N4 Bias Correction** - Remove intensity artifacts
+3. **MNI Registration** - Register to standard brain template
+4. **Skull Stripping** - Extract brain-only images using SynthStrip
 
-### Data Augmentation
+See [CLAUDE.md](CLAUDE.md) for detailed pipeline commands.
 
-The pipeline includes basic intensity normalization. You can add more augmentations by modifying the `transform` parameter in the dataset class.
+## Technology Stack
 
-## 📈 Model Architecture
+- **Python 3.12** with virtual environment
+- **Medical Imaging**: SimpleITK, nibabel, MONAI, ANTs, nilearn, dicom2nifti
+- **Machine Learning**: XGBoost, scikit-learn
+- **Data Processing**: NumPy, pandas, matplotlib, seaborn
 
-The model uses a 3D ResNet architecture optimized for medical imaging:
+## Clinical Significance
 
-```
-3D ResNet Architecture:
-- Initial Conv3D + BatchNorm + ReLU + MaxPool
-- 4 Residual blocks with increasing channels (64→128→256→512)
-- Adaptive 3D pooling for consistent output size
-- Dropout (0.5) for regularization
-- Final FC layer for 3-class classification
-```
+### For Research
 
-## 🤝 Citation
+- Early detection of cognitive decline
+- MCI progression risk assessment
+- Treatment response prediction
 
-If you use this code, please cite:
-- ADNI dataset: [adni.loni.usc.edu](http://adni.loni.usc.edu/)
-- Based on methodology from Nature Scientific Reports paper on neuroimaging classification
+### For Clinical Practice
 
-## 📝 Notes
+- Risk stratification for MCI patients
+- Personalized monitoring strategies
+- Early intervention planning
 
-- All brain scans are preprocessed (skull-stripped and MNI-registered)
-- The model processes full 3D volumes, not 2D slices
-- Memory usage: ~8GB GPU memory with batch_size=8
-- Training time: Approximately 2-3 hours on a modern GPU
+## Research Context
+
+- **Primary Goal**: Early Alzheimer's detection through hippocampus morphometry
+- **Secondary Goal**: MCI progression prediction using cognitive assessments
+- **Classification**: CN (Cognitively Normal) vs MCI (Mild Cognitive Impairment) vs AD (Alzheimer's Disease)
+
+## References
+
+- **ADNI**: [Alzheimer's Disease Neuroimaging Initiative](http://adni.loni.usc.edu/)
+- **Dataset**: 1,472 unique patients, 1,980 MRI scans
+- **Model**: XGBoost with 300 estimators, early stopping
+- **Training**: 70/10/20 split (train/val/test)
+
+## License
+
+Research use only. ADNI data usage subject to ADNI Data Use Agreement.
