@@ -7,8 +7,27 @@ This document explains all metrics and features used in the XGBoost-based Alzhei
 This project uses machine learning to classify patients into:
 - **CN (Cognitively Normal)** - Class 0
 - **AD (Alzheimer's Disease)** - Class 1
+- **MCI (Mild Cognitive Impairment)** - Intermediate state, classified as CN-like or AD-like
 
 The classification is based on clinical assessment scores and demographic data from the ADNI dataset.
+
+## Project Structure
+
+```
+tabular/
+└── xgboost/
+    ├── train.py    # Train XGBoost model on CN vs AD
+    └── run.py      # Predict MCI patient direction (CN-like vs AD-like)
+```
+
+**Outputs are organized in:**
+```
+outputs/tabular/
+├── models/          # Trained models (.pkl, .json)
+├── predictions/     # CSV predictions and metrics
+├── visualizations/  # PNG plots and charts
+└── reports/         # Analysis reports
+```
 
 ---
 
@@ -196,11 +215,59 @@ Actual  CN     TN    FP
 
 ## 📋 Output Files Generated
 
-1. **weighted_xgboost_results.csv** - Model comparison metrics
-2. **feature_importance.csv** - Feature rankings and scores
-3. **feature_importance_plot.png** - Visual feature importance
-4. **confusion_matrix_best_model.png** - Visual confusion matrix
-5. **xgboost_weight_comparison.png** - Model performance comparison
+### Training Outputs (from `train.py`)
+
+Located in `outputs/tabular/`:
+
+1. **models/xgboost_model.pkl** - Trained model (pickle format)
+2. **models/xgboost_model.json** - Trained model (XGBoost native format)
+3. **predictions/feature_importance.csv** - Feature rankings and scores
+4. **predictions/xgboost_results.csv** - Validation and test metrics
+5. **visualizations/feature_importance_plot.png** - Visual feature importance
+6. **visualizations/confusion_matrix_xgboost.png** - Visual confusion matrix
+
+### MCI Prediction Outputs (from `run.py`)
+
+Located in `outputs/tabular/`:
+
+1. **predictions/mci_predictions.csv** - MCI-only predictions with probabilities
+2. **predictions/predictions_all_groups.csv** - All predictions (CN, MCI, AD)
+3. **visualizations/mci_predictions_visualization.png** - MCI risk analysis charts
+
+## 🔄 MCI Patient Classification
+
+### Understanding MCI Predictions
+
+The model trained on **CN vs AD** is used to classify MCI patients:
+
+- **CN-like (Stable)**: MCI patients whose cognitive patterns resemble healthy controls
+  - Lower probability of AD (< 0.5)
+  - Better cognitive test scores
+  - May remain stable or revert to normal
+
+- **AD-like (At Risk)**: MCI patients whose cognitive patterns resemble AD patients
+  - Higher probability of AD (≥ 0.5)
+  - Declining cognitive function
+  - Higher risk of progression to Alzheimer's
+
+### Typical MCI Distribution
+
+Based on current dataset (1,980 samples):
+- **Total MCI patients**: 845
+- **CN-like**: ~60% (509 patients)
+- **AD-like**: ~40% (336 patients)
+
+### Risk Stratification
+
+MCI patients are categorized by AD probability:
+
+| Probability Range | Category | Interpretation |
+|-------------------|----------|----------------|
+| 0.0 - 0.2 | Very CN-like | Very low risk, stable |
+| 0.2 - 0.4 | CN-like | Low risk, monitor |
+| 0.4 - 0.6 | Uncertain | Moderate risk, close monitoring |
+| 0.6 - 0.8 | AD-like | High risk, intervention recommended |
+| 0.8 - 1.0 | Very AD-like | Very high risk, immediate intervention |
 
 ---
 

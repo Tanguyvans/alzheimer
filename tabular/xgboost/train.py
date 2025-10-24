@@ -13,14 +13,29 @@ from sklearn.utils.class_weight import compute_class_weight
 from xgboost import XGBClassifier
 from sklearn import metrics
 from sklearn.metrics import confusion_matrix, classification_report
+import pickle
+from pathlib import Path
 import warnings
 warnings.filterwarnings('ignore')
 
+# Define paths relative to this file
+BASE_DIR = Path(__file__).parent.parent.parent  # alzheimer directory
+DATA_DIR = BASE_DIR / 'data'
+OUTPUT_DIR = BASE_DIR / 'outputs' / 'tabular'
+MODELS_DIR = OUTPUT_DIR / 'models'
+PREDICTIONS_DIR = OUTPUT_DIR / 'predictions'
+VISUALIZATIONS_DIR = OUTPUT_DIR / 'visualizations'
+
+# Ensure output directories exist
+for dir_path in [MODELS_DIR, PREDICTIONS_DIR, VISUALIZATIONS_DIR]:
+    dir_path.mkdir(parents=True, exist_ok=True)
+
 def load_and_preprocess_data():
     """Load and preprocess ADNI data"""
-    
-    # Load data
-    df = pd.read_csv('/Users/tanguyvans/Desktop/umons/alzheimer/ADNIDenoise/AD_CN_clinical_data.csv')
+
+    # Load data using relative path
+    data_path = DATA_DIR / 'AD_CN_clinical_data.csv'
+    df = pd.read_csv(data_path)
     print(f"Loaded ADNI clinical data: {df.shape}")
     
     print("\\nOriginal class distribution:")
@@ -263,11 +278,11 @@ def main():
         'validation': val_results,
         'test': test_results
     }).T
-    results_df.to_csv('xgboost_results.csv')
-    
+    results_df.to_csv(PREDICTIONS_DIR / 'xgboost_results.csv')
+
     # Save detailed results
-    pd.DataFrame([val_results]).to_csv('xgboost_validation_results.csv', index=False)
-    pd.DataFrame([test_results]).to_csv('xgboost_test_results.csv', index=False)
+    pd.DataFrame([val_results]).to_csv(PREDICTIONS_DIR / 'xgboost_validation_results.csv', index=False)
+    pd.DataFrame([test_results]).to_csv(PREDICTIONS_DIR / 'xgboost_test_results.csv', index=False)
     
     # Feature importance analysis
     print(f"\\n{'='*60}")
@@ -290,9 +305,9 @@ def main():
         print(f"{i:2d}. {row['feature']:<12} : {row['importance']:.4f}")
     
     # Save feature importance
-    importance_df.to_csv('feature_importance.csv', index=False)
+    importance_df.to_csv(PREDICTIONS_DIR / 'feature_importance.csv', index=False)
     print(f"\\nFeature importance saved to: feature_importance.csv")
-    
+
     # Plot feature importance
     plt.figure(figsize=(10, 6))
     top_10 = importance_df.head(10)
@@ -300,7 +315,7 @@ def main():
     plt.xlabel('Feature Importance')
     plt.title('Top 10 Most Important Features (XGBoost)')
     plt.tight_layout()
-    plt.savefig('feature_importance_plot.png', dpi=300, bbox_inches='tight')
+    plt.savefig(VISUALIZATIONS_DIR / 'feature_importance_plot.png', dpi=300, bbox_inches='tight')
     plt.show()
     
     # Plot confusion matrix (on test set)
@@ -326,14 +341,27 @@ def main():
                     ha='center', va='center', fontsize=10, color='red')
     
     plt.tight_layout()
-    plt.savefig('confusion_matrix_xgboost.png', dpi=300, bbox_inches='tight')
+    plt.savefig(VISUALIZATIONS_DIR / 'confusion_matrix_xgboost.png', dpi=300, bbox_inches='tight')
     plt.show()
-    
+
+    # Save the trained model
+    model_path_pkl = MODELS_DIR / 'xgboost_model.pkl'
+    with open(model_path_pkl, 'wb') as f:
+        pickle.dump(model, f)
+    print(f"\\n💾 Model saved to: {model_path_pkl}")
+
+    # Also save using XGBoost's native format
+    model_path_json = MODELS_DIR / 'xgboost_model.json'
+    model.save_model(str(model_path_json))
+    print(f"💾 Model also saved to: {model_path_json} (XGBoost native format)")
+
     print(f"\\n✅ XGBoost model training completed successfully")
     print(f"   Test Accuracy: {test_results['accuracy']:.4f}")
     print(f"   F1 Score: {test_results['f1']:.4f}")
     print(f"   AD Detection: {test_results['detected_ad']:.0f}/{test_results['total_ad']:.0f} cases ({test_results['detected_ad']/test_results['total_ad']*100:.1f}%)")
     print(f"\\nResults saved to:")
+    print(f"  - xgboost_model.pkl (pickled model)")
+    print(f"  - xgboost_model.json (XGBoost native format)")
     print(f"  - xgboost_validation_results.csv")
     print(f"  - xgboost_test_results.csv")
     print(f"  - feature_importance.csv")
