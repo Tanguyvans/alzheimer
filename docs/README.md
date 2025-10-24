@@ -27,6 +27,7 @@ Data preparation pipelines
 Dataset information and statistics
 - ADNI dataset overview
 - Research group classifications
+- Diagnosis progression analysis
 - Data quality reports
 
 ## Quick Links

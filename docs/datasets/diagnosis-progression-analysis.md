@@ -1,9 +1,10 @@
-# ADNI Diagnosis Summary Analysis Report
+# ADNI Diagnosis Progression Analysis
 
-**Analysis of dxsum.csv**
+Longitudinal analysis of diagnosis changes over time from the ADNI dxsum.csv dataset.
 
-**Generated:** 2025-10-24 14:41:28  
-**Data source:** `/Users/tanguyvans/Desktop/umons/alzheimer/dxsum.csv`
+**Data source:** `dxsum.csv` - ADNI diagnosis summary with longitudinal patient visits
+
+![Diagnosis Progression Visualizations](dxsum_visualizations.png)
 
 ---
 
@@ -97,7 +98,6 @@ Total fluctuated patients: **56**
 - **MCI baseline:** 35 patients fluctuated
 - **AD baseline:** 2 patients fluctuated
 
-
 ## 5. Progression Analysis by Baseline Diagnosis
 
 ### CN Patients (n=839)
@@ -182,4 +182,11 @@ This suggests that patients with more longitudinal imaging data are more likely 
 
 ---
 
-*End of Report*
+## Summary
+
+This analysis reveals important patterns in Alzheimer's disease progression:
+
+- **73.6%** of patients maintain stable diagnosis over time
+- **35.2%** of MCI patients progress to AD (critical intervention window)
+- Patients with changing diagnoses have **3.72 more** MRI scans on average
+- **MCI → AD** is the most common transition (399 cases, 50.8% of all transitions)

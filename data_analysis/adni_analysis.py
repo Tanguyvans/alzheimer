@@ -10,14 +10,17 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from collections import defaultdict, Counter
 import re
+from pathlib import Path
 
 def analyze_adni_directory_structure():
     """Analyze ADNI directory structure"""
     print("=" * 60)
     print("ADNI DATASET ANALYSIS")
     print("=" * 60)
-    
-    base_path = "/Users/tanguyvans/Desktop/umons/alzheimer/ADNIDenoise"
+
+    # Use relative path
+    BASE_DIR = Path(__file__).parent.parent
+    base_path = BASE_DIR / "ADNIDenoise"
     
     if not os.path.exists(base_path):
         print(f"ADNI directory not found at {base_path}")
@@ -91,8 +94,10 @@ def analyze_csv_files():
     print("\n" + "=" * 60)
     print("CSV FILES ANALYSIS")
     print("=" * 60)
-    
-    base_path = "/Users/tanguyvans/Desktop/umons/alzheimer/ADNIDenoise"
+
+    # Use relative path
+    BASE_DIR = Path(__file__).parent.parent
+    base_path = BASE_DIR / "ADNIDenoise"
     csv_files = [f for f in os.listdir(base_path) if f.endswith('.csv')]
     
     for csv_file in csv_files:
@@ -177,14 +182,17 @@ def create_visualizations(diagnosis_counts, patient_mri_counts):
             axes[1, 1].text(i, v + 5, str(v), ha='center', va='bottom')
     
     plt.tight_layout()
-    plt.savefig('/Users/tanguyvans/Desktop/umons/alzheimer/data_analysis/adni_analysis.png', 
-                dpi=300, bbox_inches='tight')
-    print(f"\nVisualization saved as 'adni_analysis.png'")
+
+    # Use relative path for output
+    output_path = Path(__file__).parent / 'adni_analysis.png'
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    print(f"\nVisualization saved as '{output_path}'")
 
 def create_summary_report(diagnosis_counts, patient_mri_counts):
     """Create summary report"""
-    
-    report_path = '/Users/tanguyvans/Desktop/umons/alzheimer/data_analysis/adni_report.txt'
+
+    # Use relative path for output
+    report_path = Path(__file__).parent / 'adni_report.txt'
     
     with open(report_path, 'w') as f:
         f.write("ADNI DATASET ANALYSIS REPORT\n")

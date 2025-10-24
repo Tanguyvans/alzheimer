@@ -17,6 +17,7 @@ import seaborn as sns
 from datetime import datetime
 from collections import defaultdict, Counter
 from typing import Dict, List, Tuple, Optional
+from pathlib import Path
 import warnings
 
 warnings.filterwarnings('ignore')
@@ -574,61 +575,43 @@ class DxsumAnalyzer:
     
     def create_visualizations(self) -> None:
         """
-        Create comprehensive visualization charts.
+        Create simplified visualization with 4 key charts.
         """
         print("\n" + "=" * 80)
         print("GENERATING VISUALIZATIONS")
         print("=" * 80)
-        
-        # Set up the figure - add extra row if we have MRI data
-        has_mri = len(self.mri_analysis) > 0 and len(self.mri_analysis.get('stable_counts', [])) > 0
-        
-        if has_mri:
-            fig = plt.figure(figsize=(20, 20))
-            gs = fig.add_gridspec(5, 3, hspace=0.35, wspace=0.3)
-        else:
-            fig = plt.figure(figsize=(20, 16))
-            gs = fig.add_gridspec(4, 3, hspace=0.35, wspace=0.3)
-        
-        # 1. Overall diagnosis distribution (all records)
-        ax1 = fig.add_subplot(gs[0, 0])
-        overall_dist = self.df['DIAGNOSIS'].value_counts().sort_index()
-        labels = [self.DIAGNOSIS_MAP.get(int(dx), str(dx)) for dx in overall_dist.index]
-        colors = [self.COLORS.get(label, 'gray') for label in labels]
-        ax1.bar(labels, overall_dist.values, color=colors, alpha=0.7)
-        ax1.set_ylabel('Number of Records')
-        ax1.set_title('Overall Diagnosis Distribution\n(All Records)', fontweight='bold')
-        for i, v in enumerate(overall_dist.values):
-            ax1.text(i, v + 50, str(v), ha='center', va='bottom', fontweight='bold')
-        
-        # 2. Baseline diagnosis distribution
-        ax2 = fig.add_subplot(gs[0, 1])
-        baseline_dx = [self.DIAGNOSIS_MAP.get(t['first_dx'], 'Unknown') 
-                      for t in self.patient_trajectories.values()]
-        baseline_counts = Counter(baseline_dx)
+
+        # Simplified 2x2 grid with 4 most important charts
+        fig = plt.figure(figsize=(16, 10))
+        gs = fig.add_gridspec(2, 2, hspace=0.3, wspace=0.3)
+
         dx_labels = ['CN', 'MCI', 'AD']
-        dx_counts = [baseline_counts.get(dx, 0) for dx in dx_labels]
-        colors = [self.COLORS[dx] for dx in dx_labels]
-        ax2.bar(dx_labels, dx_counts, color=colors, alpha=0.7)
-        ax2.set_ylabel('Number of Patients')
-        ax2.set_title('Baseline Diagnosis Distribution\n(First Visit)', fontweight='bold')
-        for i, v in enumerate(dx_counts):
-            ax2.text(i, v + 10, str(v), ha='center', va='bottom', fontweight='bold')
-        
-        # 3. Final diagnosis distribution
-        ax3 = fig.add_subplot(gs[0, 2])
-        final_dx = [self.DIAGNOSIS_MAP.get(t['last_dx'], 'Unknown') 
-                   for t in self.patient_trajectories.values()]
-        final_counts = Counter(final_dx)
-        dx_counts = [final_counts.get(dx, 0) for dx in dx_labels]
-        ax3.bar(dx_labels, dx_counts, color=colors, alpha=0.7)
-        ax3.set_ylabel('Number of Patients')
-        ax3.set_title('Final Diagnosis Distribution\n(Last Visit)', fontweight='bold')
-        for i, v in enumerate(dx_counts):
-            ax3.text(i, v + 10, str(v), ha='center', va='bottom', fontweight='bold')
-        
-        # 4. Transition matrix heatmap
-        ax4 = fig.add_subplot(gs[1, 0:2])
+
+        # Calculate trajectory statistics
+        progressed = sum(1 for t in self.patient_trajectories.values() if t['progression'])
+        improved = sum(1 for t in self.patient_trajectories.values() if t['improvement'])
+        fluctuated = sum(1 for t in self.patient_trajectories.values() if t['fluctuated'])
+        stable = sum(1 for t in self.patient_trajectories.values() if not t['changed'])
+        total_patients = len(self.patient_trajectories)
+
+        # 1. Disease Trajectory Pie Chart (TOP LEFT)
+        ax1 = fig.add_subplot(gs[0, 0])
+        trajectory_data = [stable, progressed, improved, fluctuated]
+        trajectory_labels = [
+            f'Stable\n{stable} ({stable/total_patients*100:.1f}%)',
+            f'Progression\n{progressed} ({progressed/total_patients*100:.1f}%)',
+            f'Improvement\n{improved} ({improved/total_patients*100:.1f}%)',
+            f'Fluctuated\n{fluctuated} ({fluctuated/total_patients*100:.1f}%)'
+        ]
+        trajectory_colors = ['#95e1d3', '#ff6b6b', '#6bcf7f', '#ffd93d']
+        ax1.pie(trajectory_data, labels=trajectory_labels, autopct='',
+               colors=trajectory_colors, startangle=90,
+               textprops={'fontsize': 12, 'fontweight': 'bold'})
+        ax1.set_title('Patient Trajectories (Baseline → Final)\n2,311 Patients',
+                     fontweight='bold', fontsize=14, pad=20)
+
+        # 2. Transition Matrix Heatmap (TOP RIGHT)
+        ax2 = fig.add_subplot(gs[0, 1])
         transition_matrix = np.zeros((3, 3))
         for baseline in ['CN', 'MCI', 'AD']:
             if baseline in self.baseline_outcomes:
@@ -636,151 +619,94 @@ class DxsumAnalyzer:
                 i = dx_labels.index(baseline)
                 for j, outcome in enumerate(dx_labels):
                     transition_matrix[i, j] = data[f'to_{outcome}']
-        
+
         sns.heatmap(transition_matrix, annot=True, fmt='.0f', cmap='YlOrRd',
-                   xticklabels=dx_labels, yticklabels=dx_labels, ax=ax4,
-                   cbar_kws={'label': 'Number of Patients'})
-        ax4.set_xlabel('Final Diagnosis', fontsize=11)
-        ax4.set_ylabel('Baseline Diagnosis', fontsize=11)
-        ax4.set_title('Diagnosis Transition Matrix\n(Baseline → Final)', 
-                     fontsize=12, fontweight='bold')
-        
-        # 5. Disease trajectory pie chart
-        ax5 = fig.add_subplot(gs[1, 2])
-        progressed = sum(1 for t in self.patient_trajectories.values() if t['progression'])
-        improved = sum(1 for t in self.patient_trajectories.values() if t['improvement'])
-        fluctuated = sum(1 for t in self.patient_trajectories.values() if t['fluctuated'])
-        stable = sum(1 for t in self.patient_trajectories.values() if not t['changed'])
-        
-        trajectory_data = [progressed, stable, improved, fluctuated]
-        trajectory_labels = [f'Progression\n({progressed})', f'Stable\n({stable})', 
-                           f'Improvement\n({improved})', f'Fluctuated\n({fluctuated})']
-        trajectory_colors = ['#ff6b6b', '#95e1d3', '#6bcf7f', '#ffd93d']
-        ax5.pie(trajectory_data, labels=trajectory_labels, autopct='%1.1f%%',
-               colors=trajectory_colors, startangle=90)
-        ax5.set_title('Disease Trajectory\n(Baseline to Final)', fontweight='bold')
-        
-        # 6. Visit count distribution
-        ax6 = fig.add_subplot(gs[2, 0])
-        num_visits = [t['num_visits'] for t in self.patient_trajectories.values()]
-        ax6.hist(num_visits, bins=20, edgecolor='black', alpha=0.7, color='skyblue')
-        ax6.set_xlabel('Number of Visits')
-        ax6.set_ylabel('Number of Patients')
-        ax6.set_title('Visit Count Distribution', fontweight='bold')
-        ax6.axvline(np.mean(num_visits), color='red', linestyle='--',
-                   label=f'Mean: {np.mean(num_visits):.1f}')
-        ax6.legend()
-        
-        # 7. Diagnosis change frequency
-        ax7 = fig.add_subplot(gs[2, 1])
-        num_changes = [t['num_changes'] for t in self.patient_trajectories.values()]
-        change_counts = Counter(num_changes)
-        ax7.bar(change_counts.keys(), change_counts.values(), color='coral', alpha=0.7)
-        ax7.set_xlabel('Number of Diagnosis Changes')
-        ax7.set_ylabel('Number of Patients')
-        ax7.set_title('Frequency of Diagnosis Changes', fontweight='bold')
-        
-        # 8. Stable vs Changed
-        ax8 = fig.add_subplot(gs[2, 2])
-        changed = sum(1 for t in self.patient_trajectories.values() if t['changed'])
-        unchanged = len(self.patient_trajectories) - changed
-        ax8.pie([unchanged, changed], labels=[f'Stable\n({unchanged})', f'Changed\n({changed})'],
-               autopct='%1.1f%%', colors=['#90ee90', '#ffb6c1'], startangle=90)
-        ax8.set_title('Diagnosis Stability', fontweight='bold')
-        
-        # 9-11. Baseline outcome breakdowns (CN, MCI, AD)
-        for idx, baseline in enumerate(['CN', 'MCI', 'AD']):
-            ax = fig.add_subplot(gs[3, idx])
-            if baseline in self.baseline_outcomes:
-                data = self.baseline_outcomes[baseline]
-                outcomes = ['CN', 'MCI', 'AD']
-                counts = [data[f'to_{dx}'] for dx in outcomes]
-                bars = ax.bar(outcomes, counts, 
-                            color=[self.COLORS[dx] for dx in outcomes], alpha=0.7)
-                
-                # Highlight stable diagnosis
-                stable_idx = outcomes.index(baseline)
-                bars[stable_idx].set_edgecolor('black')
-                bars[stable_idx].set_linewidth(3)
-                
-                ax.set_ylabel('Number of Patients')
-                ax.set_title(f'{baseline} Baseline → Outcomes\n(n={data["total"]})', 
-                           fontweight='bold')
-                
-                for i, v in enumerate(counts):
-                    percentage = (v / data['total'] * 100) if data['total'] > 0 else 0
-                    ax.text(i, v + 3, f'{v}\n({percentage:.0f}%)', 
-                          ha='center', va='bottom', fontsize=9)
-        
-        # MRI visualizations (if available)
+                   xticklabels=dx_labels, yticklabels=dx_labels, ax=ax2,
+                   cbar_kws={'label': 'Number of Patients'},
+                   linewidths=2, linecolor='black',
+                   annot_kws={'fontsize': 13, 'fontweight': 'bold'})
+        ax2.set_xlabel('Final Diagnosis', fontsize=13, fontweight='bold')
+        ax2.set_ylabel('Baseline Diagnosis', fontsize=13, fontweight='bold')
+        ax2.set_title('Diagnosis Transition Matrix',
+                     fontsize=14, fontweight='bold', pad=15)
+
+        # 3. MCI Outcomes (BOTTOM LEFT - most clinically important)
+        ax3 = fig.add_subplot(gs[1, 0])
+        if 'MCI' in self.baseline_outcomes:
+            mci_data = self.baseline_outcomes['MCI']
+            outcomes = ['CN', 'MCI', 'AD']
+            counts = [mci_data[f'to_{dx}'] for dx in outcomes]
+            colors_list = [self.COLORS[dx] for dx in outcomes]
+            bars = ax3.bar(outcomes, counts, color=colors_list, alpha=0.7,
+                          edgecolor='black', linewidth=2)
+
+            # Highlight stable MCI
+            bars[1].set_edgecolor('darkgreen')
+            bars[1].set_linewidth(4)
+
+            ax3.set_ylabel('Number of Patients', fontsize=13, fontweight='bold')
+            ax3.set_title(f'MCI Baseline Outcomes (n={mci_data["total"]})\nKey Clinical Question',
+                         fontweight='bold', fontsize=14)
+
+            for i, v in enumerate(counts):
+                percentage = (v / mci_data['total'] * 100) if mci_data['total'] > 0 else 0
+                ax3.text(i, v + 15, f'{v}\n({percentage:.1f}%)',
+                      ha='center', va='bottom', fontsize=12, fontweight='bold')
+            ax3.grid(axis='y', alpha=0.3)
+
+        # 4. Key Statistics Panel (BOTTOM RIGHT)
+        ax4 = fig.add_subplot(gs[1, 1])
+        ax4.axis('off')
+
+        total_records = len(self.df)
+        avg_visits = self.df.groupby('RID').size().mean()
+
+        stats_text = "Key Statistics\n" + "="*45 + "\n\n"
+        stats_text += f"📊 Dataset Overview:\n"
+        stats_text += f"  • Total patients: {total_patients:,}\n"
+        stats_text += f"  • Total records: {total_records:,}\n"
+        stats_text += f"  • Avg visits/patient: {avg_visits:.1f}\n\n"
+
+        stats_text += f"🔄 Diagnosis Stability:\n"
+        stats_text += f"  • Stable: {stable} ({stable/total_patients*100:.1f}%)\n"
+        stats_text += f"  • Changed: {progressed+improved+fluctuated}\n"
+        stats_text += f"    ({(progressed+improved+fluctuated)/total_patients*100:.1f}%)\n\n"
+
+        stats_text += f"📈 Key Progression Rates:\n"
+        if 'MCI' in self.baseline_outcomes:
+            mci_to_ad_rate = (self.baseline_outcomes['MCI']['to_AD'] /
+                             self.baseline_outcomes['MCI']['total'] * 100)
+            mci_to_cn_rate = (self.baseline_outcomes['MCI']['to_CN'] /
+                             self.baseline_outcomes['MCI']['total'] * 100)
+            stats_text += f"  • MCI → AD: {mci_to_ad_rate:.1f}%\n"
+            stats_text += f"  • MCI → CN: {mci_to_cn_rate:.1f}% (improvement)\n"
+
+        if 'CN' in self.baseline_outcomes:
+            cn_to_mci_rate = (self.baseline_outcomes['CN']['to_MCI'] /
+                             self.baseline_outcomes['CN']['total'] * 100)
+            stats_text += f"  • CN → MCI: {cn_to_mci_rate:.1f}%\n\n"
+
+        stats_text += f"🎯 Most Common Transitions:\n"
+        if 'MCI' in self.baseline_outcomes and 'CN' in self.baseline_outcomes:
+            stats_text += f"  1. MCI → AD: {self.baseline_outcomes['MCI']['to_AD']} cases\n"
+            stats_text += f"  2. CN → MCI: {self.baseline_outcomes['CN']['to_MCI']} cases\n"
+            stats_text += f"  3. MCI → CN: {self.baseline_outcomes['MCI']['to_CN']} cases\n"
+
+        # Add MRI info if available
+        has_mri = len(self.mri_analysis) > 0 and len(self.mri_analysis.get('stable_counts', [])) > 0
         if has_mri:
             stable_counts = self.mri_analysis['stable_counts']
             changed_counts = self.mri_analysis['changed_counts']
-            
-            # 12. MRI distribution comparison (box plot)
-            ax12 = fig.add_subplot(gs[4, 0])
-            data_to_plot = []
-            labels_to_plot = []
-            if stable_counts:
-                data_to_plot.append(stable_counts)
-                labels_to_plot.append(f'Stable\n(n={len(stable_counts)})')
-            if changed_counts:
-                data_to_plot.append(changed_counts)
-                labels_to_plot.append(f'Changed\n(n={len(changed_counts)})')
-            
-            if data_to_plot:
-                bp = ax12.boxplot(data_to_plot, labels=labels_to_plot, patch_artist=True)
-                bp['boxes'][0].set_facecolor('#90ee90')
-                if len(bp['boxes']) > 1:
-                    bp['boxes'][1].set_facecolor('#ffb6c1')
-                ax12.set_ylabel('Number of MRI Scans')
-                ax12.set_title('MRI Count by Diagnosis Stability', fontweight='bold')
-                ax12.grid(axis='y', alpha=0.3)
-            
-            # 13. MRI histogram comparison
-            ax13 = fig.add_subplot(gs[4, 1])
-            if stable_counts and changed_counts:
-                ax13.hist([stable_counts, changed_counts], 
-                         bins=15, label=['Stable', 'Changed'],
-                         alpha=0.6, color=['#90ee90', '#ffb6c1'])
-                ax13.set_xlabel('Number of MRI Scans')
-                ax13.set_ylabel('Number of Patients')
-                ax13.set_title('MRI Count Distribution', fontweight='bold')
-                ax13.legend()
-                ax13.axvline(np.mean(stable_counts), color='green', linestyle='--', 
-                           linewidth=2, label=f'Stable mean: {np.mean(stable_counts):.1f}')
-                ax13.axvline(np.mean(changed_counts), color='red', linestyle='--',
-                           linewidth=2, label=f'Changed mean: {np.mean(changed_counts):.1f}')
-            
-            # 14. MRI statistics summary
-            ax14 = fig.add_subplot(gs[4, 2])
-            ax14.axis('off')
-            
-            summary_text = "MRI Analysis Summary\n" + "="*30 + "\n\n"
-            
-            if stable_counts:
-                summary_text += f"✓ Stable Patients:\n"
-                summary_text += f"  n = {len(stable_counts)}\n"
-                summary_text += f"  Mean = {np.mean(stable_counts):.2f}\n"
-                summary_text += f"  Median = {np.median(stable_counts):.1f}\n\n"
-            
-            if changed_counts:
-                summary_text += f"⚠️ Changed Patients:\n"
-                summary_text += f"  n = {len(changed_counts)}\n"
-                summary_text += f"  Mean = {np.mean(changed_counts):.2f}\n"
-                summary_text += f"  Median = {np.median(changed_counts):.1f}\n\n"
-            
             if stable_counts and changed_counts:
                 diff = np.mean(changed_counts) - np.mean(stable_counts)
-                summary_text += f"Difference:\n"
-                summary_text += f"  {diff:+.2f} MRIs\n"
-                summary_text += f"  Changed patients have\n"
-                summary_text += f"  {'MORE' if diff > 0 else 'FEWER'} MRIs on avg"
-            
-            ax14.text(0.1, 0.5, summary_text, transform=ax14.transAxes,
-                     fontsize=11, verticalalignment='center',
-                     bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.3),
-                     family='monospace')
+                stats_text += f"\n🔬 MRI Analysis:\n"
+                stats_text += f"  • Changed patients have {diff:+.2f}\n"
+                stats_text += f"    more MRI scans on average\n"
+
+        ax4.text(0.05, 0.5, stats_text, transform=ax4.transAxes,
+                fontsize=11, verticalalignment='center',
+                bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.3),
+                family='monospace', fontweight='bold')
         
         # Main title
         fig.suptitle('ADNI Diagnosis Analysis - dxsum.csv', 
@@ -1084,11 +1010,11 @@ class DxsumAnalyzer:
 
 def main():
     """Main execution function."""
-    # Configuration
-    BASE_PATH = '/Users/tanguyvans/Desktop/umons/alzheimer'
-    CSV_PATH = os.path.join(BASE_PATH, 'dxsum.csv')
-    MRI_CSV_PATH = os.path.join(BASE_PATH, '3D_MPRAGE_Cohort_Study_Key_MRI_18Sep2025.csv')
-    OUTPUT_DIR = os.path.join(BASE_PATH, 'data_analysis')
+    # Configuration - use relative paths
+    BASE_DIR = Path(__file__).parent.parent
+    CSV_PATH = BASE_DIR / 'dxsum.csv'
+    MRI_CSV_PATH = BASE_DIR / '3D_MPRAGE_Cohort_Study_Key_MRI_18Sep2025.csv'
+    OUTPUT_DIR = BASE_DIR / 'data_analysis'
     
     # Create analyzer and run
     analyzer = DxsumAnalyzer(
