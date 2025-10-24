@@ -13,7 +13,7 @@ This project combines medical image processing with machine learning to:
 
 ## Dataset
 
-**ADNI (Alzheimer's Disease Neuroimaging Initiative)**
+### ADNI (Alzheimer's Disease Neuroimaging Initiative)
 
 - **Total**: 1,980 MRI scans from 1,472 unique patients
 - **CN (Cognitively Normal)**: 859 scans (564 patients)
@@ -22,16 +22,26 @@ This project combines medical image processing with machine learning to:
 
 ## Project Structure
 
-```
+```text
 alzheimer/
 ├── docs/                              # Documentation
-│   ├── ALZHEIMER_RESEARCH_GROUPS.md  # Group classifications and results
-│   ├── TABULAR_README.md             # XGBoost implementation guide
-│   └── TABULAR_METRICS_GUIDE.md      # Metrics and features explained
+│   ├── README.md                      # Documentation index
+│   ├── tabular/                       # Tabular ML documentation
+│   │   ├── quickstart.md              # 5-minute getting started
+│   │   └── features.md                # Clinical features guide
+│   └── datasets/                      # Dataset documentation
+│       ├── adni-dataset.md            # ADNI dataset overview
+│       ├── diagnosis-progression-analysis.md  # Longitudinal analysis
+│       └── data-analysis-guide.md     # Analysis guide
 │
 ├── data/                              # Clinical and tabular data
 │   ├── AD_CN_clinical_data.csv       # Clean training data (CN vs AD)
 │   └── clinical_data_all_groups.csv  # Full dataset (CN, MCI, AD)
+│
+├── data_analysis/                     # Data analysis scripts
+│   ├── adni_analysis.py               # ADNI directory analysis
+│   ├── analyze_dxsum.py               # Diagnosis progression analysis
+│   └── create_docs_visualization.py  # Generate documentation visualizations
 │
 ├── preprocessing/                     # MRI preprocessing pipeline
 │   ├── dicom_to_nifti.py             # DICOM conversion
@@ -104,11 +114,18 @@ python3 run.py
 
 ## Documentation
 
-Detailed documentation in `docs/`:
+Comprehensive documentation in [`docs/`](docs/):
 
-- **[ALZHEIMER_RESEARCH_GROUPS.md](docs/ALZHEIMER_RESEARCH_GROUPS.md)** - Research group classifications, dataset statistics, and implementation results
-- **[TABULAR_README.md](docs/TABULAR_README.md)** - XGBoost implementation guide, dataset analysis, and feature importance
-- **[TABULAR_METRICS_GUIDE.md](docs/TABULAR_METRICS_GUIDE.md)** - Comprehensive metrics guide and clinical features
+### Tabular Machine Learning
+
+- **[Quick Start Guide](docs/tabular/quickstart.md)** - Get started with XGBoost in 5 minutes
+- **[Clinical Features Reference](docs/tabular/features.md)** - Complete guide to all 13 cognitive test features
+
+### Dataset Documentation
+
+- **[ADNI Dataset Overview](docs/datasets/adni-dataset.md)** - Complete dataset reference with statistics
+- **[Diagnosis Progression Analysis](docs/datasets/diagnosis-progression-analysis.md)** - Longitudinal progression patterns
+- **[Data Analysis Guide](docs/datasets/data-analysis-guide.md)** - How to analyze the data with code examples
 
 ## Preprocessing Pipeline
 
@@ -154,7 +171,3 @@ See [CLAUDE.md](CLAUDE.md) for detailed pipeline commands.
 - **Dataset**: 1,472 unique patients, 1,980 MRI scans
 - **Model**: XGBoost with 300 estimators, early stopping
 - **Training**: 70/10/20 split (train/val/test)
-
-## License
-
-Research use only. ADNI data usage subject to ADNI Data Use Agreement.
