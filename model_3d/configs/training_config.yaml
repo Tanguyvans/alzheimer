@@ -1,0 +1,54 @@
+# DenseNet3D + CLIP Training Configuration for ADNI
+# This file defines data processing and model training parameters
+
+# Data columns
+target_column: "Group"  # Column containing class labels (AD, CN, MCI)
+subject_column: "Subject"  # Column containing patient IDs for patient-aware split
+image_column: "nii_path"  # Column containing paths to NIfTI files
+
+# Categorical and continuous features (if using tabular data)
+cat_cols: []
+cont_cols: []
+
+# Data preprocessing
+normalize: false  # Normalize tabular features
+make_dummies: true  # Create dummy variables for categorical features
+
+# Image processing configuration
+image_processing:
+  data_type: "nii.gz"  # Type of image data (nii.gz for skull-stripped NIfTI)
+  transform_fun: null  # Transform function (null = use default preprocessing)
+  params: null  # Parameters for transform function
+
+# Tabular processing (set to null if not using tabular data)
+tabular_processing: null
+
+# Class names (will be automatically detected from data)
+classes: ["AD", "CN", "MCI"]
+
+# Training parameters
+training:
+  batch_size: 8
+  learning_rate: 0.0001
+  weight_decay: 0.00001
+  max_epochs: 50
+  num_workers: 4
+  seed: 42
+
+# Model architecture
+model:
+  freeze_encoder: false  # Whether to freeze DenseNet3D weights
+  hidden_dim: 0  # Hidden layer dimension in classifier (0 = direct classification)
+  dropout_rate: 0.0  # Dropout rate
+
+# Early stopping
+early_stopping:
+  patience: 10
+  monitor: "val/loss"
+  mode: "min"
+
+# Checkpointing
+checkpoint:
+  monitor: "val/acc"
+  mode: "max"
+  save_top_k: 3
