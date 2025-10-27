@@ -44,7 +44,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 repo_path = Path(__file__).parent.parent.parent / 'ADNI_unimodal_models'
 sys.path.insert(0, str(repo_path))
 
-from encoders.image_encoders import DenseNet3D
+from encoders.image_encoders import Resnet3D
 from models.classifier import CustomClassifier
 from models.model import UnimodalModel
 
@@ -55,9 +55,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-class DenseNet3DMCIBinary(pl.LightningModule):
+class ResNet3DMCIBinary(pl.LightningModule):
     """
-    PyTorch Lightning module for DenseNet3D binary MCI classification
+    PyTorch Lightning module for ResNet3D binary MCI classification with MedicalNet pretrained weights
     """
 
     def __init__(
@@ -66,7 +66,8 @@ class DenseNet3DMCIBinary(pl.LightningModule):
         weight_decay: float = 1e-5,
         freeze_encoder: bool = False,
         hidden_dim: int = 0,
-        dropout_rate: float = 0.3
+        dropout_rate: float = 0.3,
+        resnet_depth: int = 50
     ):
         super().__init__()
         self.save_hyperparameters()
@@ -74,9 +75,10 @@ class DenseNet3DMCIBinary(pl.LightningModule):
         self.learning_rate = learning_rate
         self.weight_decay = weight_decay
 
-        # Create encoder (DenseNet3D)
-        logger.info("Initializing DenseNet3D encoder...")
-        self.image_encoder = DenseNet3D(
+        # Create encoder (ResNet3D) with MedicalNet pretrained weights
+        logger.info(f"Initializing ResNet3D-{resnet_depth} encoder with MedicalNet pretrained weights...")
+        self.image_encoder = Resnet3D(
+            depth=resnet_depth,
             freeze=freeze_encoder,
             include_head=False
         )
@@ -283,8 +285,7 @@ class DenseNet3DMCIBinary(pl.LightningModule):
             optimizer,
             mode='min',
             factor=0.5,
-            patience=5,
-            verbose=True
+            patience=5
         )
 
         return {
@@ -376,6 +377,7 @@ def main():
         args.hidden_dim = args.hidden_dim if args.hidden_dim is not None else config['model']['hidden_dim']
         args.dropout = args.dropout if args.dropout is not None else config['model']['dropout']
         args.freeze_encoder = args.freeze_encoder or config['model']['freeze_encoder']
+        args.resnet_depth = getattr(args, 'resnet_depth', None) or config['model'].get('resnet_depth', 50)
 
         # Training
         args.batch_size = args.batch_size or config['training']['batch_size']
@@ -412,10 +414,10 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print("\n" + "="*80)
-    print("🧠 DENSENET3D TRAINING FOR MCI-TO-AD CONVERSION PREDICTION")
+    print("🧠 RESNET3D TRAINING FOR MCI-TO-AD CONVERSION PREDICTION")
     print("="*80)
     print(f"Task: Binary Classification (pMCI vs sMCI)")
-    print(f"Model: DenseNet3D with CLIP initialization")
+    print(f"Model: ResNet3D with MedicalNet pretrained weights")
     print(f"Target Shape: {tuple(args.target_shape)}")
     print(f"Config: {args.config if args.config else 'Command line arguments'}")
     print("="*80 + "\n")
@@ -434,12 +436,14 @@ def main():
 
     # Create model
     logger.info("Creating model...")
-    model = DenseNet3DMCIBinary(
+    resnet_depth = getattr(args, 'resnet_depth', 50)  # Default to ResNet-50
+    model = ResNet3DMCIBinary(
         learning_rate=args.lr,
         weight_decay=args.weight_decay,
         freeze_encoder=args.freeze_encoder,
         hidden_dim=args.hidden_dim,
-        dropout_rate=args.dropout
+        dropout_rate=args.dropout,
+        resnet_depth=resnet_depth
     )
 
     # Setup callbacks
@@ -449,7 +453,7 @@ def main():
 
     checkpoint_callback = ModelCheckpoint(
         dirpath=checkpoint_dir,
-        filename='densenet3d_mci-{epoch:02d}-{val/balanced_acc:.4f}',
+        filename='resnet3d_mci-{epoch:02d}-{val/balanced_acc:.4f}',
         monitor='val/balanced_acc',
         mode='max',
         save_top_k=3,

@@ -41,7 +41,8 @@ model:
   target_shape: [96, 96, 96]  # MRI volume size (D, H, W)
   hidden_dim: 0               # Hidden layer dimension (0 = no hidden layer)
   dropout: 0.3                # Dropout rate for regularization
-  freeze_encoder: false       # Freeze DenseNet3D encoder weights
+  freeze_encoder: false       # Freeze ResNet3D encoder weights
+  resnet_depth: 50            # ResNet depth: 10, 18, 34, or 50 (MedicalNet pretrained weights)
 
 # =============================================================================
 # TRAINING HYPERPARAMETERS

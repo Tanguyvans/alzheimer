@@ -21,7 +21,22 @@ env
 *.csv
 models/
 *.pth
+*.pkl
 .pkl
 
 .csv
 __pycache__
+
+# Experiment checkpoints and logs
+experiments/*/data/checkpoints/
+experiments/*/data/logs/
+experiments/*/data/splits/*.csv
+
+# Model weights and checkpoints
+*.ckpt
+checkpoints/
+logs/
+tensorboard_logs/
+
+# MedicalNet downloaded weights
+*.pth
