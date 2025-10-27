@@ -40,6 +40,9 @@ from pytorch_lightning.loggers import TensorBoardLogger
 import numpy as np
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix, roc_auc_score
 
+# Add current directory to path for local imports
+sys.path.insert(0, str(Path(__file__).parent))
+
 # Import local models (self-contained, no external dependencies)
 from models import Resnet3D, CustomClassifier, UnimodalModel
 from dataset import get_mci_dataloaders
