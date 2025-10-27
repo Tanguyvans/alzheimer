@@ -480,7 +480,7 @@ def main():
         logger=tb_logger,
         log_every_n_steps=10,
         enable_progress_bar=True,
-        deterministic=True
+        deterministic='warn'  # 'warn' instead of True to allow non-deterministic ops on GPU
     )
 
     # Train
