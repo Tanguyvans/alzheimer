@@ -19,7 +19,6 @@ env
 *.pyc
 
 *.csv
-models/
 *.pth
 *.pkl
 .pkl
