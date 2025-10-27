@@ -225,9 +225,9 @@ def get_mci_dataloaders(
     )
 
     # Create weighted sampler for training (optional, helps with class imbalance)
-    if use_weighted_sampling:
-        train_df = pd.read_csv(train_csv)
-        labels = train_df['label'].values
+    if use_weighted_sampling and len(train_dataset) > 0:
+        # Use filtered dataset labels (after missing file check)
+        labels = train_dataset.df['label'].values
         class_counts = np.bincount(labels)
         class_weights = 1.0 / class_counts
         sample_weights = class_weights[labels]

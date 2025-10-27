@@ -40,15 +40,8 @@ from pytorch_lightning.loggers import TensorBoardLogger
 import numpy as np
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix, roc_auc_score
 
-# Add ADNI_unimodal_models to path
-repo_path = Path(__file__).parent.parent.parent / 'ADNI_unimodal_models'
-sys.path.insert(0, str(repo_path))
-
-from encoders.image_encoders import Resnet3D
-from models.classifier import CustomClassifier
-from models.model import UnimodalModel
-
-# Import our custom dataset
+# Import local models (self-contained, no external dependencies)
+from models import Resnet3D, CustomClassifier, UnimodalModel
 from dataset import get_mci_dataloaders
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
