@@ -1,0 +1,82 @@
+# Configuration for pMCI vs sMCI Baseline Experiment
+#
+# This experiment predicts MCI-to-AD conversion using single baseline MRI scans.
+# All data and outputs are self-contained in experiments/pmci_smci_baseline/
+#
+# Usage:
+#   Step 1: python 01_prepare_dataset.py --config config.yaml
+#   Step 2: python 02_train_model.py --config config.yaml
+
+# =============================================================================
+# DATA PATHS - Edit these for your setup
+# =============================================================================
+data:
+  # Input data (skull-stripped MRI scans)
+  dxsum_csv: "/Volumes/KINGSTON/dxsum.csv"
+  skull_dir: "/Volumes/KINGSTON/ADNI-skull"
+
+  # Output paths (relative to this experiment folder)
+  splits_dir: "data/splits"          # Where to save train/val/test CSVs
+  checkpoints_dir: "data/checkpoints" # Where to save model checkpoints
+  logs_dir: "data/logs"               # TensorBoard logs
+
+  # Automatically generated paths (don't edit)
+  train_csv: "data/splits/train.csv"
+  val_csv: "data/splits/val.csv"
+  test_csv: "data/splits/test.csv"
+
+# =============================================================================
+# DATASET PREPARATION (Step 1)
+# =============================================================================
+dataset_preparation:
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+  random_seed: 42
+
+# =============================================================================
+# MODEL ARCHITECTURE
+# =============================================================================
+model:
+  target_shape: [96, 96, 96]  # MRI volume size (D, H, W)
+  hidden_dim: 0               # Hidden layer dimension (0 = no hidden layer)
+  dropout: 0.3                # Dropout rate for regularization
+  freeze_encoder: false       # Freeze DenseNet3D encoder weights
+
+# =============================================================================
+# TRAINING HYPERPARAMETERS
+# =============================================================================
+training:
+  batch_size: 8               # Batch size
+  epochs: 50                  # Maximum number of epochs
+  learning_rate: 0.0001       # Learning rate (1e-4)
+  weight_decay: 0.00001       # Weight decay (1e-5)
+  use_weighted_sampling: true # Balance classes with weighted sampling
+  seed: 42                    # Random seed for reproducibility
+
+# =============================================================================
+# HARDWARE & PERFORMANCE
+# =============================================================================
+hardware:
+  gpus: 0                     # Number of GPUs (0 = CPU, 1 = single GPU)
+  num_workers: 4              # Number of dataloader workers
+  pin_memory: true            # Pin memory for faster GPU transfer
+
+# =============================================================================
+# CALLBACKS & MONITORING
+# =============================================================================
+callbacks:
+  early_stopping:
+    patience: 15              # Stop if no improvement after N epochs
+    monitor: "val/loss"       # Metric to monitor
+    mode: "min"               # Minimize or maximize
+
+  checkpoint:
+    save_top_k: 3             # Save top K checkpoints
+    monitor: "val/balanced_acc"  # Metric to monitor for best checkpoint
+    mode: "max"               # Minimize or maximize
+
+  lr_scheduler:
+    patience: 5               # Reduce LR after N epochs without improvement
+    factor: 0.5               # Multiply LR by this factor
+    monitor: "val/loss"       # Metric to monitor

@@ -1,0 +1,15 @@
+{
+  "creation_date": "2025-10-27 09:34:57",
+  "dataset_type": "pmci_smci_single_mri",
+  "description": "Binary classification (pMCI vs sMCI) using single baseline MRI per patient",
+  "dxsum_path": "/Volumes/KINGSTON/dxsum.csv",
+  "skull_dir": "/Volumes/KINGSTON/ADNI-skull",
+  "total_samples": 455,
+  "train_samples": 318,
+  "val_samples": 68,
+  "test_samples": 69,
+  "pmci_count": 215,
+  "smci_count": 240,
+  "conversion_rate": 0.4725274725274725,
+  "class_balance_ratio": 1.1162790697674418
+}
