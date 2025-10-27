@@ -343,9 +343,9 @@ def main():
                        help='Freeze encoder weights (transfer learning)')
 
     # Training options
-    parser.add_argument('--num-workers', type=int,
+    parser.add_argument('--num-workers', type=int, default=None,
                        help='Number of dataloader workers')
-    parser.add_argument('--gpus', type=int, default=0,
+    parser.add_argument('--gpus', type=int, default=None,
                        help='Number of GPUs to use (0 for CPU)')
     parser.add_argument('--seed', type=int, default=42,
                        help='Random seed')
