@@ -8,7 +8,26 @@
 
 ## Quick Start
 
-### 1. Edit Configuration
+### 1. Setup Environment (Optional but Recommended)
+
+Create a `.env` file in the **project root** for sensitive credentials:
+
+```bash
+# From project root directory (alzheimer/)
+cp .env.example .env
+# Edit .env and add your wandb credentials
+```
+
+Example `.env`:
+```bash
+WANDB_API_KEY=your_api_key_from_wandb_authorize
+WANDB_ENTITY=your_username
+WANDB_PROJECT=alzheimer-research
+```
+
+**Note**: You can also create a local `.env` in this experiment directory to override root settings.
+
+### 2. Edit Configuration
 
 Open [config.yaml](config.yaml) and set your paths:
 
@@ -16,9 +35,12 @@ Open [config.yaml](config.yaml) and set your paths:
 data:
   dxsum_csv: "/Volumes/KINGSTON/dxsum.csv"        # Path to diagnosis CSV
   skull_dir: "/Volumes/KINGSTON/ADNI-skull"      # Path to MRI scans
+
+wandb:
+  enabled: true  # Enable wandb logging
 ```
 
-### 2. Run Pipeline
+### 3. Run Pipeline
 
 ```bash
 cd experiments/pmci_smci_baseline

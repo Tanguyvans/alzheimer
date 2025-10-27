@@ -26,17 +26,19 @@ Usage:
 """
 
 import sys
+import os
 import argparse
 import logging
 from pathlib import Path
 from typing import Dict, Optional
 import yaml
+from dotenv import load_dotenv
 
 import torch
 import torch.nn as nn
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping, LearningRateMonitor
-from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.loggers import TensorBoardLogger, WandbLogger
 import numpy as np
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix, roc_auc_score
 
@@ -301,6 +303,18 @@ def load_config(config_path: str) -> Dict:
 
 
 def main():
+    # Load environment variables from .env file (if it exists)
+    # Check both root directory and experiment directory
+    root_env = Path(__file__).parent.parent.parent / '.env'
+    local_env = Path(__file__).parent / '.env'
+
+    if root_env.exists():
+        load_dotenv(root_env)
+        logger.info(f"Loaded environment variables from {root_env}")
+    if local_env.exists():
+        load_dotenv(local_env, override=True)  # Local .env overrides root .env
+        logger.info(f"Loaded environment variables from {local_env} (override)")
+
     parser = argparse.ArgumentParser(
         description='Train DenseNet3D for pMCI vs sMCI binary classification',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -465,11 +479,36 @@ def main():
 
     lr_monitor = LearningRateMonitor(logging_interval='epoch')
 
-    # Setup logger
+    # Setup loggers
+    loggers = []
+
+    # TensorBoard logger (always enabled)
     tb_logger = TensorBoardLogger(
         save_dir=output_dir,
         name='tensorboard_logs'
     )
+    loggers.append(tb_logger)
+
+    # Weights & Biases logger (optional, based on config or env)
+    # Priority: environment variables > config file
+    wandb_enabled = config.get('wandb', {}).get('enabled', False)
+    if wandb_enabled or os.getenv('WANDB_API_KEY'):
+        wandb_project = os.getenv('WANDB_PROJECT') or config.get('wandb', {}).get('project', 'alzheimer-pmci-smci')
+        wandb_entity = os.getenv('WANDB_ENTITY') or config.get('wandb', {}).get('entity', None)
+        wandb_run_name = config.get('wandb', {}).get('run_name', None)
+
+        wandb_logger = WandbLogger(
+            project=wandb_project,
+            name=wandb_run_name,
+            entity=wandb_entity,
+            save_dir=output_dir,
+            log_model=config.get('wandb', {}).get('log_model', False),
+            tags=config.get('wandb', {}).get('tags', ['resnet3d', 'mci-classification'])
+        )
+        loggers.append(wandb_logger)
+        logger.info(f"Weights & Biases logging enabled: {wandb_project}")
+        if wandb_entity:
+            logger.info(f"  Entity: {wandb_entity}")
 
     # Create trainer
     trainer = pl.Trainer(
@@ -477,7 +516,7 @@ def main():
         accelerator='gpu' if args.gpus > 0 else 'cpu',
         devices=args.gpus if args.gpus > 0 else 1,
         callbacks=[checkpoint_callback, early_stop_callback, lr_monitor],
-        logger=tb_logger,
+        logger=loggers,
         log_every_n_steps=10,
         enable_progress_bar=True,
         deterministic='warn'  # 'warn' instead of True to allow non-deterministic ops on GPU

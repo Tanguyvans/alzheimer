@@ -5,7 +5,14 @@ Task04_Hippocampus
 mni_tmeplate
 output
 env
+
+# Environment variables and secrets
 .env
+.env.local
+.env.*.local
+*.env
+!.env.example
+
 *.gz
 *.nii
 *.nii.gz

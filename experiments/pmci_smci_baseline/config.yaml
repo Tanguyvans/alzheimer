@@ -81,3 +81,17 @@ callbacks:
     patience: 5               # Reduce LR after N epochs without improvement
     factor: 0.5               # Multiply LR by this factor
     monitor: "val/loss"       # Metric to monitor
+
+# =============================================================================
+# WEIGHTS & BIASES (WANDB) LOGGING
+# =============================================================================
+wandb:
+  enabled: true              # Enable/disable wandb logging (true/false)
+  project: "alzheimer-pmci-smci"  # Wandb project name
+  entity: null                # Wandb entity/team name (null = use default)
+  run_name: null              # Custom run name (null = auto-generate)
+  log_model: false            # Upload model checkpoints to wandb (true/false)
+  tags:                       # Tags for this experiment
+    - resnet3d
+    - mci-classification
+    - medicalnet-pretrained
