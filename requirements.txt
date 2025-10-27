@@ -19,5 +19,5 @@ pyyaml>=6.0
 tqdm>=4.65.0
 python-dateutil>=2.8.0
 transformers>=4.30.0
-onnxruntime>=1.15.0,<1.16.0
-opencv-python>=4.8.0,<4.9.0
+onnxruntime>=1.17.0
+opencv-python>=4.8.0
