@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from pathlib import Path
+
+# Add parent directory to path to import preprocessing module
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import directly from the module to avoid __init__.py issues
 import preprocessing.dicom_to_nifti as dcm2nii

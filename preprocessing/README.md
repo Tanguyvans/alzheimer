@@ -1,8 +1,61 @@
 # Medical Image Preprocessing Pipeline
 
-A clean 4-step preprocessing pipeline for medical imaging: **DICOM → NIfTI → N4 Bias Correction → MNI Registration → Skull Stripping**.
+Two preprocessing pipelines for MRI brain scans:
+- **Pipeline 1 (SynthStrip+ANTs)**: Traditional preprocessing
+- **Pipeline 2 (NPPY)**: Learned preprocessing for 3D HCCT model
 
-## Pipeline Steps
+## Directory Structure
+
+```
+preprocessing/
+├── pipeline.py                    # Unified Pipeline 1 (uses modules below)
+├── dicom_to_nifti.py             # Module: DICOM conversion
+├── image_enhancement.py           # Module: N4 + MNI registration
+├── skull_stripping.py             # Module: SynthStrip
+├── pipeline_1_synthstrip/         # Standalone Pipeline 1 scripts
+│   ├── dicom_to_nifti.py
+│   ├── register_to_mni.py
+│   └── skull_strip.py
+├── pipeline_2_nppy/               # NPPY preprocessing (for 3D HCCT)
+│   └── run_nppy_preprocessing.py
+└── compare_preprocessing_interactive.py  # Compare both pipelines
+```
+
+---
+
+## Pipeline 2: NPPY (Recommended for 3D HCCT)
+
+**Use this to fix overfitting in 3D HCCT experiments!**
+
+The original 3D HCCT paper uses NPPY preprocessing. Using Pipeline 1 causes severe overfitting (Train 100%, Val 65%).
+
+### Quick Start - NPPY
+
+```bash
+cd pipeline_2_nppy
+python3 run_nppy_preprocessing.py \
+  --input /Volumes/KINGSTON/ADNI_nifti \
+  --output /Volumes/KINGSTON/ADNI_nppy \
+  --nppy-script ~/nppy_docker.py \
+  --resume
+```
+
+**Time**: ~5-10 seconds per scan, ~1-2 hours for 636 scans
+
+**What it does**:
+- Skull stripping (learned)
+- Intensity normalization (optimized for ADNI)
+- Spatial normalization (standard space)
+
+**See**: `experiments/NPPY_SOLUTION_SUMMARY.md` for full details
+
+---
+
+## Pipeline 1: SynthStrip + ANTs (Traditional)
+
+Traditional preprocessing pipeline: **DICOM → NIfTI → N4 Bias Correction → MNI Registration → Skull Stripping**
+
+### Pipeline 1 Steps
 
 1. **DICOM to NIfTI Conversion** - Convert DICOM medical scans to NIfTI format
 2. **N4 Bias Correction** - Remove intensity non-uniformity artifacts
@@ -137,6 +190,36 @@ skull_results = pipeline.run_skull_stripping()
 ## Performance Notes
 
 - Processing is sequential (one file at a time)
-- Each step has progress bars and ETA estimates  
+- Each step has progress bars and ETA estimates
 - Intermediate files are preserved for resuming interrupted runs
 - Already processed files are automatically skipped
+
+---
+
+## Comparing Pipelines
+
+Visualize differences between SynthStrip+ANTs vs NPPY:
+
+```bash
+python3 compare_preprocessing_interactive.py --patient-id 035_S_6948
+```
+
+This opens an interactive viewer with sliders to explore preprocessing differences.
+
+**Key differences**:
+- **SynthStrip+ANTs**: Intensity range [0, 339], mean=165
+- **NPPY**: Intensity range [-1, 121], mean=60
+- **Impact**: Different intensity distributions cause 3D HCCT to overfit
+
+---
+
+## Which Pipeline Should I Use?
+
+| Task | Use |
+|------|-----|
+| **3D HCCT model training** | **Pipeline 2 (NPPY)** |
+| Reproducing 3D HCCT paper | **Pipeline 2 (NPPY)** |
+| General preprocessing | Pipeline 1 (SynthStrip) |
+| Custom model training | Pipeline 1 (SynthStrip) |
+
+**Important**: If using 3D HCCT with Pipeline 1, expect severe overfitting. Use Pipeline 2 for Train/Val gap < 15%.

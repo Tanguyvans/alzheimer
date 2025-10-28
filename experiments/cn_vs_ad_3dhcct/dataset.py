@@ -26,7 +26,7 @@ class ADNIDataset(Dataset):
 
     Expects CSV files with columns:
     - scan_path: path to .nii.gz file
-    - label: 0 for CN, 1 for AD
+    - label: 0 for CN, 1 for MCI, 2 for AD
     """
 
     def __init__(
@@ -50,7 +50,8 @@ class ADNIDataset(Dataset):
 
         logger.info(f"Loaded {len(self.df)} samples from {csv_path}")
         logger.info(f"  CN: {len(self.df[self.df['label'] == 0])}")
-        logger.info(f"  AD: {len(self.df[self.df['label'] == 1])}")
+        logger.info(f"  MCI: {len(self.df[self.df['label'] == 1])}")
+        logger.info(f"  AD: {len(self.df[self.df['label'] == 2])}")
 
     def __len__(self) -> int:
         return len(self.df)
@@ -59,7 +60,7 @@ class ADNIDataset(Dataset):
         """
         Returns:
             image: torch.Tensor of shape (1, D, H, W)
-            label: int (0 for CN, 1 for AD)
+            label: int (0 for CN, 1 for MCI, 2 for AD)
         """
         # Get scan path and label
         scan_path = self.df.iloc[idx]['scan_path']
@@ -69,8 +70,15 @@ class ADNIDataset(Dataset):
         nifti_img = nib.load(scan_path)
         image = nifti_img.get_fdata().astype(np.float32)
 
-        # Normalize intensity to [0, 1]
-        if image.max() > 0:
+        # Proper intensity normalization for medical images
+        # Percentile-based normalization (robust to outliers)
+        brain_voxels = image[image > 0]
+        if len(brain_voxels) > 0:
+            p1, p99 = np.percentile(brain_voxels, (1, 99))
+            image = np.clip(image, p1, p99)
+
+        # Normalize to [0, 1]
+        if image.max() > image.min():
             image = (image - image.min()) / (image.max() - image.min())
 
         # Resize to target shape
@@ -123,7 +131,7 @@ class ADNIDatasetWithPadding(ADNIDataset):
         """
         Returns:
             image: torch.Tensor of shape (1, D, H, W)
-            label: int (0 for CN, 1 for AD)
+            label: int (0 for CN, 1 for MCI, 2 for AD)
         """
         # Get scan path and label
         scan_path = self.df.iloc[idx]['scan_path']

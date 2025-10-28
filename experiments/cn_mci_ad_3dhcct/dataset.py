@@ -70,8 +70,15 @@ class ADNIDataset(Dataset):
         nifti_img = nib.load(scan_path)
         image = nifti_img.get_fdata().astype(np.float32)
 
-        # Normalize intensity to [0, 1]
-        if image.max() > 0:
+        # Proper intensity normalization for medical images
+        # Percentile-based normalization (robust to outliers)
+        brain_voxels = image[image > 0]
+        if len(brain_voxels) > 0:
+            p1, p99 = np.percentile(brain_voxels, (1, 99))
+            image = np.clip(image, p1, p99)
+
+        # Normalize to [0, 1]
+        if image.max() > image.min():
             image = (image - image.min()) / (image.max() - image.min())
 
         # Resize to target shape
