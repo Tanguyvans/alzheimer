@@ -30,18 +30,43 @@ The 3D HCCT combines:
 
 **Note**: This implementation adapts their code for binary classification (CN vs AD) using our preprocessed ADNI data.
 
+## Quick Start
+
+```bash
+# 1. Navigate to experiment directory
+cd experiments/cn_vs_ad_3dhcct
+
+# 2. Activate virtual environment
+source ../../env/bin/activate
+
+# 3. Configure your data paths in config.yaml
+# Edit: dxsum_csv and skull_dir
+
+# 4. Prepare dataset splits
+python3 01_prepare_dataset.py --config config.yaml
+
+# 5. Train the model
+python3 train.py --config config.yaml
+```
+
 ## Project Structure
 
 ```
 cn_vs_ad_3dhcct/
 ├── README.md              # This file
 ├── config.yaml            # Configuration file
+├── 01_prepare_dataset.py  # Data preparation script
 ├── dataset.py             # Dataset loader (adapted for our data)
 ├── model_hcct.py          # 3D HCCT model architecture
 ├── train.py               # Training script
-├── checkpoints/           # Saved model checkpoints
-├── logs/                  # Training logs
-└── results/               # Evaluation results
+├── data/
+│   └── splits/            # Train/val/test CSV files (created by step 1)
+│       ├── train.csv
+│       ├── val.csv
+│       └── test.csv
+├── data/checkpoints/      # Saved model checkpoints
+├── data/logs/             # Training logs
+└── data/results/          # Evaluation results
 ```
 
 ## Setup
@@ -57,23 +82,33 @@ All dependencies are already installed in the main environment:
 - einops
 - pyyaml
 - tqdm
+- scikit-learn
 - wandb (optional, for logging)
 
-### 2. Data Preparation
+### 2. Configure Data Paths
 
-This experiment **reuses the data splits** from the baseline experiment:
-```
-../cn_vs_ad_baseline/data/splits/
-├── train.csv
-├── val.csv
-└── test.csv
+Edit `config.yaml` and set your data paths:
+
+```yaml
+data:
+  dxsum_csv: "/path/to/your/dxsum.csv"
+  skull_dir: "/path/to/your/ADNI-skull"
 ```
 
-If you haven't created these splits yet:
+### 3. Prepare Dataset Splits
+
+Create train/val/test splits (70/15/15):
+
 ```bash
-cd ../cn_vs_ad_baseline
-python 01_prepare_dataset.py --config config.yaml
+python3 01_prepare_dataset.py --config config.yaml
 ```
+
+This will create:
+
+- `data/splits/train.csv` - Training set (stable CN/AD patients)
+- `data/splits/val.csv` - Validation set
+- `data/splits/test.csv` - Test set
+- `data/splits/dataset_metadata.json` - Dataset statistics
 
 ## Usage
 
@@ -82,7 +117,7 @@ python 01_prepare_dataset.py --config config.yaml
 Train the 3D HCCT model from scratch:
 
 ```bash
-python train.py --config config.yaml
+python3 train.py --config config.yaml
 ```
 
 ### Testing Only
@@ -90,7 +125,7 @@ python train.py --config config.yaml
 Evaluate a trained model on the test set:
 
 ```bash
-python train.py --config config.yaml --test-only
+python3 train.py --config config.yaml --test-only
 ```
 
 ### Configuration

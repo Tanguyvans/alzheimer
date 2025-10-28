@@ -7,22 +7,36 @@
 #         Explainable 3D Hybrid Compact Convolutional Transformers"
 #
 # Usage:
-#   Step 1: Use existing splits from cn_vs_ad_baseline (or create new ones)
+#   Step 1: python 01_prepare_dataset.py --config config.yaml
 #   Step 2: python train.py --config config.yaml
 
 # =============================================================================
-# DATA PATHS
+# DATA PATHS - Edit these for your setup
 # =============================================================================
 data:
-  # Use the same splits as baseline experiment
-  train_csv: "../cn_vs_ad_baseline/data/splits/train.csv"
-  val_csv: "../cn_vs_ad_baseline/data/splits/val.csv"
-  test_csv: "../cn_vs_ad_baseline/data/splits/test.csv"
+  # Input data (skull-stripped MRI scans)
+  dxsum_csv: "/Volumes/KINGSTON/dxsum.csv"
+  skull_dir: "/Volumes/KINGSTON/ADNI-skull"
 
   # Output paths (relative to this experiment folder)
-  checkpoints_dir: "checkpoints"
-  logs_dir: "logs"
-  results_dir: "results"
+  splits_dir: "data/splits"          # Where to save train/val/test CSVs
+  checkpoints_dir: "data/checkpoints" # Where to save model checkpoints
+  logs_dir: "data/logs"               # TensorBoard logs
+  results_dir: "data/results"         # Evaluation results
+
+  # Automatically generated paths (don't edit)
+  train_csv: "data/splits/train.csv"
+  val_csv: "data/splits/val.csv"
+  test_csv: "data/splits/test.csv"
+
+# =============================================================================
+# DATASET PREPARATION (Step 1)
+# =============================================================================
+dataset_preparation:
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+  random_seed: 42
 
 # =============================================================================
 # MODEL ARCHITECTURE - 3D HCCT
