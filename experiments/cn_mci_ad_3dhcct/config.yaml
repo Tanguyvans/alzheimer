@@ -1,0 +1,161 @@
+# Configuration for CN vs MCI vs AD with 3D HCCT Model (3-Class Classification)
+#
+# This experiment uses the 3D Hybrid Compact Convolutional Transformers (3D HCCT)
+# architecture from: https://github.com/arindammajee/Alzheimer-Detection-with-3D-HCCT
+#
+# Paper: "Enhancing MRI-Based Classification of Alzheimer's Disease with
+#         Explainable 3D Hybrid Compact Convolutional Transformers"
+#
+# Usage:
+#   Step 1: python 01_prepare_dataset.py --config config.yaml
+#   Step 2: python train.py --config config.yaml
+
+# =============================================================================
+# DATA PATHS - Edit these for your setup
+# =============================================================================
+data:
+  # Input data (skull-stripped MRI scans)
+  dxsum_csv: "/Volumes/KINGSTON/dxsum.csv"
+  skull_dir: "/Volumes/KINGSTON/ADNI-skull"
+
+  # Output paths (relative to this experiment folder)
+  splits_dir: "data/splits"          # Where to save train/val/test CSVs
+  checkpoints_dir: "data/checkpoints" # Where to save model checkpoints
+  logs_dir: "data/logs"               # TensorBoard logs
+  results_dir: "data/results"         # Evaluation results
+
+  # Automatically generated paths (don't edit)
+  train_csv: "data/splits/train.csv"
+  val_csv: "data/splits/val.csv"
+  test_csv: "data/splits/test.csv"
+
+# =============================================================================
+# DATASET PREPARATION (Step 1)
+# =============================================================================
+dataset_preparation:
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+  random_seed: 42
+
+# =============================================================================
+# MODEL ARCHITECTURE - 3D HCCT
+# =============================================================================
+model:
+  name: "3D_HCCT"
+
+  # Image/volume configuration
+  image_size: 192              # Input volume size (192x192x192)
+  patch_size: 6                # Patch size (6x6x6 after 5 max-pools from 192)
+  num_channels: 1              # Number of input channels (grayscale MRI)
+  num_classes: 3               # 3-class classification (CN vs MCI vs AD)
+
+  # Vision Transformer configuration
+  # Note: hidden_size = 216 comes from 192/(2^5) = 6, so 6x6x6 = 216 spatial positions
+  # The 512 conv channels become the sequence length (patches)
+  hidden_size: 216             # Hidden dimension size (6x6x6 spatial positions)
+  num_hidden_layers: 3         # Number of transformer blocks
+  num_attention_heads: 8       # Number of attention heads (216/8 = 27 per head)
+  intermediate_size: 648       # MLP intermediate size (3 * hidden_size)
+
+  # Regularization
+  hidden_dropout_prob: 0.25    # Dropout probability (same as original paper)
+  attention_probs_dropout_prob: 0.25  # Attention dropout
+
+  # Other settings
+  qkv_bias: true               # Use bias in QKV projections
+  use_faster_attention: true   # Use optimized attention implementation
+  initializer_range: 0.02      # Weight initialization range
+
+# =============================================================================
+# TRAINING HYPERPARAMETERS
+# =============================================================================
+training:
+  batch_size: 3                # Batch size (same as original paper)
+  epochs: 100                  # Maximum number of epochs
+  learning_rate: 0.00008       # Initial learning rate (8e-5, same as original)
+  weight_decay: 0.01           # Weight decay for AdamW
+  optimizer: "AdamW"           # Optimizer: Adam or AdamW
+
+  # Learning rate scheduler
+  scheduler: "ReduceLROnPlateau"  # Options: ReduceLROnPlateau, CosineAnnealing, None
+  lr_patience: 5               # Reduce LR after N epochs without improvement
+  lr_factor: 0.5               # Multiply LR by this factor
+
+  # Class balancing
+  use_weighted_loss: true      # Use weighted cross-entropy for class imbalance
+  use_weighted_sampling: false # Use weighted random sampler (alternative to weighted loss)
+
+  # Reproducibility
+  seed: 42                     # Random seed
+
+# =============================================================================
+# DATA AUGMENTATION
+# =============================================================================
+augmentation:
+  enabled: false               # Enable data augmentation
+  random_flip_prob: 0.5        # Probability of random flip
+  random_rotation_degrees: 15  # Max rotation degrees
+  random_affine: true          # Apply random affine transforms
+
+# =============================================================================
+# HARDWARE & PERFORMANCE
+# =============================================================================
+hardware:
+  device: "cuda"               # cuda or cpu
+  num_workers: 4               # Number of dataloader workers
+  pin_memory: true             # Pin memory for faster GPU transfer
+  mixed_precision: false       # Use automatic mixed precision (FP16)
+
+# =============================================================================
+# CALLBACKS & MONITORING
+# =============================================================================
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 10               # Stop if no improvement after N epochs
+    monitor: "val_loss"        # Metric to monitor
+    mode: "min"                # Minimize or maximize
+
+  checkpoint:
+    save_top_k: 3              # Save top K checkpoints
+    monitor: "val_accuracy"    # Metric to monitor for best checkpoint
+    mode: "max"                # Minimize or maximize
+    save_last: true            # Always save last checkpoint
+
+  logging:
+    log_every_n_steps: 10      # Log metrics every N steps
+    save_training_plot: true   # Save training curves
+
+# =============================================================================
+# WEIGHTS & BIASES (WANDB) LOGGING
+# =============================================================================
+wandb:
+  enabled: true                # Enable/disable wandb logging
+  project: "alzheimer-research"
+  entity: null                 # Wandb entity/team name (null = use default)
+  run_name: "cn-mci-ad-3dhcct" # Custom run name
+  log_model: false             # Upload model checkpoints to wandb
+  tags:
+    - 3d-hcct
+    - vision-transformer
+    - hybrid-cnn-transformer
+    - 3-class-classification
+    - cn-mci-ad
+  notes: "3D HCCT for 3-class classification: CN vs MCI vs AD (stable patients only)"
+
+# =============================================================================
+# EVALUATION
+# =============================================================================
+evaluation:
+  metrics:
+    - accuracy
+    - balanced_accuracy
+    - precision
+    - recall
+    - f1
+    - auc
+    - confusion_matrix
+
+  save_predictions: true       # Save predictions on test set
+  save_attention_maps: false   # Save attention visualizations (memory intensive)
