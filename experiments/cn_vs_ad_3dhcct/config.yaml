@@ -46,15 +46,17 @@ model:
 
   # Image/volume configuration
   image_size: 192              # Input volume size (192x192x192)
-  patch_size: 16               # Patch size for ViT (not used in conv-based embedding)
+  patch_size: 6                # Patch size (6x6x6 after 5 max-pools from 192)
   num_channels: 1              # Number of input channels (grayscale MRI)
   num_classes: 2               # Binary classification (CN vs AD)
 
   # Vision Transformer configuration
-  hidden_size: 512             # Hidden dimension size
+  # Note: hidden_size = 216 comes from 192/(2^5) = 6, so 6x6x6 = 216 spatial positions
+  # The 512 conv channels become the sequence length (patches)
+  hidden_size: 216             # Hidden dimension size (6x6x6 spatial positions)
   num_hidden_layers: 3         # Number of transformer blocks
-  num_attention_heads: 8       # Number of attention heads
-  intermediate_size: 2048      # MLP intermediate size (typically 4x hidden_size)
+  num_attention_heads: 8       # Number of attention heads (216/8 = 27 per head)
+  intermediate_size: 648       # MLP intermediate size (3 * hidden_size)
 
   # Regularization
   hidden_dropout_prob: 0.1     # Dropout probability

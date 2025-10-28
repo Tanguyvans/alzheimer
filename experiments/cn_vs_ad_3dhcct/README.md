@@ -180,13 +180,21 @@ Conv3D(256, 512) → BatchNorm → ReLU → MaxPool
 After 5 max-pooling operations, the spatial dimensions are reduced significantly.
 
 ### Vision Transformer Encoder
-- **Embedding**: Flattened conv features (512 channels)
-- **Position embeddings**: Learnable
-- **CLS token**: Learnable classification token
-- **Transformer blocks**: 3 layers (configurable)
-  - Multi-head self-attention (8 heads)
+
+**Important Architecture Note**: This model uses an unconventional design:
+- After 5 max-pooling operations: 192 → 96 → 48 → 24 → 12 → 6
+- Spatial dimensions: 6×6×6 = **216 positions**
+- Conv5 output: **512 channels**
+- The rearrange treats **512 channels as sequence tokens** and **216 as feature dimension**
+
+Components:
+- **Embedding**: 512 sequence tokens with 216-dim features each
+- **Position embeddings**: Learnable (513 positions including CLS)
+- **CLS token**: Learnable classification token (216-dim)
+- **Transformer blocks**: 3 layers
+  - Multi-head self-attention (8 heads, 27-dim per head)
   - Layer normalization
-  - Feed-forward MLP (hidden_size → 2048 → hidden_size)
+  - Feed-forward MLP (216 → 648 → 216)
   - Residual connections
 
 ### Classification Head
