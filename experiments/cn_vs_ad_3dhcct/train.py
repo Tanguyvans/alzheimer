@@ -166,10 +166,9 @@ class Trainer:
                 self.optimizer,
                 mode='min',
                 patience=self.config['training']['lr_patience'],
-                factor=self.config['training']['lr_factor'],
-                verbose=True
+                factor=self.config['training']['lr_factor']
             )
-            logger.info(f"LR Scheduler: ReduceLROnPlateau")
+            logger.info(f"LR Scheduler: ReduceLROnPlateau (patience={self.config['training']['lr_patience']}, factor={self.config['training']['lr_factor']})")
         elif scheduler_type == 'CosineAnnealing':
             self.scheduler = optim.lr_scheduler.CosineAnnealingLR(
                 self.optimizer,
