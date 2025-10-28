@@ -1,0 +1,14 @@
+{
+  "creation_date": "2025-10-28 09:41:13",
+  "dataset_type": "cn_vs_ad_stable",
+  "description": "Binary classification (CN vs AD) using stable patients only",
+  "dxsum_path": "/Volumes/KINGSTON/dxsum.csv",
+  "skull_dir": "/Volumes/KINGSTON/ADNI-skull",
+  "total_samples": 1085,
+  "train_samples": 759,
+  "val_samples": 163,
+  "test_samples": 163,
+  "cn_count": 738,
+  "ad_count": 347,
+  "class_balance_ratio": 0.470189701897019
+}

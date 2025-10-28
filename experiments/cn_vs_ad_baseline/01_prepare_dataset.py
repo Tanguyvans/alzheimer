@@ -51,8 +51,8 @@ class CNADDatasetPreparator:
         self.dx_df = pd.read_csv(self.dxsum_csv)
         logger.info(f"Loaded {len(self.dx_df):,} diagnosis records for {self.dx_df['RID'].nunique():,} patients")
 
-        # Convert diagnosis codes: 1=CN, 2=MCI, 3=AD
-        self.dx_df['DIAGNOSIS'] = self.dx_df['DX'].astype(int)
+        # Diagnosis codes already in DIAGNOSIS column: 1=CN, 2=MCI, 3=AD
+        # No conversion needed
 
     def identify_stable_patients(self):
         """Identify patients with stable CN or AD diagnosis"""
