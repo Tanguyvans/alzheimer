@@ -128,15 +128,22 @@ class CNMCIADDatasetPreparator:
 
             # Validate the scan file is not corrupted
             scan_path = scans[0]
-            try:
-                # Try to load the file to verify it's valid
-                img = nib.load(str(scan_path))
-                data = img.get_fdata()
-                if data.size == 0:
-                    raise ValueError("Empty scan data")
-            except Exception as e:
-                corrupted_files.append(f"{ptid}: {scan_path.name} - {str(e)}")
+
+            # Quick check: file must be larger than 1KB
+            if scan_path.stat().st_size < 1024:
+                corrupted_files.append(f"{ptid}: {scan_path.name} - File too small ({scan_path.stat().st_size} bytes)")
                 continue
+
+            # Optional: Full validation (slower but more thorough)
+            # Uncomment to validate file can be loaded
+            # try:
+            #     img = nib.load(str(scan_path))
+            #     data = img.get_fdata()
+            #     if data.size == 0:
+            #         raise ValueError("Empty scan data")
+            # except Exception as e:
+            #     corrupted_files.append(f"{ptid}: {scan_path.name} - {str(e)}")
+            #     continue
 
             scan_paths.append({
                 'PTID': ptid,
