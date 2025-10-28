@@ -59,8 +59,8 @@ model:
   intermediate_size: 648       # MLP intermediate size (3 * hidden_size)
 
   # Regularization
-  hidden_dropout_prob: 0.25    # Dropout probability (same as original paper)
-  attention_probs_dropout_prob: 0.25  # Attention dropout
+  hidden_dropout_prob: 0.4     # Dropout probability (increased to combat overfitting)
+  attention_probs_dropout_prob: 0.4  # Attention dropout (increased)
 
   # Other settings
   qkv_bias: true               # Use bias in QKV projections
@@ -73,8 +73,8 @@ model:
 training:
   batch_size: 3                # Batch size (same as original paper)
   epochs: 100                  # Maximum number of epochs
-  learning_rate: 0.00008       # Initial learning rate (8e-5, same as original)
-  weight_decay: 0.01           # Weight decay for AdamW
+  learning_rate: 0.00003       # Initial learning rate (3e-5, reduced to prevent overfitting)
+  weight_decay: 0.05           # Weight decay for AdamW (increased for regularization)
   optimizer: "AdamW"           # Optimizer: Adam or AdamW
 
   # Learning rate scheduler
@@ -93,10 +93,10 @@ training:
 # DATA AUGMENTATION
 # =============================================================================
 augmentation:
-  enabled: false               # Enable data augmentation
+  enabled: true                # Enable data augmentation
   random_flip_prob: 0.5        # Probability of random flip
-  random_rotation_degrees: 15  # Max rotation degrees
-  random_affine: true          # Apply random affine transforms
+  random_rotation_degrees: 10  # Max rotation degrees (reduced from 15)
+  random_affine: false         # Apply random affine transforms (disabled for now)
 
 # =============================================================================
 # HARDWARE & PERFORMANCE
