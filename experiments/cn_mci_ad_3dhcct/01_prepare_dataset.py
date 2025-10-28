@@ -98,6 +98,8 @@ class CNMCIADDatasetPreparator:
 
     def find_baseline_mri_scans(self):
         """Map patients to their baseline MRI scans"""
+        import nibabel as nib
+
         logger.info("\n" + "="*80)
         logger.info("MAPPING TO BASELINE MRI SCANS")
         logger.info("="*80)
@@ -107,6 +109,7 @@ class CNMCIADDatasetPreparator:
 
         scan_paths = []
         missing_patients = []
+        corrupted_files = []
 
         for _, row in baseline_visits.iterrows():
             ptid = row['PTID']
@@ -123,8 +126,17 @@ class CNMCIADDatasetPreparator:
                 missing_patients.append(ptid)
                 continue
 
-            # Use the first scan (baseline)
+            # Validate the scan file is not corrupted
             scan_path = scans[0]
+            try:
+                # Try to load the file to verify it's valid
+                img = nib.load(str(scan_path))
+                data = img.get_fdata()
+                if data.size == 0:
+                    raise ValueError("Empty scan data")
+            except Exception as e:
+                corrupted_files.append(f"{ptid}: {scan_path.name} - {str(e)}")
+                continue
 
             scan_paths.append({
                 'PTID': ptid,
@@ -141,6 +153,7 @@ class CNMCIADDatasetPreparator:
         logger.info(f"\nMRI mapping results:")
         logger.info(f"  Successfully mapped: {len(self.dataset_df):,} patients")
         logger.info(f"  Missing/no scans: {len(missing_patients):,} patients")
+        logger.info(f"  Corrupted files: {len(corrupted_files):,} files")
 
         if len(self.dataset_df) > 0:
             logger.info(f"\nClass distribution:")
@@ -150,6 +163,13 @@ class CNMCIADDatasetPreparator:
 
         if len(missing_patients) > 0 and len(missing_patients) <= 10:
             logger.info(f"\nMissing patients: {missing_patients}")
+
+        if len(corrupted_files) > 0:
+            logger.warning(f"\nCorrupted/empty files detected:")
+            for cf in corrupted_files[:10]:  # Show first 10
+                logger.warning(f"  - {cf}")
+            if len(corrupted_files) > 10:
+                logger.warning(f"  ... and {len(corrupted_files) - 10} more")
 
         return self.dataset_df
 
