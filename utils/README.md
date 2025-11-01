@@ -1,0 +1,81 @@
+# Utility Scripts
+
+Quick reference for visualization and data processing utilities.
+
+---
+
+## Visualize Single MRI
+
+View a single brain scan with 3 anatomical views (axial, coronal, sagittal).
+
+```bash
+python utils/visualize.py
+```
+
+Edit line 10 to change the scan path.
+
+---
+
+## Visualize Multiple MRI Scans
+
+Browse through a list of scans using arrow keys.
+
+```bash
+# View all required scans for cn_mci_ad_3dhcct
+python utils/visualize_scan_list.py \
+  --scan-list experiments/cn_mci_ad_3dhcct/required_scans.txt
+
+# View first 10 scans only (for testing)
+python utils/visualize_scan_list.py \
+  --scan-list experiments/cn_mci_ad_3dhcct/required_scans.txt \
+  --limit 10
+
+# Start at scan #100
+python utils/visualize_scan_list.py \
+  --scan-list experiments/cn_mci_ad_3dhcct/required_scans.txt \
+  --start-index 100
+```
+
+**Keyboard shortcuts:**
+- `←` Previous scan
+- `→` Next scan
+- `↑` Next slice
+- `↓` Previous slice
+
+---
+
+## Compare Preprocessing Stages
+
+View the same patient across all three preprocessing stages side-by-side (ADNI_nifti, ADNI_skull, ADNI_nppy).
+
+```bash
+# Compare all patients
+python utils/compare_preprocessing.py
+
+# Start at specific patient
+python utils/compare_preprocessing.py --patient 002_S_0295
+
+# Compare specific list of patients
+python utils/compare_preprocessing.py \
+  --patient-list experiments/cn_mci_ad_3dhcct/required_patients.txt
+```
+
+**Keyboard shortcuts:**
+- `←` Previous patient
+- `→` Next patient
+- `↑` Next slice
+- `↓` Previous slice
+
+Shows 3×3 grid: 3 preprocessing stages (rows) × 3 anatomical views (columns).
+
+---
+
+## Generate Tabular Features
+
+Create CSV with clinical features for ADNI patients.
+
+```bash
+python utils/gen_tabular.py
+```
+
+Merges multiple ADNI CSV files into a single tabular dataset.

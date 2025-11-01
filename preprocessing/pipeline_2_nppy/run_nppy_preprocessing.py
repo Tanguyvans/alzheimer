@@ -24,12 +24,49 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def find_all_nifti_files(input_dir: Path):
+def load_patient_filter_list(patient_list_file: Path) -> set:
+    """
+    Load list of patient IDs to process from file
+
+    Args:
+        patient_list_file: Path to text file with patient IDs (one per line)
+
+    Returns:
+        Set of patient IDs
+    """
+    with open(patient_list_file, 'r') as f:
+        return {line.strip() for line in f if line.strip()}
+
+
+def load_scan_list(scan_list_file: Path) -> list:
+    """
+    Load list of exact scan paths to process from file
+
+    Args:
+        scan_list_file: Path to text file with full scan paths (one per line)
+
+    Returns:
+        List of tuples (patient_id, Path(scan_path))
+    """
+    scans = []
+    with open(scan_list_file, 'r') as f:
+        for line in f:
+            scan_path = Path(line.strip())
+            if scan_path.exists():
+                patient_id = scan_path.parent.name
+                scans.append((patient_id, scan_path))
+            else:
+                logger.warning(f"Scan not found: {scan_path}")
+    return scans
+
+
+def find_all_nifti_files(input_dir: Path, patient_filter: set = None):
     """
     Find all NIfTI files in the input directory
 
     Args:
         input_dir: Root directory containing patient folders
+        patient_filter: Optional set of patient IDs to filter (only process these patients)
 
     Returns:
         List of tuples (patient_id, nifti_path)
@@ -45,6 +82,10 @@ def find_all_nifti_files(input_dir: Path):
             continue
 
         patient_id = patient_dir.name
+
+        # Apply patient filter if provided
+        if patient_filter and patient_id not in patient_filter:
+            continue
 
         # Find NIfTI files in patient directory
         for nifti_file in patient_dir.glob("*.nii.gz"):
@@ -105,24 +146,23 @@ def process_single_scan(nifti_path: Path, output_dir: Path, nppy_script: Path) -
 
 def main():
     parser = argparse.ArgumentParser(description='Batch NPPY preprocessing for ADNI dataset')
-    parser.add_argument('--input', required=True, help='Input directory with ADNI NIfTI files')
+    parser.add_argument('--input', type=str, default=None, help='Input directory with ADNI NIfTI files (not needed if using --scan-list)')
     parser.add_argument('--output', required=True, help='Output directory for NPPY results')
     parser.add_argument('--nppy-script', default=os.path.expanduser('~/nppy_docker.py'),
                        help='Path to NPPY Docker wrapper script')
     parser.add_argument('--resume', action='store_true',
                        help='Skip already processed scans')
+    parser.add_argument('--patient-list', type=str, default=None,
+                       help='Text file with patient IDs to process (one per line). Only these patients will be processed.')
+    parser.add_argument('--scan-list', type=str, default=None,
+                       help='Text file with exact scan paths to process (one per line). RECOMMENDED for baseline-only processing.')
 
     args = parser.parse_args()
 
-    input_dir = Path(args.input)
     output_dir = Path(args.output)
     nppy_script = Path(args.nppy_script)
 
-    # Validate paths
-    if not input_dir.exists():
-        logger.error(f"Input directory not found: {input_dir}")
-        sys.exit(1)
-
+    # Validate NPPY script
     if not nppy_script.exists():
         logger.error(f"NPPY script not found: {nppy_script}")
         sys.exit(1)
@@ -130,11 +170,51 @@ def main():
     # Create output directory
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Find all NIfTI files
-    logger.info("="*80)
-    logger.info("FINDING NIFTI FILES")
-    logger.info("="*80)
-    nifti_files = find_all_nifti_files(input_dir)
+    # Determine which mode to use
+    if args.scan_list:
+        # Mode 1: Use exact scan list (RECOMMENDED)
+        logger.info("="*80)
+        logger.info("LOADING SCAN LIST")
+        logger.info("="*80)
+
+        scan_list_file = Path(args.scan_list)
+        if not scan_list_file.exists():
+            logger.error(f"Scan list file not found: {scan_list_file}")
+            sys.exit(1)
+
+        nifti_files = load_scan_list(scan_list_file)
+        logger.info(f"Loaded {len(nifti_files)} scans from {scan_list_file}")
+
+    else:
+        # Mode 2: Scan directory with optional patient filter
+        if not args.input:
+            logger.error("Either --input or --scan-list must be provided")
+            sys.exit(1)
+
+        input_dir = Path(args.input)
+        if not input_dir.exists():
+            logger.error(f"Input directory not found: {input_dir}")
+            sys.exit(1)
+
+        # Load patient filter if provided
+        patient_filter = None
+        if args.patient_list:
+            patient_list_file = Path(args.patient_list)
+            if not patient_list_file.exists():
+                logger.error(f"Patient list file not found: {patient_list_file}")
+                sys.exit(1)
+
+            patient_filter = load_patient_filter_list(patient_list_file)
+            logger.info(f"Patient filter loaded: {len(patient_filter)} patients from {patient_list_file}")
+
+        # Find all NIfTI files
+        logger.info("="*80)
+        logger.info("FINDING NIFTI FILES")
+        logger.info("="*80)
+        if patient_filter:
+            logger.info(f"Filtering for {len(patient_filter)} specific patients")
+        nifti_files = find_all_nifti_files(input_dir, patient_filter)
+
     logger.info(f"Found {len(nifti_files)} scans to process")
 
     # Process each scan
