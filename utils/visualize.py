@@ -7,18 +7,18 @@ from matplotlib.widgets import Slider
 #img = nib.load('/Users/tanguyvans/Desktop/umons/code/alzheimer/new_irm_output/SEP-MRI-001_T0_6f1.nii.gz')
 #img = nib.load('/Users/tanguyvans/Desktop/umons/code/alzheimer/new_irm_output/SEP-MRI-001_T1_be7d.nii.gz')
 #img = nib.load('/Volumes/KINGSTON/ADNI_nifti/002_S_2010/MPRAGE_2010-06-24_14_21_28.0_I180310_180310.nii.gz')
-img = nib.load('/Volumes/KINGSTON/ADNI_nppy/035_S_6948/Accelerated_Sagittal_MPRAGE_Phase_A-P_2023-06-06_12_45_06_mni_norm.nii.gz')
+img = nib.load('/Volumes/KINGSTON/ADNI_nifti/006_S_4153/MPRAGE_2011-08-03_08_12_01.0_I248517_248517.nii.gz')
 
 data = img.get_fdata()
+
+# Squeeze out extra dimensions (e.g., 4D with shape[3]==1 -> 3D)
+import numpy as np
+data = np.squeeze(data)
 
 # Afficher les dimensions et orientation
 print("Image shape:", data.shape)
 print("Image spacing:", img.header.get_zooms())
 print("Image orientation:", img.header.get_best_affine())
-
-# Get proper anatomical orientation
-# Most NIfTI files: RAS orientation (Right-Anterior-Superior)
-# Need to check the actual orientation and adjust accordingly
 
 # Créer la figure
 fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
@@ -28,12 +28,6 @@ plt.subplots_adjust(bottom=0.25)
 z_pos = data.shape[2]//2
 y_pos = data.shape[1]//2
 x_pos = data.shape[0]//2
-
-# Correct anatomical orientation for medical images
-# Standard neurological convention: 
-# - Axial: horizontal slices (z-axis), looking from feet to head
-# - Coronal: front-to-back slices (y-axis), looking from front  
-# - Sagittal: left-to-right slices (x-axis), looking from side
 
 # Axial view: slice through z-axis (horizontal brain slices)
 img1 = ax1.imshow(data[:, :, z_pos].T, cmap='gray', origin='lower', aspect='equal')
