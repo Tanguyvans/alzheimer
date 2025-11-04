@@ -45,23 +45,42 @@ preprocessing/
 
 **Requirement**: NIfTI files already converted (use Pipeline 1 Step 1 if needed)
 
-### Step 0: Handle 4D Scans (If Needed)
+### Step 0: Select Quality Scans
 
-Some ADNI scans have 4D shape (256, 256, 170, 1) instead of 3D (256, 256, 170). These need to be squeezed before NPPY preprocessing.
+**IMPORTANT**: NPPY preprocessing fails on high-resolution "Accelerated_Sagittal_MPRAGE__MSV22" scans (>20MB, from 2024-2025). The patient selection script automatically filters these out and selects alternative scans.
 
 ```bash
-# Check if you have 4D scans - use dimension analysis
-python3 utils/analyze_scan_dimensions.py \
-  --input-dir /Volumes/KINGSTON/ADNI_nifti \
-  --output dimension_distribution.png
+cd experiments/cn_mci_ad_3dhcct
 
+# Select patients with quality baseline scans (filters dimensions + file size)
+python3 00_get_required_patients.py --config config.yaml
+```
+
+**What it does**:
+- Filters scans with bad dimensions (any axis <100)
+- **Filters large files** (>20MB - problematic high-res scans)
+- **Automatically tries alternative scans** for each patient if first scan fails
+- Sorts by file size (prefers smaller, more compatible scans)
+- Outputs: `required_patients.txt` + `required_scans.txt`
+
+**Quality checks**:
+1. ✅ All dimensions ≥ 100 (removes localizer scans)
+2. ✅ File size ≤ 20MB (removes high-res scans incompatible with NPPY)
+3. ✅ 3D shape (no 4D scans)
+
+**Options**:
+- `--min-dim 100` - Minimum dimension threshold (default: 100)
+- `--max-size 20.0` - Maximum file size in MB (default: 20.0)
+- `--blacklist file.txt` - Optional additional blacklist
+
+### Step 0b: Handle 4D Scans (If Any Remain)
+
+Some ADNI scans have 4D shape (256, 256, 170, 1) instead of 3D (256, 256, 170). These are filtered by Step 0, but if you encounter any:
+
+```bash
 # Convert 4D scans to 3D (creates .4d_backup files)
 python3 preprocessing/squeeze_4d_scans.py \
-  --input-dir /Volumes/KINGSTON/ADNI_nifti
-
-# Or squeeze specific scan list
-python3 preprocessing/squeeze_4d_scans.py \
-  --scan-list experiments/cn_mci_ad_3dhcct/scans_to_process.txt
+  --scan-list experiments/cn_mci_ad_3dhcct/required_scans.txt
 ```
 
 **What it does**: Converts (256, 256, 170, 1) → (256, 256, 170) by squeezing singleton dimensions
@@ -107,6 +126,46 @@ python3 preprocessing/pipeline_2_nppy/run_nppy_preprocessing.py \
 - Produces intensity range [-1, 121] that 3D HCCT expects
 
 **See**: [experiments/NPPY_SOLUTION_SUMMARY.md](../experiments/NPPY_SOLUTION_SUMMARY.md) for full details
+
+### Quality Inspection Tools
+
+After NPPY preprocessing, you can visually inspect the results to verify quality:
+
+**Compare preprocessing stages side-by-side:**
+
+```bash
+# Compare NIFTI → SKULL → NPPY for specific patients
+python3 utils/compare_preprocessing.py \
+  --patient-list experiments/cn_mci_ad_3dhcct/required_patients.txt
+
+# Or start at specific patient
+python3 utils/compare_preprocessing.py --patient 128_S_0200
+```
+
+**Navigation**: Use arrow keys (←→ to change patients, ↑↓ to change slices)
+
+**Identify problematic scans:**
+
+```bash
+# Extract patient IDs with large scans (>20MB) for inspection
+python3 utils/extract_large_scan_patients.py \
+  --scan-list experiments/cn_mci_ad_3dhcct/required_scans.txt \
+  --max-size 20 \
+  --output experiments/cn_mci_ad_3dhcct/large_scan_patients.txt
+
+# Then inspect their NPPY quality
+python3 utils/compare_preprocessing.py \
+  --patient-list experiments/cn_mci_ad_3dhcct/large_scan_patients.txt
+```
+
+**Analyze file sizes:**
+
+```bash
+# Get detailed statistics on scan file sizes
+python3 utils/filter_scans_by_size.py \
+  --scan-list experiments/cn_mci_ad_3dhcct/required_scans.txt \
+  --max-size 20
+```
 
 ---
 
