@@ -80,7 +80,7 @@ class PreprocessingComparisonViewer:
         self.slider.on_changed(self.update_slice)
 
         # Navigation instructions
-        nav_text = "Navigation: ← → (change patient) | ↑ ↓ (change slice) | Slider (fine control)"
+        nav_text = "Navigation: ← → (change patient) | ↑ ↓ (change slice) | Slider (scroll through slices)"
         self.fig.text(0.5, 0.01, nav_text, ha='center', va='bottom', fontsize=10, style='italic')
 
         # Connect keyboard
@@ -156,22 +156,24 @@ class PreprocessingComparisonViewer:
 
     def display_patient(self):
         """Display all three preprocessing stages"""
-        # Get slice position (middle of smallest z dimension)
-        z_sizes = []
-        if self.nifti_data is not None:
-            z_sizes.append(self.nifti_data.shape[2])
-        if self.skull_data is not None:
-            z_sizes.append(self.skull_data.shape[2])
-        if self.nppy_data is not None:
-            z_sizes.append(self.nppy_data.shape[2])
+        # Get max dimension across all axes to set slider range
+        max_dim = 0
+        for data in [self.nifti_data, self.skull_data, self.nppy_data]:
+            if data is not None:
+                max_dim = max(max_dim, max(data.shape))
 
-        if not z_sizes:
+        if max_dim == 0:
             return
 
-        min_z = min(z_sizes)
-        self.slider.valmax = min_z - 1
-        self.slider.set_val(min_z // 2)
-        self.slider.ax.set_xlim(0, min_z - 1)
+        # Set slider range based on smallest dimension to avoid out of bounds
+        min_dim = float('inf')
+        for data in [self.nifti_data, self.skull_data, self.nppy_data]:
+            if data is not None:
+                min_dim = min(min_dim, min(data.shape))
+
+        self.slider.valmax = min_dim - 1
+        self.slider.set_val(min_dim // 2)
+        self.slider.ax.set_xlim(0, min_dim - 1)
 
         # Update title
         self.fig.suptitle(f'Patient: {self.current_patient_id} ({self.current_patient_idx + 1}/{len(self.patient_ids)})',
@@ -180,11 +182,12 @@ class PreprocessingComparisonViewer:
         self.update_slice(self.slider.val)
 
     def update_slice(self, val):
-        """Update displayed slice"""
+        """Update displayed slice - slider controls axial slice position"""
         pos = int(val)
 
-        # Row 0: ADNI_nifti
         data_list = [self.nifti_data, self.skull_data, self.nppy_data]
+        row_labels = ['ADNI_nifti (Raw)', 'ADNI_skull (SynthStrip+ANTs)', 'ADNI_nppy (NPPY)']
+        col_labels = ['Axial', 'Coronal', 'Sagittal']
 
         for row_idx, data in enumerate(data_list):
             if data is None:
@@ -193,14 +196,17 @@ class PreprocessingComparisonViewer:
                     if self.images[row_idx][col_idx]:
                         self.images[row_idx][col_idx].remove()
                         self.images[row_idx][col_idx] = None
+                    # Update title to show "Not found"
+                    ax = self.axes[row_idx][col_idx]
+                    ax.set_title(f'{row_labels[row_idx]}\n{col_labels[col_idx]}\nNot found', fontsize=9)
                 continue
 
             # Ensure slice is within bounds
             z_pos = min(pos, data.shape[2] - 1)
-            y_pos = data.shape[1] // 2
-            x_pos = data.shape[0] // 2
+            y_pos = min(pos, data.shape[1] - 1)  # Use slider pos for coronal too
+            x_pos = min(pos, data.shape[0] - 1)  # Use slider pos for sagittal too
 
-            # Get slices
+            # Get slices - use same position for all views
             axial = data[:, :, z_pos].T
             coronal = data[:, y_pos, :].T
             sagittal = data[x_pos, :, :]
@@ -218,6 +224,17 @@ class PreprocessingComparisonViewer:
                 vmin, vmax = data.min(), data.max()
                 img = ax.imshow(slice_data, cmap='gray', origin='lower', aspect='equal', vmin=vmin, vmax=vmax)
                 self.images[row_idx][col_idx] = img
+
+                # Update title with slice info and total slices
+                view_name = col_labels[col_idx]
+                if col_idx == 0:  # Axial
+                    slice_info = f"z={z_pos}/{data.shape[2]-1} ({data.shape[2]} slices)"
+                elif col_idx == 1:  # Coronal
+                    slice_info = f"y={y_pos}/{data.shape[1]-1} ({data.shape[1]} slices)"
+                else:  # Sagittal
+                    slice_info = f"x={x_pos}/{data.shape[0]-1} ({data.shape[0]} slices)"
+
+                ax.set_title(f'{row_labels[row_idx]}\n{view_name}\n{slice_info}', fontsize=8)
 
         self.fig.canvas.draw_idle()
 
@@ -276,8 +293,9 @@ Examples:
 Keyboard shortcuts:
   Left Arrow  : Previous patient
   Right Arrow : Next patient
-  Up Arrow    : Next slice
-  Down Arrow  : Previous slice
+  Up Arrow    : Next slice (scroll through all views)
+  Down Arrow  : Previous slice (scroll through all views)
+  Slider      : Scroll through slices
         """
     )
 

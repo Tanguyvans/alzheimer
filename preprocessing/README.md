@@ -28,6 +28,7 @@ Two preprocessing pipelines for MRI brain scans with **different outputs**:
 preprocessing/
 ├── dicom_to_nifti.py             # Shared module: DICOM→NIfTI conversion
 ├── skull_stripping.py            # Shared module: SynthStrip functions
+├── squeeze_4d_scans.py           # Utility: Convert 4D→3D scans
 │
 ├── pipeline_1_synthstrip/        # Traditional preprocessing (standalone scripts)
 │   ├── dicom_to_nifti.py         # Step 1: DICOM→NIfTI
@@ -43,6 +44,29 @@ preprocessing/
 ## Pipeline 2: NPPY (For 3D HCCT)
 
 **Requirement**: NIfTI files already converted (use Pipeline 1 Step 1 if needed)
+
+### Step 0: Handle 4D Scans (If Needed)
+
+Some ADNI scans have 4D shape (256, 256, 170, 1) instead of 3D (256, 256, 170). These need to be squeezed before NPPY preprocessing.
+
+```bash
+# Check if you have 4D scans - use dimension analysis
+python3 utils/analyze_scan_dimensions.py \
+  --input-dir /Volumes/KINGSTON/ADNI_nifti \
+  --output dimension_distribution.png
+
+# Convert 4D scans to 3D (creates .4d_backup files)
+python3 preprocessing/squeeze_4d_scans.py \
+  --input-dir /Volumes/KINGSTON/ADNI_nifti
+
+# Or squeeze specific scan list
+python3 preprocessing/squeeze_4d_scans.py \
+  --scan-list experiments/cn_mci_ad_3dhcct/scans_to_process.txt
+```
+
+**What it does**: Converts (256, 256, 170, 1) → (256, 256, 170) by squeezing singleton dimensions
+
+**Time**: ~1-2 seconds per scan
 
 ### ⚠️ Important: N3 Bias Correction Required
 

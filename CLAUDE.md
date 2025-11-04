@@ -73,6 +73,7 @@ python visualize_processing_results.py
 3. **Skull Stripping**: Multiple methods available (HD-BET, SynthStrip) - compare with `skull_comparison_plot.py`
 4. **Image Enhancement**: N4 bias correction and denoising applied during preprocessing
 5. **Volume Extraction**: Final volumes resized to 192x20x192 for consistent ML input
+6. **Data Quality**: ADNI dataset (17,832 scans) - 16,353 whitelisted (91.7%), 1,479 blacklisted (8.3%), 127 4D→3D conversions
 
 ## Research Context
 

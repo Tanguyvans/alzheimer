@@ -235,7 +235,12 @@ def main():
 
             # Check if already processed (for resume mode)
             if args.resume:
-                expected_output = patient_output_dir / f"{nifti_path.stem.replace('.nii', '')}_mni_norm.nii.gz"
+                # NPPY truncates scan names by removing .0_I#####_##### suffix
+                # Example: MPRAGE_Repeat_2006-09-12_12_33_14.0_I24697_24697.nii.gz
+                #       -> MPRAGE_Repeat_2006-09-12_12_33_14_mni_norm.nii.gz
+                scan_name = nifti_path.stem.replace('.nii', '')
+                scan_base = scan_name.split('.0_')[0] if '.0_' in scan_name else scan_name
+                expected_output = patient_output_dir / f"{scan_base}_mni_norm.nii.gz"
                 if expected_output.exists():
                     logger.debug(f"Skipping {patient_id} (already processed)")
                     skipped += 1

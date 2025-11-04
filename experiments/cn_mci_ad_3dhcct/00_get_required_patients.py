@@ -17,6 +17,8 @@ import logging
 from pathlib import Path
 import yaml
 import pandas as pd
+import nibabel as nib
+import numpy as np
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -28,17 +30,88 @@ def load_config(config_path: str) -> dict:
         return yaml.safe_load(f)
 
 
+def check_scan_dimensions(scan_path: Path, min_dim: int = 100) -> tuple:
+    """
+    Check if scan meets dimension requirements.
+
+    IMPORTANT: ALL three dimensions must be >= min_dim (not just the minimum).
+    This filters out localizer scans like (240, 256, 3) where only one dimension is too small.
+
+    Returns:
+        (is_valid, shape, reason)
+        - is_valid: True if scan has 3D shape with ALL dimensions >= min_dim
+        - shape: tuple of scan dimensions
+        - reason: description of why scan is invalid (or "ok")
+    """
+    try:
+        img = nib.load(str(scan_path))
+        data = img.get_fdata()
+        data = np.squeeze(data)  # Remove singleton dimensions
+        shape = data.shape
+
+        # Check if 3D
+        if len(shape) != 3:
+            return (False, shape, f"not_3d_{len(shape)}d")
+
+        # Check EACH dimension individually
+        for i, dim_size in enumerate(shape):
+            if dim_size < min_dim:
+                return (False, shape, f"dim[{i}]={dim_size}<{min_dim}")
+
+        return (True, shape, "ok")
+    except Exception as e:
+        return (False, None, f"load_error: {e}")
+
+
+def check_scan_file_size(scan_path: Path, max_size_mb: float = 20.0) -> tuple:
+    """
+    Check if scan file size is within acceptable range.
+
+    Large files (>20MB) are often "Accelerated_Sagittal_MPRAGE__MSV22" protocol
+    from 2024-2025 that don't work well with NPPY preprocessing.
+
+    Returns:
+        (is_valid, size_mb, reason)
+        - is_valid: True if file size is <= max_size_mb
+        - size_mb: file size in MB
+        - reason: description of why scan is invalid (or "ok")
+    """
+    try:
+        size_mb = scan_path.stat().st_size / (1024**2)
+
+        if size_mb > max_size_mb:
+            return (False, size_mb, f"file_size={size_mb:.1f}MB>{max_size_mb}MB")
+
+        return (True, size_mb, "ok")
+    except Exception as e:
+        return (False, 0.0, f"size_check_error: {e}")
+
+
 def identify_required_patients(dxsum_csv: str, nifti_dir: str, output_file: str = "required_patients.txt",
-                               output_scans_file: str = "required_scans.txt"):
+                               output_scans_file: str = "required_scans.txt", blacklist_file: str = None,
+                               min_dim: int = 100, max_size_mb: float = 20.0):
     """
     Identify stable CN, MCI, and AD patients from ADNI diagnosis data.
     Maps each patient to their BASELINE scan (first visit only).
+    Filters out scans with bad dimensions (min_dim < 100), large file sizes (>20MB), and blacklisted scans.
 
     Returns list of PTID (patient IDs) and exact scan paths needed for the experiment.
     """
     logger.info("="*80)
     logger.info("IDENTIFYING REQUIRED PATIENTS FOR CN_MCI_AD_3DHCCT")
     logger.info("="*80)
+    logger.info(f"Minimum dimension threshold: {min_dim}")
+    logger.info(f"Maximum file size: {max_size_mb} MB")
+
+    # Load blacklist if provided (optional, dimension checking is primary filter)
+    blacklist = set()
+    if blacklist_file and Path(blacklist_file).exists():
+        logger.info(f"\nLoading blacklist from: {blacklist_file}")
+        with open(blacklist_file, 'r') as f:
+            blacklist = {line.strip() for line in f if line.strip()}
+        logger.info(f"Loaded {len(blacklist)} blacklisted scans")
+    else:
+        logger.info(f"\nNo blacklist provided - using dimension checking only")
 
     # Load diagnosis data
     dx_df = pd.read_csv(dxsum_csv)
@@ -83,6 +156,8 @@ def identify_required_patients(dxsum_csv: str, nifti_dir: str, output_file: str 
     required_ptids = []
     required_scans = []
     missing_scans = []
+    rejected_scans = []
+    dimension_failures = []
 
     for _, row in baseline_visits.iterrows():
         ptid = row['PTID']
@@ -94,19 +169,67 @@ def identify_required_patients(dxsum_csv: str, nifti_dir: str, output_file: str 
 
         # Find all NIfTI files for this patient
         scans = list(patient_folder.glob('*.nii.gz'))
-        scans = [s for s in scans if not s.name.startswith('.')]  # Skip hidden files
+        scans = [s for s in scans if not s.name.startswith('.') and '.4d_backup' not in s.name]  # Skip hidden files and backups
 
         if not scans:
             missing_scans.append(ptid)
             continue
 
-        # Use the first scan (baseline - they should all be from same visit after DICOM conversion)
-        scan_path = scans[0]
-        required_ptids.append(ptid)
-        required_scans.append(str(scan_path))
+        # Try scans in order until we find one that passes all checks
+        # Sort scans by file size (prefer smaller files first - more likely to work with NPPY)
+        scans_with_size = []
+        for scan_path in scans:
+            try:
+                size_mb = scan_path.stat().st_size / (1024**2)
+                scans_with_size.append((scan_path, size_mb))
+            except:
+                scans_with_size.append((scan_path, 999))  # Put failed size checks at end
 
-    logger.info(f"Found scans: {len(required_scans)}")
+        scans_sorted = sorted(scans_with_size, key=lambda x: x[1])
+
+        scan_found = False
+        failed_reasons = []
+
+        for scan_path, size_mb in scans_sorted:
+            # Check if blacklisted
+            if str(scan_path) in blacklist:
+                failed_reasons.append(f"{scan_path.name}: blacklisted")
+                logger.debug(f"Skipping blacklisted scan: {ptid} - {scan_path.name}")
+                continue
+
+            # Check file size
+            is_size_valid, actual_size_mb, size_reason = check_scan_file_size(scan_path, max_size_mb)
+            if not is_size_valid:
+                failed_reasons.append(f"{scan_path.name}: {size_reason}")
+                logger.debug(f"Skipping large scan: {ptid} - {scan_path.name} - {size_reason}")
+                dimension_failures.append((ptid, scan_path.name, f"{actual_size_mb:.1f}MB", size_reason))
+                continue
+
+            # Check dimensions
+            is_valid, shape, reason = check_scan_dimensions(scan_path, min_dim)
+
+            if not is_valid:
+                failed_reasons.append(f"{scan_path.name}: {reason} (shape={shape})")
+                logger.debug(f"Skipping bad dimension scan: {ptid} - {scan_path.name} - {reason}")
+                dimension_failures.append((ptid, scan_path.name, shape, reason))
+                continue
+
+            # Found a good scan!
+            required_ptids.append(ptid)
+            required_scans.append(str(scan_path))
+            scan_found = True
+            logger.debug(f"Selected scan: {ptid} - {scan_path.name} - {actual_size_mb:.1f}MB - shape={shape}")
+            break
+
+        if not scan_found:
+            # All scans for this patient failed checks
+            rejected_scans.append((ptid, f"All {len(scans)} scans rejected: {'; '.join(failed_reasons[:3])}"))
+            logger.warning(f"All scans rejected for {ptid} ({len(scans)} scans checked)")
+
+    logger.info(f"\nFound scans: {len(required_scans)}")
     logger.info(f"Missing scans: {len(missing_scans)}")
+    logger.info(f"Rejected scans (bad dimensions, large file size, or blacklisted): {len(rejected_scans)}")
+    logger.info(f"Total failures (dim/size issues): {len(dimension_failures)}")
 
     # Save patient IDs to file
     with open(output_file, 'w') as f:
@@ -126,6 +249,13 @@ def identify_required_patients(dxsum_csv: str, nifti_dir: str, output_file: str 
     if missing_scans:
         logger.warning(f"\n⚠️  {len(missing_scans)} patients have no NIfTI scans in {nifti_dir}")
 
+    if dimension_failures:
+        logger.info(f"\n📊 Dimension failures by reason:")
+        from collections import Counter
+        reasons = Counter([reason for _, _, _, reason in dimension_failures])
+        for reason, count in reasons.most_common():
+            logger.info(f"  {reason}: {count} scans")
+
     return required_ptids, required_scans
 
 
@@ -143,6 +273,12 @@ def main():
                        help='Output file for patient IDs')
     parser.add_argument('--output-scans', type=str, default='required_scans.txt',
                        help='Output file for scan paths')
+    parser.add_argument('--blacklist', type=str, default=None,
+                       help='Optional blacklist file to filter out bad quality scans')
+    parser.add_argument('--min-dim', type=int, default=100,
+                       help='Minimum dimension threshold for scans (default: 100)')
+    parser.add_argument('--max-size', type=float, default=20.0,
+                       help='Maximum file size in MB (default: 20.0, filters out high-res scans)')
 
     args = parser.parse_args()
 
@@ -159,10 +295,17 @@ def main():
         nifti_dir = str(Path(skull_dir).parent / 'ADNI_nifti')
 
     logger.info(f"dxsum.csv: {dxsum_csv}")
-    logger.info(f"NIfTI directory: {nifti_dir}\n")
+    logger.info(f"NIfTI directory: {nifti_dir}")
+    if args.blacklist:
+        logger.info(f"Blacklist: {args.blacklist}")
+    else:
+        logger.info(f"Blacklist: None (dimension and size checking only)")
+    logger.info(f"Min dimension: {args.min_dim}")
+    logger.info(f"Max file size: {args.max_size} MB\n")
 
     # Identify required patients and scans
-    identify_required_patients(dxsum_csv, nifti_dir, args.output_patients, args.output_scans)
+    identify_required_patients(dxsum_csv, nifti_dir, args.output_patients, args.output_scans,
+                              args.blacklist, args.min_dim, args.max_size)
 
 
 if __name__ == '__main__':

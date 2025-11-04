@@ -68,6 +68,12 @@ python utils/compare_preprocessing.py \
 
 Shows 3×3 grid: 3 preprocessing stages (rows) × 3 anatomical views (columns).
 
+**Display Features:**
+- Scan filename displayed in each subplot title
+- Scan dimensions (e.g., "Shape: 256×256×170")
+- Grid overlay for spatial reference
+- Useful for identifying sagittal scans that appear stretched in axial view
+
 ---
 
 ## Create Baseline Scans Archive
@@ -121,11 +127,61 @@ python utils/analyze_scan_dimensions.py \
 - Filter analysis at common thresholds (50, 80, 100, 120, 150)
 
 **ADNI Dataset Statistics** (17,832 total scans):
-- 91.7% have min_dim ≥ 100 (good quality 3D scans)
-- 8.3% have min_dim < 100 (4D volumes, localizers, corrupted scans)
+- **Whitelisted**: 16,353 scans (91.7%) - good quality with min_dim ≥ 100
+- **Blacklisted**: 1,479 scans (8.3%) - localizers/corrupted with min_dim < 100
 - Most scans (79.1%) have min_dim in 160-180 range
+- 127 scans (0.7%) were 4D with shape[3]==1, converted to 3D
+
+**Quality Control Results**:
+- ✅ **Whitelist**: 16,353 scans ready for preprocessing (`ADNI_dimension_whitelist.txt`)
+- ❌ **Blacklist**: 1,479 scans filtered out (`ADNI_dimension_blacklist.txt`)
+- 📊 **Details**: Full analysis with shapes and reasons (`ADNI_dimension_details.txt`)
+
+**4D Scan Conversion**:
+- Total 4D scans found: 127 (0.7% of dataset)
+- Successfully converted: 127 scans (shape like `(256, 256, 170, 1)` → `(256, 256, 170)`)
+- Backups created: All original 4D files preserved with `.4d_backup` extension
+- To restore: `mv file.nii.gz.4d_backup file.nii.gz`
 
 ![ADNI Dataset Dimension Distribution](../adni_all_scans_dimension_distribution.png)
+
+---
+
+## Create Dimension Blacklist
+
+Create a blacklist of scans with problematic dimensions (localizers, corrupted scans).
+
+```bash
+# Create blacklist from entire ADNI dataset
+python utils/create_dimension_blacklist.py \
+  --input-dir /Volumes/KINGSTON/ADNI_nifti \
+  --output ADNI_dimension_blacklist.txt \
+  --min-dim 100
+
+# Also create whitelist (good scans)
+python utils/create_dimension_blacklist.py \
+  --input-dir /Volumes/KINGSTON/ADNI_nifti \
+  --output ADNI_dimension_blacklist.txt \
+  --whitelist ADNI_dimension_whitelist.txt \
+  --min-dim 100 \
+  --details ADNI_dimension_analysis.txt
+
+# Create blacklist from specific scan list
+python utils/create_dimension_blacklist.py \
+  --scan-list all_scans.txt \
+  --output blacklist.txt \
+  --min-dim 100
+```
+
+**Output files**:
+- Blacklist: Scans that fail dimension requirements
+- Whitelist: Scans that pass dimension requirements (optional)
+- Details: Full analysis with shapes and rejection reasons (optional)
+
+**Filtering criteria**:
+- Rejects scans with min_dim < threshold (default 100)
+- Automatically squeezes 4D scans with shape[3]==1 before analysis
+- Rejects 4D multi-volume scans (fMRI, DTI)
 
 ---
 
