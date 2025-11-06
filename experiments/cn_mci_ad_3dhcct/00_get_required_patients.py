@@ -87,20 +87,85 @@ def check_scan_file_size(scan_path: Path, max_size_mb: float = 20.0) -> tuple:
         return (False, 0.0, f"size_check_error: {e}")
 
 
+def check_exact_dimensions(scan_path: Path, target_dims_list: list = None) -> tuple:
+    """
+    Check if scan has exact target dimensions for high-quality NPPY output.
+
+    Accepts multiple dimension sets (e.g., [(192, 192, 160), (240, 256, 160), ...]).
+    Each dimension set can be in any orientation.
+
+    Good quality dimensions (visually verified):
+    - (160, 192, 192) ✓ GOOD (original, 7.83% variance retention)
+    - (160, 240, 256) ✓ GOOD
+    - (180, 256, 256) ✓ GOOD
+    - (176, 240, 256) ✓ GOOD
+    - (208, 240, 256) ✓ GOOD
+    - (128, 240, 256) ✓ GOOD
+    - (120, 240, 256) ✓ GOOD
+    - (230, 230, 240) ✓ GOOD (WARNING: head may be rotated!)
+
+    Poor quality dimensions:
+    - (256, 256, 166) ✗ BLURRY
+    - (256, 256, 170) ✗ BLURRY
+    - (256, 256, 208) ✗ BLURRY
+    - (256, 256, 211) ✗ BLURRY (but some exceptions exist)
+
+    Returns:
+        (is_valid, shape, reason)
+        - is_valid: True if scan dimensions match any target in list (any orientation)
+        - shape: tuple of scan dimensions
+        - reason: description of why scan is invalid (or "ok")
+    """
+    if target_dims_list is None:
+        target_dims_list = [(192, 192, 160)]
+
+    try:
+        img = nib.load(str(scan_path))
+        data = img.get_fdata()
+        data = np.squeeze(data)  # Remove singleton dimensions
+        shape = tuple(data.shape)
+
+        # Check if 3D
+        if len(shape) != 3:
+            return (False, shape, f"not_3d_{len(shape)}d")
+
+        # Check if sorted dimensions match any target (allows any orientation)
+        sorted_shape = tuple(sorted(shape))
+
+        for target_dims in target_dims_list:
+            sorted_target = tuple(sorted(target_dims))
+            if sorted_shape == sorted_target:
+                return (True, shape, "ok")
+
+        # No match found
+        return (False, shape, f"dim={shape}!=any_target_dims")
+    except Exception as e:
+        return (False, None, f"load_error: {e}")
+
+
 def identify_required_patients(dxsum_csv: str, nifti_dir: str, output_file: str = "required_patients.txt",
                                output_scans_file: str = "required_scans.txt", blacklist_file: str = None,
-                               min_dim: int = 100, max_size_mb: float = 20.0):
+                               min_dim: int = 100, max_size_mb: float = 20.0,
+                               exact_dims_list: list = None):
     """
     Identify stable CN, MCI, and AD patients from ADNI diagnosis data.
     Maps each patient to their BASELINE scan (first visit only).
-    Filters out scans with bad dimensions (min_dim < 100), large file sizes (>20MB), and blacklisted scans.
+    Filters out scans with bad dimensions, large file sizes (>20MB), and blacklisted scans.
+
+    If exact_dims_list is specified, only scans matching one of the dimension sets are selected.
+    This ensures high-quality NPPY output (e.g., exact_dims_list=[(192, 192, 160), (240, 256, 160)]).
 
     Returns list of PTID (patient IDs) and exact scan paths needed for the experiment.
     """
     logger.info("="*80)
     logger.info("IDENTIFYING REQUIRED PATIENTS FOR CN_MCI_AD_3DHCCT")
     logger.info("="*80)
-    logger.info(f"Minimum dimension threshold: {min_dim}")
+    if exact_dims_list:
+        logger.info(f"Target dimensions (exact match, {len(exact_dims_list)} sets):")
+        for dims in exact_dims_list:
+            logger.info(f"  - {dims}")
+    else:
+        logger.info(f"Minimum dimension threshold: {min_dim}")
     logger.info(f"Maximum file size: {max_size_mb} MB")
 
     # Load blacklist if provided (optional, dimension checking is primary filter)
@@ -191,8 +256,8 @@ def identify_required_patients(dxsum_csv: str, nifti_dir: str, output_file: str 
         failed_reasons = []
 
         for scan_path, size_mb in scans_sorted:
-            # Check if blacklisted
-            if str(scan_path) in blacklist:
+            # Check if blacklisted (supports both patient ID and full scan path)
+            if ptid in blacklist or str(scan_path) in blacklist:
                 failed_reasons.append(f"{scan_path.name}: blacklisted")
                 logger.debug(f"Skipping blacklisted scan: {ptid} - {scan_path.name}")
                 continue
@@ -206,7 +271,12 @@ def identify_required_patients(dxsum_csv: str, nifti_dir: str, output_file: str 
                 continue
 
             # Check dimensions
-            is_valid, shape, reason = check_scan_dimensions(scan_path, min_dim)
+            if exact_dims_list:
+                # Use exact dimension matching for NPPY quality
+                is_valid, shape, reason = check_exact_dimensions(scan_path, exact_dims_list)
+            else:
+                # Use minimum dimension threshold
+                is_valid, shape, reason = check_scan_dimensions(scan_path, min_dim)
 
             if not is_valid:
                 failed_reasons.append(f"{scan_path.name}: {reason} (shape={shape})")
@@ -279,8 +349,27 @@ def main():
                        help='Minimum dimension threshold for scans (default: 100)')
     parser.add_argument('--max-size', type=float, default=20.0,
                        help='Maximum file size in MB (default: 20.0, filters out high-res scans)')
+    parser.add_argument('--exact-dims', type=str,
+                       default='192,192,160;240,256,160;256,256,180;240,256,176;240,256,208;240,256,128;240,256,120;230,230,240',
+                       help='Exact dimensions for high-quality NPPY (visually verified). Multiple sets separated by semicolon. Set to "none" to disable.')
 
     args = parser.parse_args()
+
+    # Parse exact_dims argument (now supports multiple dimension sets)
+    exact_dims_list = None
+    if args.exact_dims and args.exact_dims.lower() != 'none':
+        try:
+            exact_dims_list = []
+            for dims_str in args.exact_dims.split(';'):
+                dims = tuple(map(int, dims_str.split(',')))
+                if len(dims) != 3:
+                    logger.error(f"Invalid dimension format: {dims_str}. Each dimension set must have 3 values.")
+                    sys.exit(1)
+                exact_dims_list.append(dims)
+        except ValueError as e:
+            logger.error(f"Invalid --exact-dims format: {args.exact_dims}. Expected format: 192,192,160;240,256,160")
+            logger.error(f"Error: {e}")
+            sys.exit(1)
 
     # Load config
     config = load_config(args.config)
@@ -300,12 +389,17 @@ def main():
         logger.info(f"Blacklist: {args.blacklist}")
     else:
         logger.info(f"Blacklist: None (dimension and size checking only)")
-    logger.info(f"Min dimension: {args.min_dim}")
+    if exact_dims_list:
+        logger.info(f"Exact dimensions: {len(exact_dims_list)} dimension sets")
+        for dims in exact_dims_list:
+            logger.info(f"  - {dims}")
+    else:
+        logger.info(f"Min dimension: {args.min_dim}")
     logger.info(f"Max file size: {args.max_size} MB\n")
 
     # Identify required patients and scans
     identify_required_patients(dxsum_csv, nifti_dir, args.output_patients, args.output_scans,
-                              args.blacklist, args.min_dim, args.max_size)
+                              args.blacklist, args.min_dim, args.max_size, exact_dims_list)
 
 
 if __name__ == '__main__':

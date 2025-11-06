@@ -46,3 +46,4 @@ tensorboard_logs/
 
 # MedicalNet downloaded weights
 *.pth
+*.tar.gz

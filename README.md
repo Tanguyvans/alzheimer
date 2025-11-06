@@ -20,6 +20,47 @@ This project combines medical image processing with machine learning to:
 - **MCI (Mild Cognitive Impairment)**: 845 scans (681 patients)
 - **AD (Alzheimer's Disease)**: 276 scans (234 patients)
 
+### NPPY Preprocessed Dataset (CN/MCI/AD - Stable Patients)
+
+A quality-filtered dataset of NPPY (Neural Preprocessing Python) preprocessed MRI scans for stable patients with baseline-only diagnosis:
+
+- **Archive**: `adni_stable_cn481_mci394_ad204_nppy.tar.gz` (1.79 GB)
+- **Total**: 1,079 scans from stable patients
+- **CN (Cognitively Normal)**: 481 scans
+- **MCI (Mild Cognitive Impairment)**: 394 scans
+- **AD (Alzheimer's Disease)**: 204 scans
+
+**Quality Filtering Applied**:
+- Dimension whitelist: 176×240×256, 160×192×192, 240×256×208
+- File size filter: ≤20MB
+- Manual blacklist: 1 patient (073_S_4230)
+- Stable diagnosis: baseline visit only (diagnosis never changes)
+
+**Preprocessing Pipeline**:
+- NPPY (Neural Preprocessing Python) - End-to-end learned preprocessing
+- Spatial normalization to MNI template
+- Intensity normalization
+- Output format: `*_mni_norm.nii.gz`
+
+**Archive Structure**:
+```
+patient_id/scan_name
+├── 018_S_0043/MPRAGE_Repeat_2009-01-21_10_42_57_mni_norm.nii.gz
+├── 023_S_0058/MPRAGE_2008-10-10_10_35_48_mni_norm.nii.gz
+└── ...
+```
+
+**Dataset Creation**:
+```bash
+python3 utils/create_nppy_dataset.py \
+  --patient-list experiments/cn_mci_ad_3dhcct/required_patients.txt \
+  --nppy-dir /Volumes/KINGSTON/ADNI_nppy \
+  --dxsum /Volumes/KINGSTON/dxsum.csv \
+  --blacklist experiments/cn_mci_ad_3dhcct/blacklist.txt
+```
+
+**Diagnosis Labels**: Obtained from `dxsum.csv` using `groupby('PTID').first()` - since patients are stable, the first visit diagnosis applies to all timepoints.
+
 ## Project Structure
 
 ```text
