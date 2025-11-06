@@ -59,8 +59,8 @@ model:
   intermediate_size: 648       # MLP intermediate size (3 * hidden_size)
 
   # Regularization
-  hidden_dropout_prob: 0.4     # Dropout probability (increased to combat overfitting)
-  attention_probs_dropout_prob: 0.4  # Attention dropout (increased)
+  hidden_dropout_prob: 0.25    # Dropout probability (from original paper)
+  attention_probs_dropout_prob: 0.25  # Attention dropout (from original paper)
 
   # Other settings
   qkv_bias: true               # Use bias in QKV projections
@@ -73,14 +73,16 @@ model:
 training:
   batch_size: 3                # Batch size (same as original paper)
   epochs: 100                  # Maximum number of epochs
-  learning_rate: 0.00003       # Initial learning rate (3e-5, reduced to prevent overfitting)
-  weight_decay: 0.05           # Weight decay for AdamW (increased for regularization)
+  learning_rate: 0.00008       # Initial learning rate (8e-5, from original paper)
+  weight_decay: 0.001          # Weight decay for AdamW (1e-3, from original paper)
   optimizer: "AdamW"           # Optimizer: Adam or AdamW
 
   # Learning rate scheduler
-  scheduler: "ReduceLROnPlateau"  # Options: ReduceLROnPlateau, CosineAnnealing, None
-  lr_patience: 5               # Reduce LR after N epochs without improvement
-  lr_factor: 0.5               # Multiply LR by this factor
+  scheduler: "MultiStepLR"     # Options: ReduceLROnPlateau, CosineAnnealing, MultiStepLR, None
+  lr_milestones: [10, 20, 30, 40, 50]  # Epochs at which to reduce LR (for MultiStepLR)
+  lr_gamma: 0.7                # Multiply LR by this factor at each milestone
+  lr_patience: 5               # Reduce LR after N epochs without improvement (for ReduceLROnPlateau)
+  lr_factor: 0.5               # Multiply LR by this factor (for ReduceLROnPlateau)
 
   # Class balancing
   use_weighted_loss: true      # Use weighted cross-entropy for class imbalance

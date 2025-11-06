@@ -175,6 +175,13 @@ class Trainer:
                 T_max=self.config['training']['epochs']
             )
             logger.info(f"LR Scheduler: CosineAnnealingLR")
+        elif scheduler_type == 'MultiStepLR':
+            self.scheduler = optim.lr_scheduler.MultiStepLR(
+                self.optimizer,
+                milestones=self.config['training']['lr_milestones'],
+                gamma=self.config['training']['lr_gamma']
+            )
+            logger.info(f"LR Scheduler: MultiStepLR (milestones={self.config['training']['lr_milestones']}, gamma={self.config['training']['lr_gamma']})")
         else:
             self.scheduler = None
             logger.info(f"LR Scheduler: None")
@@ -326,6 +333,8 @@ class Trainer:
             if self.scheduler is not None:
                 if isinstance(self.scheduler, optim.lr_scheduler.ReduceLROnPlateau):
                     self.scheduler.step(val_metrics['loss'])
+                elif isinstance(self.scheduler, (optim.lr_scheduler.MultiStepLR, optim.lr_scheduler.CosineAnnealingLR)):
+                    self.scheduler.step()
                 else:
                     self.scheduler.step()
 
