@@ -119,8 +119,11 @@ class CNMCIADDatasetPreparator:
                 missing_patients.append(ptid)
                 continue
 
-            # Find all skull-stripped scans for this patient
+            # Find all scans for this patient (skull-stripped or NPPY preprocessed)
             scans = list(patient_folder.glob('*_registered_skull_stripped.nii.gz'))
+            if not scans:
+                # Try NPPY preprocessed scans
+                scans = list(patient_folder.glob('*_mni_norm.nii.gz'))
 
             if not scans:
                 missing_patients.append(ptid)

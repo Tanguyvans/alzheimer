@@ -14,9 +14,9 @@
 # DATA PATHS - Edit these for your setup
 # =============================================================================
 data:
-  # Input data (skull-stripped MRI scans)
+  # Input data (NPPY preprocessed MRI scans)
   dxsum_csv: "/Volumes/KINGSTON/dxsum.csv"
-  skull_dir: "/Volumes/KINGSTON/ADNI-skull"
+  skull_dir: "/path/to/cn_mci_ad"  # UPDATE THIS: Path to extracted NPPY dataset
 
   # Output paths (relative to this experiment folder)
   splits_dir: "data/splits"          # Where to save train/val/test CSVs
