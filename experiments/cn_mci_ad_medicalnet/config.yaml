@@ -1,19 +1,17 @@
-# Configuration for CN vs MCI vs AD with VECNN Model (3-Class Classification)
+# Configuration for CN vs MCI vs AD with MedicalNet Transfer Learning
 #
-# Based on: "Vision transformer-equipped Convolutional Neural Networks for
-# automated Alzheimer's disease diagnosis using 3D MRI scans"
-# PMC11682981 (November 2024)
+# Based on MedicalNet: https://github.com/Tencent/MedicalNet
+# Pretrained 3D ResNet models on 23 medical imaging datasets
 #
-# Key improvements over 3D HCCT:
-# - Subject-level splitting (no data leakage)
-# - 92.14% accuracy reported with proper methodology
-# - Batch size 16 (vs 3 in HCCT)
-# - 150 epochs (vs 100 in HCCT)
-# - 8:1:1 split ratio (80/10/10)
+# Key advantages:
+# - Transfer learning reduces overfitting on small datasets
+# - Pretrained on medical imaging (better than ImageNet for medical tasks)
+# - Proven to improve accuracy 10-20% vs training from scratch
 #
 # Usage:
-#   Step 1: python 01_prepare_dataset.py --config config.yaml
-#   Step 2: python train.py --config config.yaml
+#   Step 1: Download pretrained weights from https://github.com/Tencent/MedicalNet
+#   Step 2: python 01_prepare_dataset.py --config config.yaml
+#   Step 3: python train.py --config config.yaml
 
 # =============================================================================
 # DATA PATHS - Edit these for your setup
@@ -38,42 +36,40 @@ data:
 # DATASET PREPARATION (Step 1)
 # =============================================================================
 dataset_preparation:
-  train_ratio: 0.8                   # 80% training (from VECNN paper)
+  train_ratio: 0.8                   # 80% training
   val_ratio: 0.1                     # 10% validation
   test_ratio: 0.1                    # 10% test
   random_seed: 42
 
 # =============================================================================
-# MODEL ARCHITECTURE - VECNN
+# MODEL ARCHITECTURE - MedicalNet 3D ResNet
 # =============================================================================
 model:
-  name: "VECNN"
+  name: "ResNet3D"
+  architecture: "resnet18"           # Options: resnet10, resnet18, resnet34, resnet50
 
   # Image/volume configuration
   image_size: 192              # Input volume size (192x192x192)
   num_channels: 1              # Number of input channels (grayscale MRI)
   num_classes: 3               # 3-class classification (CN vs MCI vs AD)
 
-  # ResNet-50 backbone configuration
-  block_distribution: [3, 3, 9, 3]  # Modified from [3,4,6,3] to align with Swin Transformer
-  stem_kernel_size: 4          # Non-overlapping stem (4x4x4)
-  stem_stride: 4               # Stride 4 for stem
-  use_spatial_separable: true  # Use spatial separable convolutions
-  activation: "gelu"           # GELU instead of ReLU
+  # Transfer learning
+  use_pretrained: true         # Use MedicalNet pretrained weights
+  pretrained_path: "pretrained/resnet_18.pth"  # Path to pretrained weights
+  freeze_backbone: false       # Set to true to freeze all layers except FC
 
 # =============================================================================
-# TRAINING HYPERPARAMETERS (from VECNN paper)
+# TRAINING HYPERPARAMETERS
 # =============================================================================
 training:
-  batch_size: 2                # Batch size (reduced for GPU memory constraints)
-  epochs: 150                  # Maximum number of epochs (from VECNN paper)
-  learning_rate: 0.0001        # Initial learning rate (1e-4, AdamW)
-  weight_decay: 0.0001         # Weight decay for AdamW (1e-4)
+  batch_size: 4                # Batch size (increased from 2 since ResNet-18 is lighter)
+  epochs: 100                  # Maximum number of epochs
+  learning_rate: 0.0001        # Initial learning rate (1e-4)
+  weight_decay: 0.0001         # Weight decay for AdamW
   optimizer: "AdamW"           # Optimizer
 
   # Learning rate scheduler
   scheduler: "CosineAnnealing"  # Cosine annealing LR scheduler
-  lr_warmup_epochs: 10         # Warmup for first 10 epochs
   lr_min: 0.00001              # Minimum learning rate (1e-5)
 
   # Class balancing
@@ -89,9 +85,8 @@ training:
 augmentation:
   enabled: true                # Enable data augmentation
   random_flip_prob: 0.5        # Probability of random flip
-  random_rotation_degrees: 15  # Max rotation degrees
-  random_affine: true          # Apply random affine transforms
-  elastic_deformation: false   # Apply elastic deformation (expensive)
+  random_rotation_degrees: 10  # Max rotation degrees
+  random_affine: false         # Apply random affine transforms
   intensity_shift: true        # Random intensity shifts
   intensity_scale: true        # Random intensity scaling
 
@@ -110,7 +105,7 @@ hardware:
 callbacks:
   early_stopping:
     enabled: true
-    patience: 20               # Stop if no improvement after 20 epochs
+    patience: 15               # Stop if no improvement after 15 epochs
     monitor: "val_accuracy"    # Metric to monitor
     mode: "max"                # Maximize accuracy
 
@@ -131,16 +126,16 @@ wandb:
   enabled: true                # Enable/disable wandb logging
   project: "alzheimer-research"
   entity: null                 # Wandb entity/team name (null = use default)
-  run_name: "cn-mci-ad-vecnn"  # Custom run name
+  run_name: "cn-mci-ad-medicalnet-resnet18"  # Custom run name
   log_model: false             # Upload model checkpoints to wandb
   tags:
-    - vecnn
-    - vision-transformer
-    - resnet50
+    - medicalnet
+    - transfer-learning
+    - resnet18
     - 3-class-classification
     - cn-mci-ad
     - patient-level-split
-  notes: "VECNN for 3-class classification: CN vs MCI vs AD (stable patients, patient-level split)"
+  notes: "MedicalNet ResNet-18 transfer learning for CN/MCI/AD classification (patient-level split)"
 
 # =============================================================================
 # EVALUATION
