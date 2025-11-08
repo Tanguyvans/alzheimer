@@ -21,7 +21,8 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import argparse
 import logging
-from model_resnet3d import resnet18, load_pretrained_weights
+from model_resnet3d import resnet18, load_pretrained_weights as load_pretrained_resnet
+from model_seresnet3d import seresnet18, load_pretrained_weights as load_pretrained_seresnet
 from dataset import ADNIDataset
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -43,18 +44,25 @@ class EnsembleTrainer:
         train_csv: str,
         val_csv: str,
         model_id: int,
-        pretrained_path: str = None
+        pretrained_path: str = None,
+        use_se: bool = True
     ):
         """Train a single model on a balanced subset"""
         logger.info(f"\n{'='*80}")
         logger.info(f"TRAINING MODEL {model_id}")
         logger.info(f"{'='*80}")
 
-        # Build model
-        model = resnet18(num_classes=3, in_channels=1)
-
-        if pretrained_path and Path(pretrained_path).exists():
-            model = load_pretrained_weights(model, pretrained_path, num_classes=3)
+        # Build model (with or without SE blocks)
+        if use_se:
+            logger.info("Using SEResNet-18 (with SE blocks)")
+            model = seresnet18(num_classes=3, in_channels=1, use_se=True)
+            if pretrained_path and Path(pretrained_path).exists():
+                model = load_pretrained_seresnet(model, pretrained_path, num_classes=3)
+        else:
+            logger.info("Using vanilla ResNet-18")
+            model = resnet18(num_classes=3, in_channels=1)
+            if pretrained_path and Path(pretrained_path).exists():
+                model = load_pretrained_resnet(model, pretrained_path, num_classes=3)
 
         model = model.to(self.device)
 
@@ -178,12 +186,14 @@ class EnsembleTrainer:
         subset_dir: str,
         val_csv: str,
         num_models: int,
-        pretrained_path: str = None
+        pretrained_path: str = None,
+        use_se: bool = True
     ):
         """Train all models in the ensemble"""
         logger.info("="*80)
         logger.info("TRAINING ENSEMBLE OF MODELS")
         logger.info("="*80)
+        logger.info(f"Architecture: {'SEResNet-18' if use_se else 'ResNet-18'}")
 
         subset_dir = Path(subset_dir)
         best_val_accs = []
@@ -199,7 +209,8 @@ class EnsembleTrainer:
                 train_csv=str(train_csv),
                 val_csv=val_csv,
                 model_id=i,
-                pretrained_path=pretrained_path
+                pretrained_path=pretrained_path,
+                use_se=use_se
             )
             best_val_accs.append(val_acc)
 
@@ -236,6 +247,10 @@ def main():
                        help='Early stopping patience')
     parser.add_argument('--num-workers', type=int, default=4,
                        help='Number of dataloader workers')
+    parser.add_argument('--use-se', action='store_true', default=True,
+                       help='Use SE blocks (SEResNet-18)')
+    parser.add_argument('--no-se', dest='use_se', action='store_false',
+                       help='Use vanilla ResNet-18 without SE blocks')
 
     args = parser.parse_args()
 
@@ -254,7 +269,8 @@ def main():
         subset_dir=args.subset_dir,
         val_csv=args.val_csv,
         num_models=args.num_models,
-        pretrained_path=args.pretrained
+        pretrained_path=args.pretrained,
+        use_se=args.use_se
     )
 
 

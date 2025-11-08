@@ -22,13 +22,14 @@ import argparse
 import logging
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, classification_report, confusion_matrix
 from model_resnet3d import resnet18
+from model_seresnet3d import seresnet18
 from dataset import ADNIDataset
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
-def load_ensemble_models(checkpoints_dir: str, num_models: int, device):
+def load_ensemble_models(checkpoints_dir: str, num_models: int, device, use_se: bool = True):
     """Load all models in the ensemble"""
     models = []
     checkpoints_dir = Path(checkpoints_dir)
@@ -40,7 +41,12 @@ def load_ensemble_models(checkpoints_dir: str, num_models: int, device):
             logger.warning(f"Checkpoint not found: {checkpoint_path}")
             continue
 
-        model = resnet18(num_classes=3, in_channels=1)
+        # Load SEResNet or vanilla ResNet
+        if use_se:
+            model = seresnet18(num_classes=3, in_channels=1, use_se=True)
+        else:
+            model = resnet18(num_classes=3, in_channels=1)
+
         model.load_state_dict(torch.load(checkpoint_path, map_location=device))
         model = model.to(device)
         model.eval()
