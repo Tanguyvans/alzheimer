@@ -51,21 +51,28 @@ def scan_nppy_dataset(nppy_dir: Path, dxsum_csv: Path):
             logger.warning(f"Unexpected path structure: {patient_id}")
             continue
 
+        # Extract numeric RID from patient_id (e.g., "011_S_0003" → 3)
+        try:
+            rid = int(patient_id.split('_S_')[1])
+        except (IndexError, ValueError):
+            logger.warning(f"Could not extract RID from patient_id: {patient_id}")
+            continue
+
         data.append({
             'scan_path': str(scan_path),
-            'patient_id': patient_id
+            'patient_id': patient_id,
+            'RID': rid
         })
 
     scans_df = pd.DataFrame(data)
     logger.info(f"Processed {len(scans_df)} scans with valid patient IDs")
 
     # Match with diagnosis info
-    # Merge on patient_id to get diagnosis labels
+    # Merge on RID to get diagnosis labels
     # dxsum.csv has DIAGNOSIS column with codes: 1=CN, 2=MCI, 3=AD
     merged_df = scans_df.merge(
         dx_df[['RID', 'DIAGNOSIS']].drop_duplicates(subset=['RID']),
-        left_on='patient_id',
-        right_on='RID',
+        on='RID',
         how='left'
     )
 
