@@ -10,10 +10,16 @@ Class-balanced diversity ensemble approach inspired by IMBALMED (October 2024).
 
 **Our Implementation**:
 1. Create multiple balanced subsets from training data
-2. Train separate ResNet-18 models on each subset
+2. Train separate ResNet-18/SEResNet-18 models on each subset
 3. Ensemble predictions by averaging probabilities
 
-**Expected Improvement**: 60-62% (single model) → 70-75% (ensemble)
+**Architectures Available**:
+- ResNet-18 (vanilla): 33.2M parameters
+- SEResNet-18 (with SE blocks): 33.2M parameters (+87K for SE attention, +0.3%)
+
+**Results**:
+- Vanilla ResNet-18 ensemble: 63% test accuracy
+- SEResNet-18 ensemble: Testing in progress (expected 70-75%)
 
 ## Quick Start
 
@@ -43,7 +49,26 @@ python3 create_balanced_subsets.py \
 
 ### Step 3: Train Ensemble
 
-Train 5 ResNet-18 models (one per subset):
+**Option A: SEResNet-18 (Recommended - with SE attention blocks)**
+
+Train 5 SEResNet-18 models with Squeeze-and-Excitation blocks:
+
+```bash
+python3 train_ensemble.py \
+  --subset-dir balanced_subsets \
+  --val-csv ../cn_mci_ad_medicalnet/data/splits/val.csv \
+  --num-models 5 \
+  --pretrained ../cn_mci_ad_medicalnet/pretrained/resnet_18_23dataset.pth \
+  --checkpoints-dir checkpoints_seresnet \
+  --batch-size 4 \
+  --epochs 50 \
+  --patience 10 \
+  --use-se
+```
+
+**Option B: Vanilla ResNet-18 (baseline)**
+
+Train 5 vanilla ResNet-18 models without SE blocks:
 
 ```bash
 python3 train_ensemble.py \
@@ -54,7 +79,8 @@ python3 train_ensemble.py \
   --checkpoints-dir checkpoints \
   --batch-size 4 \
   --epochs 50 \
-  --patience 10
+  --patience 10 \
+  --no-se
 ```
 
 **Training time**: ~30-40 minutes per model on GPU (total: 2-3 hours for 5 models)
@@ -70,6 +96,42 @@ python3 predict_ensemble.py \
   --num-models 5 \
   --batch-size 4
 ```
+
+## Architecture: SEResNet-18 with Squeeze-and-Excitation Blocks
+
+### What are SE Blocks?
+
+Squeeze-and-Excitation (SE) blocks add **channel attention** to ResNet with minimal overhead:
+
+1. **Squeeze**: Global average pooling aggregates spatial information per channel
+2. **Excitation**: Two FC layers learn channel-wise attention weights (with bottleneck)
+3. **Scale**: Multiply original features by attention weights to recalibrate channels
+
+**Benefits**:
+- Emphasizes important feature channels, suppresses irrelevant ones
+- Only +87K parameters (+0.3% overhead)
+- Paper achieved 93.26% accuracy on ADNI with SEResNet-18
+
+**Architecture**:
+```
+Input (B, C, D, H, W)
+  ↓
+ResNet Block: conv → BN → ReLU → conv → BN
+  ↓
+SE Block:
+  - Squeeze: GlobalAvgPool3D → (B, C)
+  - Excitation: FC(C→C/16) → ReLU → FC(C/16→C) → Sigmoid
+  - Scale: multiply features by attention weights
+  ↓
+Add residual → ReLU → Output
+```
+
+### Implementation
+
+- `model_seresnet3d.py`: SEResNet-18/34/50 with configurable SE blocks
+- `SEBlock`: Channel attention module
+- `SEBasicBlock`: ResNet basic block + SE attention
+- Pretrained weight loading: Loads conv/BN layers from MedicalNet, randomly initializes SE blocks
 
 ## How It Works
 
@@ -111,10 +173,27 @@ Averaging reduces errors and variance!
 
 ## Results Comparison
 
-| Method | Train Acc | Val Acc | Test Acc | Overfitting |
-|--------|-----------|---------|----------|-------------|
-| Single ResNet-18 | 74% | 47% | 62% | ❌ High |
-| **Ensemble (5 models)** | ? | ? | **70-75%** | ✅ Lower |
+| Method | Test Acc | Balanced Acc | CN Precision | MCI Precision | AD Precision |
+|--------|----------|--------------|--------------|---------------|--------------|
+| Single ResNet-18 (MedicalNet) | 61.9% | 61.0% | 0.66 | 0.50 | 0.66 |
+| **Vanilla ResNet-18 Ensemble** | **63.0%** | **62.0%** | **0.70** | **0.52** | **0.60** |
+| SEResNet-18 Ensemble (expected) | 70-75% | - | - | - | - |
+
+**Vanilla ResNet-18 Ensemble Confusion Matrix** (Test Set, n=168):
+```
+           Predicted
+           CN  MCI  AD
+Actual CN  59   12   3   (80% recall)
+      MCI  23   23  13   (39% recall)
+       AD   2    9  24   (69% recall)
+```
+
+**Analysis**:
+- Ensemble improves over single model (63.0% vs 61.9%)
+- CN classification is strong (70% precision, 80% recall)
+- MCI remains challenging (52% precision, 39% recall) - typical for this class
+- AD classification is decent (60% precision, 69% recall)
+- Main confusion: MCI samples misclassified as CN or AD (transitional stage is hard)
 
 ## Configuration
 
@@ -162,5 +241,11 @@ Edit `train_ensemble.py` or pass as arguments:
 ## References
 
 - **IMBALMED Paper**: Francesconi et al., "Class Balancing Diversity Multimodal Ensemble for Alzheimer's Disease Diagnosis and Early Detection", Computerized Medical Imaging and Graphics, October 2024
-- **ArXiv**: https://arxiv.org/html/2410.10374v1
+  - ArXiv: <https://arxiv.org/html/2410.10374v1>
+
+- **SEResNet Paper**: Gupta et al., "Deep CNN ResNet-18 based model with attention and transfer learning for Alzheimer's disease detection", Neural Computing and Applications, 2024
+  - 93.26% accuracy on ADNI dataset with SEResNet-18
+  - Uses Squeeze-and-Excitation blocks for channel attention
+
 - **MedicalNet**: Chen et al., "Med3D: Transfer Learning for 3D Medical Image Analysis"
+  - Pretrained 3D ResNet models on 23 medical imaging datasets
