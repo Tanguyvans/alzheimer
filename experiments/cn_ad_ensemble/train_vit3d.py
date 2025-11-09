@@ -24,7 +24,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import time
 
-from dataset import AlzheimerDataset
+from dataset import ADNIDataset
 from model_vit3d import vit3d_small, vit3d_base, vit3d_large
 
 logging.basicConfig(level=logging.INFO)
@@ -213,8 +213,8 @@ def main():
 
     # Create datasets
     logger.info("Loading datasets...")
-    train_dataset = AlzheimerDataset(args.train_csv, augment=True)
-    val_dataset = AlzheimerDataset(args.val_csv, augment=False)
+    train_dataset = ADNIDataset(args.train_csv, augment=True)
+    val_dataset = ADNIDataset(args.val_csv, augment=False)
 
     logger.info(f"Training samples: {len(train_dataset)}")
     logger.info(f"Validation samples: {len(val_dataset)}")

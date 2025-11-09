@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from sklearn.metrics import classification_report, confusion_matrix, balanced_accuracy_score
 
-from dataset import AlzheimerDataset
+from dataset import ADNIDataset
 from model_vit3d import vit3d_small, vit3d_base, vit3d_large
 
 logging.basicConfig(level=logging.INFO)
@@ -97,7 +97,7 @@ def main():
 
     # Create dataset
     logger.info("Loading test dataset...")
-    test_dataset = AlzheimerDataset(args.test_csv, augment=False)
+    test_dataset = ADNIDataset(args.test_csv, augment=False)
     logger.info(f"Test samples: {len(test_dataset)}")
 
     test_loader = DataLoader(
