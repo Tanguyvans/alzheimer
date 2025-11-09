@@ -189,6 +189,14 @@ def main():
     # Filter to binary CN vs AD
     df_binary = filter_cn_ad(df)
 
+    # Verify we have both classes
+    if len(df_binary[df_binary['label'] == 0]) == 0:
+        logger.error("No CN samples found after filtering!")
+        return
+    if len(df_binary[df_binary['label'] == 1]) == 0:
+        logger.error("No AD samples found after filtering!")
+        return
+
     # Create patient-level splits
     train_df, val_df, test_df = create_patient_level_splits(
         df_binary,
@@ -205,6 +213,14 @@ def main():
     train_df[['scan_path', 'label']].to_csv(output_dir / 'train.csv', index=False)
     val_df[['scan_path', 'label']].to_csv(output_dir / 'val.csv', index=False)
     test_df[['scan_path', 'label']].to_csv(output_dir / 'test.csv', index=False)
+
+    # Verify saved files
+    logger.info("\nVerifying saved splits:")
+    for split_name, split_path in [('train', 'train.csv'), ('val', 'val.csv'), ('test', 'test.csv')]:
+        split_df = pd.read_csv(output_dir / split_path)
+        cn_count = len(split_df[split_df['label'] == 0])
+        ad_count = len(split_df[split_df['label'] == 1])
+        logger.info(f"  {split_name}: CN={cn_count}, AD={ad_count}, Total={len(split_df)}")
 
     logger.info(f"\n✓ Saved splits to {output_dir}/")
     logger.info(f"  - train.csv")

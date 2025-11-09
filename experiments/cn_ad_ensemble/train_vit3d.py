@@ -236,13 +236,23 @@ def main():
         pin_memory=True
     )
 
-    # Loss function
+    # Compute class weights based on inverse frequency
+    train_labels = train_dataset.df['label'].values
+    class_counts = np.bincount(train_labels)
+    class_weights = len(train_labels) / (len(class_counts) * class_counts)
+    class_weights = torch.FloatTensor(class_weights).to(device)
+
+    logger.info(f"\nClass distribution in training set:")
+    logger.info(f"  CN (0): {class_counts[0]} samples, weight: {class_weights[0]:.4f}")
+    logger.info(f"  AD (1): {class_counts[1]} samples, weight: {class_weights[1]:.4f}")
+
+    # Loss function with class weights
     if args.use_focal_loss:
-        logger.info(f"Using Focal Loss (alpha={args.focal_alpha}, gamma={args.focal_gamma})")
+        logger.info(f"Using Focal Loss with class weights (alpha={args.focal_alpha}, gamma={args.focal_gamma})")
         criterion = FocalLoss(alpha=args.focal_alpha, gamma=args.focal_gamma)
     else:
-        logger.info("Using Cross-Entropy Loss")
-        criterion = nn.CrossEntropyLoss()
+        logger.info("Using Weighted Cross-Entropy Loss")
+        criterion = nn.CrossEntropyLoss(weight=class_weights)
 
     # Optimizer (AdamW recommended for ViT)
     optimizer = optim.AdamW(
