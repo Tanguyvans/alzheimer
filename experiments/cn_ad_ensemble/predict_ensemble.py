@@ -141,15 +141,14 @@ def evaluate_ensemble(
 
     # Classification report
     logger.info(f"\nClassification Report:")
-    report = classification_report(labels, preds, target_names=['CN', 'MCI', 'AD'])
+    report = classification_report(labels, preds, target_names=['CN', 'AD'])
     logger.info(f"\n{report}")
 
     # Save predictions
     df = pd.read_csv(test_csv)
     df['predicted_label'] = preds
     df['predicted_CN_proba'] = probs[:, 0]
-    df['predicted_MCI_proba'] = probs[:, 1]
-    df['predicted_AD_proba'] = probs[:, 2]
+    df['predicted_AD_proba'] = probs[:, 1]
 
     output_path = Path(checkpoints_dir).parent / 'ensemble_predictions.csv'
     df.to_csv(output_path, index=False)

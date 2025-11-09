@@ -11,13 +11,34 @@ The 3-class problem (CN/MCI/AD) achieved only 63% accuracy with MCI having 39% r
 3. **Validate improvements**: Test SEResNet-18 and augmentation strategies on cleaner problem
 4. **Build confidence**: Prove our pipeline works before tackling MCI
 
-## Expected Performance
+## Performance Results
 
-| Method | Expected Accuracy |
-|--------|------------------|
-| Single ResNet-18 | 85-90% |
-| SEResNet-18 Ensemble (5 models) | 90-95% |
-| SEResNet-18 Ensemble + Augmentation | 93-97% |
+| Method | Test Accuracy | Balanced Accuracy | CN Precision | AD Precision |
+|--------|---------------|-------------------|--------------|--------------|
+| **SEResNet-18 Ensemble (5 models)** | **90.83%** | **87.22%** | **90.0%** | **93.1%** |
+
+**Confusion Matrix** (Test Set, n=109):
+```
+           Predicted
+           CN   AD
+Actual CN  72    2   (97.3% recall)
+       AD   8   27   (77.1% recall)
+```
+
+**Individual Model Performance:**
+- Model 1: 88.99% val accuracy
+- Model 2: 89.91% val accuracy
+- Model 3: 87.16% val accuracy
+- Model 4: 86.24% val accuracy
+- Model 5: 88.07% val accuracy
+- **Average: 88.07% ± 1.30%**
+
+**Key Observations:**
+- ✅ **90.83% test accuracy** - major improvement from 63% on 3-class
+- ✅ **Excellent CN detection**: 97.3% recall (72/74 correct)
+- ✅ **Good AD detection**: 77.1% recall (27/35 correct)
+- ✅ **High precision**: 90% CN, 93% AD
+- ⚠️ **AD recall lower** due to class imbalance (only 35 AD samples in test)
 
 ## Quick Start
 
