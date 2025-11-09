@@ -46,8 +46,9 @@ def scan_nppy_dataset(nppy_dir: Path, dxsum_csv: Path):
         # Assuming structure: cn_mci_ad/XXX_S_XXXX/scan.nii.gz
         patient_id = scan_path.parent.name
 
-        if not patient_id.startswith(('011_S', '022_S', '023_S', '127_S', '128_S')):
-            logger.warning(f"Unexpected patient ID format: {patient_id}")
+        # Check if it looks like a patient ID (XXX_S_XXXX format)
+        if '_S_' not in patient_id:
+            logger.warning(f"Unexpected path structure: {patient_id}")
             continue
 
         data.append({
@@ -60,16 +61,17 @@ def scan_nppy_dataset(nppy_dir: Path, dxsum_csv: Path):
 
     # Match with diagnosis info
     # Merge on patient_id to get diagnosis labels
+    # dxsum.csv has DIAGNOSIS column with codes: 1=CN, 2=MCI, 3=AD
     merged_df = scans_df.merge(
-        dx_df[['RID', 'DX']].drop_duplicates(subset=['RID']),
+        dx_df[['RID', 'DIAGNOSIS']].drop_duplicates(subset=['RID']),
         left_on='patient_id',
         right_on='RID',
         how='left'
     )
 
-    # Map DX to labels (CN=0, MCI=1, AD=2)
-    label_map = {'CN': 0, 'MCI': 1, 'AD': 2}
-    merged_df['label'] = merged_df['DX'].map(label_map)
+    # Map DIAGNOSIS codes to labels (1→0 for CN, 2→1 for MCI, 3→2 for AD)
+    diagnosis_map = {1: 0, 2: 1, 3: 2}
+    merged_df['label'] = merged_df['DIAGNOSIS'].map(diagnosis_map)
 
     # Filter out rows without diagnosis
     merged_df = merged_df.dropna(subset=['label'])
