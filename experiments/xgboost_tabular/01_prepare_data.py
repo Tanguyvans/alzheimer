@@ -36,9 +36,24 @@ def prepare_features(df: pd.DataFrame) -> pd.DataFrame:
     # Create a copy
     df_prep = df.copy()
 
-    # Calculate age from birth year (assuming data collected around 2010)
-    current_year = 2010  # Approximate ADNI collection period
-    df_prep['AGE'] = current_year - df_prep['PTDOBYY']
+    # Calculate age from birth year using actual acquisition date
+    if 'Acq Date' in df_prep.columns:
+        # Parse acquisition date and extract year
+        df_prep['Acq Date'] = pd.to_datetime(df_prep['Acq Date'])
+        df_prep['acq_year'] = df_prep['Acq Date'].dt.year
+        df_prep['AGE'] = df_prep['acq_year'] - df_prep['PTDOBYY']
+        logger.info("Calculated AGE using actual acquisition date (Acq Date)")
+    elif 'EXAMDATE' in df_prep.columns:
+        # Fallback to EXAMDATE if Acq Date not available
+        df_prep['EXAMDATE'] = pd.to_datetime(df_prep['EXAMDATE'])
+        df_prep['exam_year'] = df_prep['EXAMDATE'].dt.year
+        df_prep['AGE'] = df_prep['exam_year'] - df_prep['PTDOBYY']
+        logger.info("Calculated AGE using exam date (EXAMDATE)")
+    else:
+        # Last resort: use fixed year (2010) as approximation
+        current_year = 2010
+        df_prep['AGE'] = current_year - df_prep['PTDOBYY']
+        logger.warning(f"No date column found. Using approximate year {current_year} for AGE calculation")
 
     # BMI calculation (weight in kg, height in cm)
     df_prep['BMI'] = df_prep['VSWEIGHT'] / ((df_prep['VSHEIGHT'] / 100) ** 2)
