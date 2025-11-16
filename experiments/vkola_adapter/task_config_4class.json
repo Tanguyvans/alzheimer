@@ -1,0 +1,21 @@
+{
+  "COG_4class": {
+    "task_type": "cla",
+    "num_classes": 4,
+    "learning_rate": 0.0001,
+    "num_epochs": 100,
+    "batch_size": 4,
+    "backbone_model": "ResNet18",
+    "factor": 1.0,
+    "class_weights": [0.579, 0.671, 9.125, 1.778]
+  },
+  "ADD_binary": {
+    "task_type": "cla",
+    "num_classes": 2,
+    "learning_rate": 0.0001,
+    "num_epochs": 100,
+    "batch_size": 8,
+    "backbone_model": "ResNet18",
+    "factor": 1.0
+  }
+}
