@@ -1,26 +1,61 @@
-## XGBoost Tabular Classification: CN vs AD+MCI-to-AD
+# XGBoost Tabular Classification
 
-Binary classification using clinical and cognitive features from ADNI dataset.
+XGBoost models for Alzheimer's disease classification using clinical tabular data.
 
-### Overview
+## Experiments
 
-**Task**: Classify patients as Cognitively Normal (CN) or Alzheimer's Disease including MCI-to-AD converters
+### 1. Binary Classification
+**CN vs (AD + MCI→AD)**
+- Cognitively Normal vs Alzheimer's Disease (including MCI converters)
 
-**Features**: 33 clinical features including:
-- Demographics: age, gender, education, race
-- Cognitive scores: MMSE, Trail Making, Clock Drawing, Boston Naming Test
-- Medical history: cardiovascular, psychiatric, neurological conditions
-- Physical measurements: BMI, weight, height
-- Clinical assessments: CDR, FAQ, depression scores
+### 2. 4-Class Classification
+**CN | MCI stable | MCI→AD | AD**
+- Class 0: CN (Cognitively Normal)
+- Class 1: MCI stable (MCI patients who did NOT convert to AD)
+- Class 2: MCI→AD (MCI patients who converted to AD)
+- Class 3: AD (Alzheimer's Disease)
 
-**Dataset**:
-- Total samples: 1,443 (442 unique patients with multiple scans)
-- CN: 746 samples
-- AD + MCI-to-AD: 697 samples (includes MCI patients who converted to AD)
+## Quick Start
 
-### Quick Start
+```bash
+# Run both experiments
+./run_experiments.sh /path/to/ALL_classes_clinical.csv
 
-#### Step 1: Prepare Data
+# Or run individually
+python train_binary.py \
+    --input-csv /path/to/ALL_classes_clinical.csv \
+    --output-dir results/binary
+
+python train_multiclass.py \
+    --input-csv /path/to/ALL_classes_clinical.csv \
+    --output-dir results/multiclass
+```
+
+## Input Data
+
+Expected CSV columns:
+- `Subject`: Patient ID (for patient-level splitting)
+- `Group`: Original diagnosis at scan time (CN, MCI, AD)
+- `DX`: Final diagnosis after follow-up (CN, MCI, AD)
+- Clinical features: MMSCORE, CDGLOBAL, PTGENDER, PTEDUCAT, etc.
+
+## Output
+
+Each experiment saves to its output directory:
+- `xgboost_model.json` - Trained model
+- `scaler.pkl` - Feature scaler
+- `metrics.json` - Test metrics (accuracy, balanced accuracy, AUC-ROC)
+- `predictions.csv` - Test set predictions with probabilities
+- `feature_importance.csv` - Feature importance scores
+- `confusion_matrix.png` - Visualization
+
+---
+
+## Legacy Pipeline (Binary Classification Only)
+
+The original pipeline for CN vs AD+MCI-to-AD binary classification:
+
+### Step 1: Prepare Data
 
 ```bash
 python 01_prepare_data.py \
@@ -29,15 +64,8 @@ python 01_prepare_data.py \
   --seed 42
 ```
 
-Creates patient-level train/val/test splits (70/15/15) with feature engineering:
-- Age calculation from birth year
-- BMI computation
-- Feature normalization
-- Binary labels (CN=0, AD+MCI-to-AD=1)
+### Step 2: Train XGBoost
 
-#### Step 2: Train XGBoost
-
-**Without hyperparameter tuning** (faster, ~5 minutes):
 ```bash
 python 02_train_xgboost.py \
   --train-csv data/splits/train.csv \
@@ -46,17 +74,7 @@ python 02_train_xgboost.py \
   --use-class-weights
 ```
 
-**With hyperparameter tuning** (slower, ~30 minutes):
-```bash
-python 02_train_xgboost.py \
-  --train-csv data/splits/train.csv \
-  --val-csv data/splits/val.csv \
-  --output-dir models \
-  --tune-hyperparameters \
-  --use-class-weights
-```
-
-#### Step 3: Evaluate on Test Set
+### Step 3: Evaluate on Test Set
 
 ```bash
 python 03_evaluate_xgboost.py \
@@ -65,13 +83,7 @@ python 03_evaluate_xgboost.py \
   --output-csv predictions.csv
 ```
 
-Generates:
-- Classification metrics (accuracy, balanced accuracy, AUC-ROC)
-- Confusion matrix visualization
-- ROC curve plot
-- Per-sample predictions CSV
-
-#### Step 4: Analyze MCI-Stable Patients (Optional)
+### Step 4: Analyze MCI-Stable Patients (Optional)
 
 ```bash
 python 04_test_mci_stable.py \
@@ -80,16 +92,6 @@ python 04_test_mci_stable.py \
   --converters-csv ../../data/AD_CN_MCI_to_AD.csv \
   --output-csv mci_stable_predictions.csv
 ```
-
-Classifies MCI-stable patients to see where they fall in the CN-AD spectrum.
-
-```bash
-python 05_visualize_mci_stable.py \
-  --predictions-csv mci_stable_predictions.csv \
-  --output-dir models
-```
-
-Generates MCI-stable confusion matrix visualization.
 
 ### Actual Performance (Achieved)
 
