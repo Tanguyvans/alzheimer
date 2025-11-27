@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 """
-Train XGBoost for 4-class classification: CN | MCI stable | MCI→AD | AD
+Train XGBoost for multiclass classification.
 
-Classes:
-    0: CN (Cognitively Normal)
-    1: MCI stable (MCI patients who did NOT convert to AD)
-    2: MCI→AD (MCI patients who converted to AD)
-    3: AD (Alzheimer's Disease)
+If DX column available (4-class): CN | MCI stable | MCI→AD | AD
+If only Group column (3-class): CN | MCI | AD
 
 Usage:
-    python train_multiclass.py \
-        --input-csv /path/to/ALL_classes_clinical.csv \
+    python train_cn_mcis_mcic_ad.py \
+        --input-csv /path/to/clinical_data.csv \
         --output-dir results/multiclass \
         --seed 42
 """
@@ -36,13 +33,10 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-CLASS_NAMES = ['CN', 'MCI_stable', 'MCI_to_AD', 'AD']
-CLASS_MAPPING = {
-    'CN': 0,
-    'MCI_stable': 1,
-    'MCI_to_AD': 2,
-    'AD': 3
-}
+# Will be set dynamically based on data
+CLASS_NAMES = None
+CLASS_MAPPING = None
+NUM_CLASSES = None
 
 
 CLINICAL_FEATURES = [
@@ -61,12 +55,18 @@ CLINICAL_FEATURES = [
 ]
 
 
-def prepare_data(df: pd.DataFrame) -> pd.DataFrame:
-    """Prepare features and create 4-class labels"""
+def prepare_data(df: pd.DataFrame):
+    """Prepare features and create multiclass labels"""
+    global CLASS_NAMES, CLASS_MAPPING, NUM_CLASSES
+
     df_prep = df.copy()
 
     # Calculate AGE
-    if 'Acq Date' in df_prep.columns:
+    if 'EXAMDATE' in df_prep.columns:
+        df_prep['EXAMDATE'] = pd.to_datetime(df_prep['EXAMDATE'])
+        df_prep['exam_year'] = df_prep['EXAMDATE'].dt.year
+        df_prep['AGE'] = df_prep['exam_year'] - df_prep['PTDOBYY']
+    elif 'Acq Date' in df_prep.columns:
         df_prep['Acq Date'] = pd.to_datetime(df_prep['Acq Date'])
         df_prep['acq_year'] = df_prep['Acq Date'].dt.year
         df_prep['AGE'] = df_prep['acq_year'] - df_prep['PTDOBYY']
@@ -76,27 +76,43 @@ def prepare_data(df: pd.DataFrame) -> pd.DataFrame:
     # Calculate BMI
     df_prep['BMI'] = df_prep['VSWEIGHT'] / ((df_prep['VSHEIGHT'] / 100) ** 2)
 
-    # Create 4-class labels based on Group (original diagnosis) and DX (current/final diagnosis)
-    # Group: Original diagnosis at scan time (CN, MCI, AD)
-    # DX: Current/final diagnosis after follow-up
-    def assign_label(row):
-        group = row['Group']  # Original diagnosis
-        dx = row['DX']        # Current/final diagnosis
+    # Check if we have DX column for 4-class or just Group for 3-class
+    has_dx = 'DX' in df_prep.columns
+    has_group = 'Group' in df_prep.columns
 
-        if group == 'CN' and dx == 'CN':
-            return 0  # CN
-        elif group == 'MCI' and dx == 'MCI':
-            return 1  # MCI stable
-        elif group == 'MCI' and dx == 'AD':
-            return 2  # MCI→AD (converter)
-        elif group == 'AD' or dx == 'AD':
-            return 3  # AD
-        elif group == 'CN' and dx == 'MCI':
-            return 1  # CN→MCI (treat as MCI stable for now)
-        else:
-            return -1  # Unknown
+    if has_dx and has_group:
+        # 4-class: CN | MCI stable | MCI→AD | AD
+        CLASS_NAMES = ['CN', 'MCI_stable', 'MCI_to_AD', 'AD']
+        CLASS_MAPPING = {'CN': 0, 'MCI_stable': 1, 'MCI_to_AD': 2, 'AD': 3}
+        NUM_CLASSES = 4
+        logger.info("Using 4-class classification: CN | MCI stable | MCI→AD | AD")
 
-    df_prep['label'] = df_prep.apply(assign_label, axis=1)
+        def assign_label(row):
+            group = row['Group']
+            dx = row['DX']
+            if group == 'CN' and dx == 'CN':
+                return 0  # CN
+            elif group == 'MCI' and dx == 'MCI':
+                return 1  # MCI stable
+            elif group == 'MCI' and dx == 'AD':
+                return 2  # MCI→AD (converter)
+            elif group == 'AD' or dx == 'AD':
+                return 3  # AD
+            elif group == 'CN' and dx == 'MCI':
+                return 1  # CN→MCI (treat as MCI stable)
+            else:
+                return -1
+        df_prep['label'] = df_prep.apply(assign_label, axis=1)
+    elif has_group:
+        # 3-class: CN | MCI | AD
+        CLASS_NAMES = ['CN', 'MCI', 'AD']
+        CLASS_MAPPING = {'CN': 0, 'MCI': 1, 'AD': 2}
+        NUM_CLASSES = 3
+        logger.info("Using 3-class classification: CN | MCI | AD")
+
+        df_prep['label'] = df_prep['Group'].map(CLASS_MAPPING)
+    else:
+        raise ValueError("No diagnosis column found (expected 'Group' or 'DX')")
 
     # Remove unknown labels
     df_prep = df_prep[df_prep['label'] >= 0].copy()
@@ -128,7 +144,7 @@ def patient_level_split(df, train_ratio=0.7, val_ratio=0.15, test_ratio=0.15, se
     """Split data at patient level to prevent data leakage"""
     # Get unique patients per class
     patient_classes = {}
-    for label in range(4):
+    for label in range(NUM_CLASSES):
         patient_classes[label] = df[df['label'] == label]['Subject'].unique()
         logger.info(f"Unique patients - {CLASS_NAMES[label]}: {len(patient_classes[label])}")
 
@@ -146,7 +162,7 @@ def patient_level_split(df, train_ratio=0.7, val_ratio=0.15, test_ratio=0.15, se
     val_patients = []
     test_patients = []
 
-    for label in range(4):
+    for label in range(NUM_CLASSES):
         train_p, val_p, test_p = split_patients(patient_classes[label])
         train_patients.extend(train_p)
         val_patients.extend(val_p)
@@ -165,7 +181,7 @@ def train_xgboost(X_train, y_train, X_val, y_val):
     """Train XGBoost for multiclass classification"""
     params = {
         'objective': 'multi:softprob',
-        'num_class': 4,
+        'num_class': NUM_CLASSES,
         'eval_metric': 'mlogloss',
         'max_depth': 6,
         'learning_rate': 0.1,
@@ -208,7 +224,7 @@ def evaluate_model(model, X, y, feature_names, dataset_name='Test'):
     # Calculate macro AUC-ROC if possible
     try:
         from sklearn.preprocessing import label_binarize
-        y_bin = label_binarize(y, classes=[0, 1, 2, 3])
+        y_bin = label_binarize(y, classes=list(range(NUM_CLASSES)))
         metrics['auc_roc_macro'] = roc_auc_score(y_bin, y_proba, average='macro', multi_class='ovr')
     except Exception as e:
         logger.warning(f"Could not calculate AUC-ROC: {e}")
@@ -238,7 +254,7 @@ def plot_results(y_true, y_pred, y_proba, metrics, output_dir):
                 xticklabels=CLASS_NAMES, yticklabels=CLASS_NAMES)
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
-    plt.title('Confusion Matrix - 4-Class Classification')
+    plt.title(f'Confusion Matrix - {NUM_CLASSES}-Class Classification')
     plt.savefig(output_dir / 'confusion_matrix.png', dpi=150, bbox_inches='tight')
     plt.close()
 
@@ -249,7 +265,7 @@ def plot_results(y_true, y_pred, y_proba, metrics, output_dir):
                 xticklabels=CLASS_NAMES, yticklabels=CLASS_NAMES)
     plt.xlabel('Predicted')
     plt.ylabel('Actual')
-    plt.title('Normalized Confusion Matrix - 4-Class Classification')
+    plt.title(f'Normalized Confusion Matrix - {NUM_CLASSES}-Class Classification')
     plt.savefig(output_dir / 'confusion_matrix_normalized.png', dpi=150, bbox_inches='tight')
     plt.close()
 
@@ -270,7 +286,7 @@ def plot_results(y_true, y_pred, y_proba, metrics, output_dir):
 
     ax.set_xlabel('Class')
     ax.set_ylabel('Score')
-    ax.set_title('Per-Class Metrics - 4-Class Classification')
+    ax.set_title(f'Per-Class Metrics - {NUM_CLASSES}-Class Classification')
     ax.set_xticks(x)
     ax.set_xticklabels(classes)
     ax.legend()
@@ -284,8 +300,8 @@ def plot_results(y_true, y_pred, y_proba, metrics, output_dir):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Train 4-class XGBoost classifier')
-    parser.add_argument('--input-csv', type=str, required=True, help='Path to ALL_classes_clinical.csv')
+    parser = argparse.ArgumentParser(description='Train multiclass XGBoost classifier (3 or 4 classes)')
+    parser.add_argument('--input-csv', type=str, required=True, help='Path to clinical data CSV')
     parser.add_argument('--output-dir', type=str, default='results/multiclass', help='Output directory')
     parser.add_argument('--seed', type=int, default=42, help='Random seed')
 
@@ -339,14 +355,10 @@ def main():
         json.dump(CLASS_MAPPING, f, indent=2)
 
     # Save predictions
-    pred_df = pd.DataFrame({
-        'y_true': y_test,
-        'y_pred': y_pred,
-        'y_proba_CN': y_proba[:, 0],
-        'y_proba_MCI_stable': y_proba[:, 1],
-        'y_proba_MCI_to_AD': y_proba[:, 2],
-        'y_proba_AD': y_proba[:, 3]
-    })
+    pred_dict = {'y_true': y_test, 'y_pred': y_pred}
+    for i, class_name in enumerate(CLASS_NAMES):
+        pred_dict[f'y_proba_{class_name}'] = y_proba[:, i]
+    pred_df = pd.DataFrame(pred_dict)
     pred_df.to_csv(output_dir / 'predictions.csv', index=False)
 
     # Feature importance

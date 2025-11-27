@@ -51,7 +51,11 @@ def prepare_data(df: pd.DataFrame) -> pd.DataFrame:
     df_prep = df.copy()
 
     # Calculate AGE
-    if 'Acq Date' in df_prep.columns:
+    if 'EXAMDATE' in df_prep.columns:
+        df_prep['EXAMDATE'] = pd.to_datetime(df_prep['EXAMDATE'])
+        df_prep['exam_year'] = df_prep['EXAMDATE'].dt.year
+        df_prep['AGE'] = df_prep['exam_year'] - df_prep['PTDOBYY']
+    elif 'Acq Date' in df_prep.columns:
         df_prep['Acq Date'] = pd.to_datetime(df_prep['Acq Date'])
         df_prep['acq_year'] = df_prep['Acq Date'].dt.year
         df_prep['AGE'] = df_prep['acq_year'] - df_prep['PTDOBYY']
@@ -61,12 +65,19 @@ def prepare_data(df: pd.DataFrame) -> pd.DataFrame:
     # Calculate BMI
     df_prep['BMI'] = df_prep['VSWEIGHT'] / ((df_prep['VSHEIGHT'] / 100) ** 2)
 
+    # Determine diagnosis column (DX or Group)
+    if 'DX' in df_prep.columns:
+        dx_col = 'DX'
+    elif 'Group' in df_prep.columns:
+        dx_col = 'Group'
+    else:
+        raise ValueError("No diagnosis column found (expected 'DX' or 'Group')")
+
     # Binary label: CN=0, AD (including MCI→AD)=1
-    # DX column contains the actual diagnosis (MCI patients who converted to AD have DX='AD')
-    df_prep['label'] = (df_prep['DX'] == 'AD').astype(int)
+    df_prep['label'] = (df_prep[dx_col] == 'AD').astype(int)
 
     # Filter to only CN and AD (excluding MCI stable)
-    df_prep = df_prep[df_prep['DX'].isin(['CN', 'AD'])].copy()
+    df_prep = df_prep[df_prep[dx_col].isin(['CN', 'AD'])].copy()
 
     # Get available features
     available_features = [f for f in CLINICAL_FEATURES if f in df_prep.columns]
