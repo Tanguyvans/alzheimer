@@ -17,7 +17,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.cuda.amp import GradScaler, autocast
+from torch.amp import GradScaler, autocast
 from sklearn.metrics import (
     accuracy_score, balanced_accuracy_score, confusion_matrix,
     classification_report, roc_auc_score
@@ -130,7 +130,7 @@ def train_epoch(model, loader, criterion, optimizer, scaler, device, use_amp=Tru
 
         optimizer.zero_grad()
 
-        with autocast(enabled=use_amp):
+        with autocast('cuda', enabled=use_amp):
             outputs = model(images)
             loss = criterion(outputs, labels)
 
@@ -272,7 +272,7 @@ def main():
     )
 
     # Mixed precision
-    scaler = GradScaler()
+    scaler = GradScaler('cuda')
     use_amp = config['hardware']['mixed_precision'] and device.type == 'cuda'
 
     # Output dirs
