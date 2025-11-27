@@ -1,0 +1,10 @@
+{
+  "total_samples": 845,
+  "cn_like_count": 173,
+  "ad_like_count": 672,
+  "cn_like_percent": 20.47,
+  "ad_like_percent": 79.53,
+  "mean_ad_probability": 0.661,
+  "median_ad_probability": 0.7003,
+  "std_ad_probability": 0.2198
+}
