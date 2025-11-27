@@ -49,9 +49,9 @@ echo "========================================"
 echo "Experiment 1: Binary Classification"
 echo "CN vs (AD + MCI→AD)"
 echo "========================================"
-python3 "$SCRIPT_DIR/train_binary.py" \
+python3 "$SCRIPT_DIR/train_cn_ad_mci_ad.py" \
     --input-csv "$INPUT_CSV" \
-    --output-dir "$RESULTS_DIR/binary" \
+    --output-dir "$RESULTS_DIR/cn_ad_mci_ad" \
     --seed "$SEED"
 
 echo ""
@@ -59,9 +59,9 @@ echo "========================================"
 echo "Experiment 2: 4-Class Classification"
 echo "CN | MCI stable | MCI→AD | AD"
 echo "========================================"
-python3 "$SCRIPT_DIR/train_multiclass.py" \
+python3 "$SCRIPT_DIR/train_cn_mcis_mcic_ad.py" \
     --input-csv "$INPUT_CSV" \
-    --output-dir "$RESULTS_DIR/multiclass" \
+    --output-dir "$RESULTS_DIR/cn_mcis_mcic_ad" \
     --seed "$SEED"
 
 echo ""
@@ -70,8 +70,8 @@ echo "All experiments completed!"
 echo "========================================"
 echo ""
 echo "Results saved to:"
-echo "  - Binary:     $RESULTS_DIR/binary/"
-echo "  - Multiclass: $RESULTS_DIR/multiclass/"
+echo "  - CN vs AD+MCI→AD:           $RESULTS_DIR/cn_ad_mci_ad/"
+echo "  - CN|MCIs|MCIc|AD (4-class): $RESULTS_DIR/cn_mcis_mcic_ad/"
 echo ""
 echo "Each directory contains:"
 echo "  - xgboost_model.json: Trained model"
