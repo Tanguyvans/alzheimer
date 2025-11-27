@@ -1,0 +1,149 @@
+# Configuration for 4-Class 3D MRI Classification
+# CN | MCI stable | MCI→AD | AD
+#
+# Uses 3D ResNet with transfer learning from MedicalNet
+#
+# Usage:
+#   Step 1: python 01_prepare_dataset.py --config config.yaml
+#   Step 2: python train.py --config config.yaml
+
+# =============================================================================
+# DATA PATHS - Edit these for your setup
+# =============================================================================
+data:
+  # ADNI diagnosis data (for longitudinal trajectory)
+  tabular_dir: "/Users/tanguyvans/Desktop/umons/alzheimer/data/tabular"
+  dxsum_csv: "/Users/tanguyvans/Desktop/umons/alzheimer/data/tabular/3D_MPRAGE_Imaging_Cohort_DXSUM_10Oct2025.csv"
+
+  # MRI scans directory (skull-stripped)
+  skull_dir: "/Volumes/KINGSTON/ADNI-skull"  # UPDATE: Path to skull-stripped MRI scans
+
+  # Output paths (relative to this experiment folder)
+  splits_dir: "data/splits"
+  checkpoints_dir: "data/checkpoints"
+  logs_dir: "data/logs"
+  results_dir: "data/results"
+
+  # Automatically generated paths
+  train_csv: "data/splits/train.csv"
+  val_csv: "data/splits/val.csv"
+  test_csv: "data/splits/test.csv"
+
+# =============================================================================
+# CLASSES
+# =============================================================================
+classes:
+  num_classes: 4
+  names:
+    - "CN"           # 0: Cognitively Normal (stayed CN)
+    - "MCI_stable"   # 1: MCI stable (MCI → MCI)
+    - "MCI_to_AD"    # 2: MCI converter (MCI → AD)
+    - "AD"           # 3: Alzheimer's Disease
+
+# =============================================================================
+# DATASET PREPARATION (Step 1)
+# =============================================================================
+dataset_preparation:
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+  random_seed: 42
+
+# =============================================================================
+# MODEL ARCHITECTURE
+# =============================================================================
+model:
+  name: "ResNet3D"
+  architecture: "resnet18"  # Options: resnet10, resnet18, resnet34, resnet50
+
+  # Image/volume configuration
+  image_size: 192           # Input volume size (192x192x192)
+  num_channels: 1           # Grayscale MRI
+  num_classes: 4            # 4-class classification
+
+  # Transfer learning
+  use_pretrained: true
+  pretrained_path: "pretrained/resnet_18.pth"
+  freeze_backbone: false
+
+# =============================================================================
+# TRAINING HYPERPARAMETERS
+# =============================================================================
+training:
+  batch_size: 4
+  epochs: 100
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  optimizer: "AdamW"
+
+  # Learning rate scheduler
+  scheduler: "CosineAnnealing"
+  lr_min: 0.00001
+
+  # Class balancing (important for imbalanced MCI→AD class)
+  use_weighted_loss: true
+  use_weighted_sampling: false
+
+  # Reproducibility
+  seed: 42
+
+# =============================================================================
+# DATA AUGMENTATION
+# =============================================================================
+augmentation:
+  enabled: true
+  random_flip_prob: 0.5
+  random_rotation_degrees: 10
+  intensity_shift: true
+  intensity_scale: true
+
+# =============================================================================
+# HARDWARE & PERFORMANCE
+# =============================================================================
+hardware:
+  device: "cuda"
+  num_workers: 4
+  pin_memory: true
+  mixed_precision: true
+
+# =============================================================================
+# CALLBACKS & MONITORING
+# =============================================================================
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 20
+    monitor: "val_balanced_accuracy"
+    mode: "max"
+
+  checkpoint:
+    save_top_k: 3
+    monitor: "val_balanced_accuracy"
+    mode: "max"
+    save_last: true
+
+# =============================================================================
+# WANDB LOGGING
+# =============================================================================
+wandb:
+  enabled: false
+  project: "alzheimer-research"
+  run_name: "cn-mcis-mcic-ad-resnet18"
+  tags:
+    - 4-class
+    - mci-conversion
+    - resnet18
+
+# =============================================================================
+# EVALUATION
+# =============================================================================
+evaluation:
+  metrics:
+    - accuracy
+    - balanced_accuracy
+    - precision
+    - recall
+    - f1
+    - auc
+    - confusion_matrix
+  save_predictions: true
