@@ -1,0 +1,144 @@
+# Configuration for MedTransformer 4-Class Classification
+# CN | MCI stable | MCI→AD | AD
+#
+# Based on: "MedTransformer: Accurate Alzheimer's Disease Diagnosis for 3D MRI
+# Images through 2D Vision Transformers" (arXiv 2024)
+#
+# Usage:
+#   Step 1: Symlink splits from 3D experiment (or run 01_prepare_dataset.py)
+#   Step 2: python train.py --config config.yaml
+
+# =============================================================================
+# DATA PATHS
+# =============================================================================
+data:
+  tabular_dir: "/Users/tanguyvans/Desktop/umons/alzheimer/data/tabular"
+  dxsum_csv: "/Users/tanguyvans/Desktop/umons/alzheimer/data/tabular/3D_MPRAGE_Imaging_Cohort_DXSUM_10Oct2025.csv"
+  skull_dir: "/Volumes/KINGSTON/ADNI-skull"
+
+  splits_dir: "data/splits"
+  checkpoints_dir: "data/checkpoints"
+  logs_dir: "data/logs"
+  results_dir: "data/results"
+
+  train_csv: "data/splits/train.csv"
+  val_csv: "data/splits/val.csv"
+  test_csv: "data/splits/test.csv"
+
+# =============================================================================
+# CLASSES
+# =============================================================================
+classes:
+  num_classes: 4
+  names:
+    - "CN"
+    - "MCI_stable"
+    - "MCI_to_AD"
+    - "AD"
+
+# =============================================================================
+# SLICE EXTRACTION
+# =============================================================================
+slice_extraction:
+  # Range of brain to extract slices from (0.25-0.75 = middle 50%)
+  range: [0.25, 0.75]
+
+# =============================================================================
+# MODEL - MEDTRANSFORMER
+# =============================================================================
+model:
+  name: "MedTransformer"  # or "MedTransformerLite" for faster training
+
+  # Input configuration
+  image_size: 224
+  num_classes: 4
+  num_slices: 10  # Slices per view (axial, coronal, sagittal)
+
+  # Vision Transformer backbone
+  backbone: "vit_small_patch16_224"  # Options: vit_tiny, vit_small, vit_base
+  pretrained: true
+
+  # Transformer settings
+  embed_dim: 384  # 384 for small, 768 for base
+  num_heads: 6    # 6 for small, 12 for base
+  num_layers: 2   # Dimension-specific encoder layers
+  dropout: 0.1
+
+  # Cross-attention between views
+  use_cross_attention: true
+
+# =============================================================================
+# TRAINING
+# =============================================================================
+training:
+  batch_size: 4  # Reduced due to memory (3 views × num_slices × ViT)
+  epochs: 50
+  learning_rate: 0.0001
+  weight_decay: 0.01
+  optimizer: "AdamW"
+
+  # Learning rate scheduler
+  scheduler: "CosineAnnealing"
+  warmup_epochs: 5
+  lr_min: 0.000001
+
+  # Class balancing
+  use_weighted_loss: true
+
+  # Gradient accumulation (effective batch = batch_size × accumulation_steps)
+  accumulation_steps: 4
+
+  # Reproducibility
+  seed: 42
+
+# =============================================================================
+# AUGMENTATION
+# =============================================================================
+augmentation:
+  enabled: true
+  random_horizontal_flip: 0.5
+  random_rotation: 10
+  color_jitter: true
+  brightness: 0.1
+  contrast: 0.1
+  # ImageNet normalization (for pretrained ViT)
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+
+# =============================================================================
+# HARDWARE
+# =============================================================================
+hardware:
+  device: "cuda"
+  num_workers: 4
+  pin_memory: true
+  mixed_precision: true
+
+# =============================================================================
+# CALLBACKS
+# =============================================================================
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 15
+    monitor: "val_balanced_accuracy"
+    mode: "max"
+
+  checkpoint:
+    save_top_k: 3
+    monitor: "val_balanced_accuracy"
+    mode: "max"
+    save_last: true
+
+# =============================================================================
+# EVALUATION
+# =============================================================================
+evaluation:
+  metrics:
+    - accuracy
+    - balanced_accuracy
+    - precision
+    - recall
+    - f1
+    - confusion_matrix
+  save_predictions: true
