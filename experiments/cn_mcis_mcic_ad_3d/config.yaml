@@ -13,10 +13,10 @@
 data:
   # ADNI diagnosis data (for longitudinal trajectory)
   tabular_dir: "/Users/tanguyvans/Desktop/umons/alzheimer/data/tabular"
-  dxsum_csv: "/Users/tanguyvans/Desktop/umons/alzheimer/data/tabular/3D_MPRAGE_Imaging_Cohort_DXSUM_10Oct2025.csv"
+  dxsum_csv: "/home/maxglo/tanguy/dxsum.csv"
 
   # MRI scans directory (skull-stripped)
-  skull_dir: "/Volumes/KINGSTON/ADNI-skull"  # UPDATE: Path to skull-stripped MRI scans
+  skull_dir: "/home/maxglo/tanguy/ADNI-skull"  # UPDATE: Path to skull-stripped MRI scans
 
   # Output paths (relative to this experiment folder)
   splits_dir: "data/splits"
