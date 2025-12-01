@@ -13,7 +13,19 @@ python 02_train.py
 
 # Step 3: Plot converter detection results
 python 03_plot_converter_detection.py
+
+# Inference: Predict on new data
+python predict.py --input patient_visits.csv --output predictions.csv
 ```
+
+## Inference Requirements
+
+To make predictions, input CSV must have **2+ visits per patient** with:
+- `PTID`: Patient identifier
+- `VISCODE`: Visit code (bl, m06, m12, etc.)
+- `VISDATE`: Visit date
+- Cognitive scores: TRAASCOR, TRABSCOR, CATANIMSC, CLOCKSCOR, etc.
+- Clinical features: AGE (or PTDOBYY), PTGENDER, PTEDUCAT, etc.
 
 ## Features
 

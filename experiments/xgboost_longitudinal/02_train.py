@@ -286,6 +286,36 @@ def main():
     # Save importance
     imp_df.to_csv(OUTPUT_DIR / 'feature_importance.csv', index=False)
 
+    # Plot feature importance
+    fig, ax = plt.subplots(figsize=(10, 8))
+    top_15 = imp_df.head(15)
+    colors = ['#e74c3c' if is_long else '#3498db' for is_long in top_15['is_longitudinal']]
+    y_pos = np.arange(len(top_15))
+    bars = ax.barh(y_pos, top_15['importance'], color=colors, edgecolor='black', height=0.7)
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(top_15['feature'], fontsize=11)
+    ax.invert_yaxis()
+    ax.set_xlabel('Feature Importance (Gain)', fontsize=12)
+    ax.set_title('XGBoost Longitudinal Model: Top 15 Features', fontsize=14, fontweight='bold')
+    for bar, val in zip(bars, top_15['importance']):
+        ax.text(val + 0.05, bar.get_y() + bar.get_height()/2, f'{val:.2f}', va='center', fontsize=10)
+    from matplotlib.patches import Patch
+    legend_elements = [
+        Patch(facecolor='#3498db', edgecolor='black', label='Baseline (cross-sectional)'),
+        Patch(facecolor='#e74c3c', edgecolor='black', label='Longitudinal (change over time)')
+    ]
+    ax.legend(handles=legend_elements, loc='lower right', fontsize=10)
+    n_long = top_15['is_longitudinal'].sum()
+    ax.annotate(f'{n_long} of top 15 features are longitudinal',
+                xy=(0.95, 0.05), xycoords='axes fraction', ha='right', fontsize=11, style='italic',
+                bbox=dict(boxstyle='round', facecolor='#ecf0f1', edgecolor='gray'))
+    ax.set_xlim(0, max(top_15['importance']) * 1.15)
+    ax.grid(axis='x', alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(OUTPUT_DIR / 'feature_importance.png', dpi=150, bbox_inches='tight')
+    plt.close()
+    logger.info(f"Saved feature importance plot to {OUTPUT_DIR / 'feature_importance.png'}")
+
     # Save summary
     summary = {
         'baseline_accuracy': float(results_baseline['accuracy']),
