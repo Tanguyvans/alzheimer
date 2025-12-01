@@ -1,0 +1,11 @@
+{
+  "baseline_accuracy": 0.672645739910314,
+  "baseline_balanced_accuracy": 0.6206673654786862,
+  "longitudinal_accuracy": 0.7847533632286996,
+  "longitudinal_balanced_accuracy": 0.7218902865129281,
+  "improvement": 0.10122292103424191,
+  "n_train": 892,
+  "n_test": 223,
+  "n_baseline_features": 30,
+  "n_longitudinal_features": 43
+}
