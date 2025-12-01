@@ -116,9 +116,14 @@ class PairedMRIDataset(Dataset):
     def __getitem__(self, idx) -> dict:
         row = self.pairs_df.iloc[idx]
 
-        # Load baseline and followup
-        baseline = self._load_and_preprocess(row['baseline_path'])
-        followup = self._load_and_preprocess(row['followup_path'])
+        try:
+            # Load baseline and followup
+            baseline = self._load_and_preprocess(row['baseline_path'])
+            followup = self._load_and_preprocess(row['followup_path'])
+        except Exception as e:
+            # If file is corrupted/empty, return a random valid sample instead
+            logger.warning(f"Error loading pair {idx}: {e}. Returning random sample.")
+            return self.__getitem__(np.random.randint(0, len(self)))
 
         # Add channel dimension
         baseline = np.expand_dims(baseline, 0)  # (1, D, H, W)
