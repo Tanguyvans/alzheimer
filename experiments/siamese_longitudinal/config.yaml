@@ -12,8 +12,8 @@
 # =============================================================================
 data:
   # Source data
-  dxsum_csv: "/Users/tanguyvans/Desktop/umons/alzheimer/data/tabular/3D_MPRAGE_Imaging_Cohort_DXSUM_10Oct2025.csv"
-  skull_dir: "/Volumes/KINGSTON/ADNI-skull"
+  dxsum_csv: "/home/maxglo/tanguy/dxsum.csv"
+  skull_dir: "/home/maxglo/tanguy/ADNI-skull"  
 
   # Output directories
   pairs_dir: "data"
