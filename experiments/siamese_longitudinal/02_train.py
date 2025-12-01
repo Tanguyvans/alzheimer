@@ -152,15 +152,17 @@ def validate(model, loader, criterion, device):
             preds = torch.argmax(logits, dim=1)
 
             all_preds.extend(preds.cpu().numpy())
-            all_probs.extend(probs[:, 1].cpu().numpy())
+            all_probs.append(probs.cpu().numpy())
             all_labels.extend(labels.cpu().numpy())
 
     avg_loss = total_loss / len(loader)
     accuracy = np.mean(np.array(all_preds) == np.array(all_labels))
     balanced_acc = balanced_accuracy_score(all_labels, all_preds)
 
+    # Multiclass AUC (one-vs-rest)
     try:
-        auc = roc_auc_score(all_labels, all_probs)
+        all_probs = np.vstack(all_probs)
+        auc = roc_auc_score(all_labels, all_probs, multi_class='ovr', average='macro')
     except:
         auc = 0.0
 
@@ -225,7 +227,7 @@ def plot_confusion_matrix(y_true, y_pred, class_names: list, output_path: Path):
 
     ax.set_xlabel('Predicted', fontsize=12)
     ax.set_ylabel('True', fontsize=12)
-    ax.set_title('Siamese Network - Converter Detection', fontsize=14, fontweight='bold')
+    ax.set_title('Siamese Network - CN/MCI/AD Classification', fontsize=14, fontweight='bold')
 
     # Add accuracy annotation
     accuracy = np.trace(cm) / cm.sum()
@@ -274,7 +276,10 @@ def main():
     val_ratio = config['splits']['val_ratio']
     test_ratio = config['splits']['test_ratio']
 
-    labels = pairs_df['is_converter'].values
+    labels = pairs_df['label'].values
+    num_classes = config['classes']['num_classes']
+    class_names = config['classes']['names']
+
     train_idx, temp_idx = train_test_split(
         np.arange(len(pairs_df)),
         test_size=(val_ratio + test_ratio),
@@ -293,7 +298,8 @@ def main():
         split_df = pairs_df.iloc[idx]
         split_path = data_dir / f'{name}_pairs.csv'
         split_df.to_csv(split_path, index=False)
-        logger.info(f"{name}: {len(split_df)} pairs (converters: {split_df['is_converter'].sum()})")
+        class_counts = [f"{class_names[i]}:{(split_df['label']==i).sum()}" for i in range(num_classes)]
+        logger.info(f"{name}: {len(split_df)} pairs ({', '.join(class_counts)})")
 
     # Create datasets
     target_shape = tuple(config['model']['target_shape'])
@@ -361,11 +367,12 @@ def main():
 
     # Class weights for imbalanced data
     if config['training']['use_weighted_loss']:
-        n_converters = labels.sum()
-        n_non_converters = len(labels) - n_converters
-        class_weights = torch.tensor([n_converters, n_non_converters], dtype=torch.float32)
-        class_weights = class_weights / class_weights.sum()
+        # Compute inverse frequency weights for each class
+        class_counts = np.bincount(labels, minlength=num_classes)
+        class_weights = len(labels) / (num_classes * class_counts + 1e-6)
+        class_weights = torch.tensor(class_weights, dtype=torch.float32)
         class_weights = class_weights.to(device)
+        logger.info(f"Class weights: {dict(zip(class_names, class_weights.cpu().numpy().round(3)))}")
         criterion = nn.CrossEntropyLoss(weight=class_weights)
     else:
         criterion = nn.CrossEntropyLoss()

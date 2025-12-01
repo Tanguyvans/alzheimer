@@ -1,5 +1,5 @@
 # Configuration for Siamese Network - Longitudinal MRI Analysis
-# Binary classification: Converter (MCI→AD) vs Non-Converter
+# 3-class classification: CN vs MCI vs AD (MCI→AD grouped with AD)
 #
 # Architecture: Shared 3D CNN encoder comparing baseline and follow-up MRI scans
 #
@@ -31,19 +31,18 @@ data:
 # CLASSES
 # =============================================================================
 classes:
-  num_classes: 2
+  num_classes: 3
   names:
-    - "Non-Converter"
-    - "Converter"
+    - "CN"
+    - "MCI"
+    - "AD"
 
-  # Trajectories included
-  trajectories:
-    converter:
-      - "MCI_to_AD"
-    non_converter:
-      - "CN_stable"
-      - "MCI_stable"
-      - "AD_stable"
+  # Trajectory to class mapping
+  trajectory_mapping:
+    CN_stable: 0      # CN
+    MCI_stable: 1     # MCI
+    MCI_to_AD: 2      # AD (converters grouped with AD)
+    AD_stable: 2      # AD
 
 # =============================================================================
 # PAIR SELECTION
@@ -73,7 +72,7 @@ model:
   embedding_dim: 256  # Final embedding size
 
   # Classifier
-  num_classes: 2
+  num_classes: 3
   dropout: 0.3
 
   # Use time-weighted attention (WeightedSiameseNetwork)
@@ -145,7 +144,7 @@ splits:
   train_ratio: 0.70
   val_ratio: 0.15
   test_ratio: 0.15
-  stratify: true  # Stratify by converter label
+  stratify: true  # Stratify by class label (CN/MCI/AD)
   random_seed: 42
 
 # =============================================================================

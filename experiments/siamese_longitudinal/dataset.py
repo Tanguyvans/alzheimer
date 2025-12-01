@@ -58,7 +58,15 @@ class PairedMRIDataset(Dataset):
         logger.info(f"Loaded {len(self.pairs_df)} valid pairs")
 
         # Log class distribution
-        if 'is_converter' in self.pairs_df.columns:
+        if 'label' in self.pairs_df.columns:
+            # New 3-class format (CN=0, MCI=1, AD=2)
+            label_counts = self.pairs_df['label'].value_counts().sort_index()
+            class_names = ['CN', 'MCI', 'AD']
+            for label, count in label_counts.items():
+                name = class_names[int(label)] if int(label) < len(class_names) else f"Class{label}"
+                logger.info(f"  {name}: {count}")
+        elif 'is_converter' in self.pairs_df.columns:
+            # Legacy binary format
             converter_counts = self.pairs_df['is_converter'].value_counts()
             logger.info(f"  Converters: {converter_counts.get(1, 0)}")
             logger.info(f"  Non-converters: {converter_counts.get(0, 0)}")
@@ -134,8 +142,11 @@ class PairedMRIDataset(Dataset):
             baseline = self.transform(baseline)
             followup = self.transform(followup)
 
-        # Get label
-        label = int(row.get('is_converter', 0))
+        # Get label (supports both 'label' and legacy 'is_converter' columns)
+        if 'label' in row:
+            label = int(row['label'])
+        else:
+            label = int(row.get('is_converter', 0))
 
         # Get time delta in years
         days_between = row.get('days_between', 365)

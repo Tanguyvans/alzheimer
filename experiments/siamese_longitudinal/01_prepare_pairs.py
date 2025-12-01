@@ -77,7 +77,7 @@ def load_diagnosis_data(dxsum_csv: str) -> pd.DataFrame:
 
     trajectories['trajectory'] = trajectories.apply(get_trajectory, axis=1)
 
-    # Binary converter label (MCI→AD = 1, else = 0)
+    # Binary converter label (MCI→AD = 1, else = 0) - kept for compatibility
     trajectories['is_converter'] = (trajectories['trajectory'] == 'MCI_to_AD').astype(int)
 
     logger.info(f"Identified {len(trajectories)} patient trajectories:")
@@ -86,6 +86,29 @@ def load_diagnosis_data(dxsum_csv: str) -> pd.DataFrame:
         logger.info(f"  {traj}: {count}")
 
     return trajectories
+
+
+def assign_class_labels(pairs_df: pd.DataFrame, config: dict) -> pd.DataFrame:
+    """Assign class labels based on trajectory mapping from config."""
+    trajectory_mapping = config['classes']['trajectory_mapping']
+    class_names = config['classes']['names']
+
+    # Map trajectory to class label
+    pairs_df['label'] = pairs_df['trajectory'].map(trajectory_mapping)
+
+    # Filter out unmapped trajectories (e.g., 'other', 'CN_to_MCI', 'CN_to_AD')
+    n_before = len(pairs_df)
+    pairs_df = pairs_df[pairs_df['label'].notna()].copy()
+    pairs_df['label'] = pairs_df['label'].astype(int)
+    n_after = len(pairs_df)
+
+    if n_before > n_after:
+        logger.info(f"Filtered {n_before - n_after} pairs with unmapped trajectories")
+
+    # Add class name for readability
+    pairs_df['class_name'] = pairs_df['label'].map(lambda x: class_names[x])
+
+    return pairs_df
 
 
 def find_mri_pairs(skull_dir: Path, trajectories: pd.DataFrame, min_days: int = 180) -> pd.DataFrame:
@@ -235,6 +258,10 @@ def main():
         logger.error("No valid pairs found!")
         return
 
+    # Assign class labels (CN=0, MCI=1, AD=2)
+    pairs_df = assign_class_labels(pairs_df, config)
+    class_names = config['classes']['names']
+
     # Save pairs
     output_path = pairs_dir / 'pairs.csv'
     pairs_df.to_csv(output_path, index=False)
@@ -242,7 +269,7 @@ def main():
 
     # Summary
     print("\n" + "=" * 60)
-    print("SIAMESE NETWORK - PAIRED MRI DATA")
+    print("SIAMESE NETWORK - PAIRED MRI DATA (3-CLASS)")
     print("=" * 60)
     print(f"\nTotal pairs: {len(pairs_df)}")
 
@@ -251,11 +278,10 @@ def main():
         count = (pairs_df['trajectory'] == traj).sum()
         print(f"  {traj}: {count}")
 
-    print(f"\nConverter vs Non-converter:")
-    converters = pairs_df['is_converter'].sum()
-    non_converters = len(pairs_df) - converters
-    print(f"  Converters (MCI→AD): {converters}")
-    print(f"  Non-converters: {non_converters}")
+    print(f"\nBy class (CN / MCI / AD):")
+    for label, name in enumerate(class_names):
+        count = (pairs_df['label'] == label).sum()
+        print(f"  {name} (label={label}): {count}")
 
     print(f"\nTime between scans:")
     print(f"  Mean: {pairs_df['days_between'].mean():.0f} days ({pairs_df['days_between'].mean()/365.25:.1f} years)")
