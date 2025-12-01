@@ -147,26 +147,31 @@ def find_mri_pairs(skull_dir: Path, trajectories: pd.DataFrame, min_days: int = 
 
     logger.info(f"Found {len(scans_df)} scans from {scans_df['ptid'].nunique()} patients")
 
+    # Check how many scans have dates
+    n_with_dates = scans_df['date'].notna().sum()
+    logger.info(f"Scans with parsed dates: {n_with_dates}/{len(scans_df)}")
+
     # Create pairs
     pairs = []
     for ptid, group in scans_df.groupby('ptid'):
         if len(group) < 2:
             continue
 
-        # Sort by date
+        # Sort by date if available, otherwise by filename
         if group['date'].notna().all():
             group = group.sort_values('date')
+            baseline = group.iloc[0]
+            followup = group.iloc[-1]
+            days_between = (followup['date'] - baseline['date']).days
+
+            if days_between < min_days:
+                continue
         else:
-            continue  # Skip if dates are missing
-
-        # Get baseline (first) and followup (last)
-        baseline = group.iloc[0]
-        followup = group.iloc[-1]
-
-        # Check minimum time between scans
-        days_between = (followup['date'] - baseline['date']).days
-        if days_between < min_days:
-            continue
+            # No dates - sort by filename and assume reasonable time gap
+            group = group.sort_values('filepath')
+            baseline = group.iloc[0]
+            followup = group.iloc[-1]
+            days_between = 365  # Default to 1 year if dates unknown
 
         pairs.append({
             'ptid': ptid,
@@ -179,7 +184,11 @@ def find_mri_pairs(skull_dir: Path, trajectories: pd.DataFrame, min_days: int = 
         })
 
     pairs_df = pd.DataFrame(pairs)
-    logger.info(f"Created {len(pairs_df)} scan pairs (≥{min_days} days apart)")
+    logger.info(f"Created {len(pairs_df)} scan pairs")
+
+    if len(pairs_df) == 0:
+        logger.error("No pairs created! Check scan dates or min_days setting.")
+        return pd.DataFrame()
 
     # Merge with trajectory labels
     pairs_df = pairs_df.merge(
