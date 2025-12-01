@@ -102,35 +102,37 @@ def find_mri_pairs(skull_dir: Path, trajectories: pd.DataFrame, min_days: int = 
     """
     logger.info(f"Searching for MRI pairs in {skull_dir}...")
 
-    # Find all NIfTI files (recursively search subdirectories)
-    nifti_files = list(skull_dir.glob("**/*.nii.gz")) + list(skull_dir.glob("**/*.nii"))
-    logger.info(f"Found {len(nifti_files)} NIfTI files")
-
-    # Parse filenames to extract PTID and date
+    # Files are organized by PTID folder: skull_dir/PTID/*.nii.gz
     scans = []
-    for f in nifti_files:
-        stem = f.name.replace('.nii.gz', '').replace('.nii', '')
-        parts = stem.split('_')
+    patient_folders = [d for d in skull_dir.iterdir() if d.is_dir()]
+    logger.info(f"Found {len(patient_folders)} patient folders")
 
-        # Extract PTID (format: XXX_S_XXXX)
-        ptid = None
-        scan_date = None
+    for patient_folder in patient_folders:
+        ptid = patient_folder.name  # Folder name is PTID (e.g., 002_S_0295)
 
-        for i in range(len(parts) - 2):
-            if parts[i+1] == 'S':
-                ptid = f"{parts[i]}_S_{parts[i+2]}"
-                break
+        # Find all NIfTI files for this patient
+        nifti_files = list(patient_folder.glob('*_registered_skull_stripped.nii.gz'))
+        if not nifti_files:
+            nifti_files = list(patient_folder.glob('*_mni_norm.nii.gz'))
+        if not nifti_files:
+            nifti_files = list(patient_folder.glob('*.nii.gz'))
+        if not nifti_files:
+            nifti_files = list(patient_folder.glob('*.nii'))
 
-        # Extract date (YYYYMMDD format)
-        for part in parts:
-            if len(part) == 8 and part.isdigit():
-                try:
-                    scan_date = datetime.strptime(part, '%Y%m%d')
-                    break
-                except:
-                    pass
+        for f in nifti_files:
+            stem = f.name.replace('.nii.gz', '').replace('.nii', '')
+            parts = stem.split('_')
 
-        if ptid:
+            # Extract date (YYYYMMDD format) from filename
+            scan_date = None
+            for part in parts:
+                if len(part) == 8 and part.isdigit():
+                    try:
+                        scan_date = datetime.strptime(part, '%Y%m%d')
+                        break
+                    except:
+                        pass
+
             scans.append({
                 'ptid': ptid,
                 'filepath': str(f),
@@ -138,7 +140,12 @@ def find_mri_pairs(skull_dir: Path, trajectories: pd.DataFrame, min_days: int = 
             })
 
     scans_df = pd.DataFrame(scans)
-    logger.info(f"Parsed {len(scans_df)} scans with PTID")
+
+    if len(scans_df) == 0:
+        logger.error("No scans found! Check skull_dir structure.")
+        return pd.DataFrame()
+
+    logger.info(f"Found {len(scans_df)} scans from {scans_df['ptid'].nunique()} patients")
 
     # Create pairs
     pairs = []
