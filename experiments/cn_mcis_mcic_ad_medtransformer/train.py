@@ -36,6 +36,7 @@ from sklearn.metrics import (
     classification_report
 )
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 from model import MedTransformer, MedTransformerLite
 from dataset import get_dataloaders, CLASS_NAMES
@@ -55,6 +56,44 @@ def set_seed(seed: int):
     np.random.seed(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+
+
+def plot_confusion_matrix(cm, class_names, output_path):
+    """Plot and save confusion matrix as PNG."""
+    fig, ax = plt.subplots(figsize=(10, 8))
+    im = ax.imshow(cm, cmap='Blues')
+
+    ax.set_xticks(range(len(class_names)))
+    ax.set_yticks(range(len(class_names)))
+    ax.set_xticklabels(class_names, fontsize=11, rotation=45, ha='right')
+    ax.set_yticklabels(class_names, fontsize=11)
+
+    # Add text annotations
+    for i in range(len(class_names)):
+        for j in range(len(class_names)):
+            val = cm[i, j]
+            text_color = 'white' if val > cm.max() / 2 else 'black'
+            ax.text(j, i, str(val), ha='center', va='center',
+                   fontsize=14, fontweight='bold', color=text_color)
+
+    ax.set_xlabel('Predicted', fontsize=12)
+    ax.set_ylabel('True', fontsize=12)
+    ax.set_title('MedTransformer - 4-Class Confusion Matrix', fontsize=14, fontweight='bold')
+
+    # Add colorbar
+    plt.colorbar(im, ax=ax)
+
+    # Add accuracy annotation
+    accuracy = np.trace(cm) / cm.sum()
+    ax.annotate(f'Accuracy: {accuracy:.1%}',
+                xy=(0.02, 0.98), xycoords='axes fraction',
+                fontsize=12, fontweight='bold',
+                bbox=dict(boxstyle='round', facecolor='white', edgecolor='gray'))
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150, bbox_inches='tight')
+    plt.close()
+    logger.info(f"Saved confusion matrix to {output_path}")
 
 
 def get_device(config: dict) -> torch.device:
@@ -485,6 +524,11 @@ def train(config: dict):
     )
     logger.info(f"\n{report}")
 
+    # Plot and save confusion matrix
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    cm_path = results_dir / f'confusion_matrix_{timestamp}.png'
+    plot_confusion_matrix(test_metrics['confusion_matrix'], CLASS_NAMES, cm_path)
+
     # Save results
     results = {
         'config': config,
@@ -500,7 +544,6 @@ def train(config: dict):
         }
     }
 
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     results_path = results_dir / f'results_{timestamp}.json'
     with open(results_path, 'w') as f:
         json.dump(results, f, indent=2, default=str)
