@@ -102,8 +102,8 @@ def find_mri_pairs(skull_dir: Path, trajectories: pd.DataFrame, min_days: int = 
     """
     logger.info(f"Searching for MRI pairs in {skull_dir}...")
 
-    # Find all NIfTI files
-    nifti_files = list(skull_dir.glob("*.nii.gz")) + list(skull_dir.glob("*.nii"))
+    # Find all NIfTI files (recursively search subdirectories)
+    nifti_files = list(skull_dir.glob("**/*.nii.gz")) + list(skull_dir.glob("**/*.nii"))
     logger.info(f"Found {len(nifti_files)} NIfTI files")
 
     # Parse filenames to extract PTID and date
