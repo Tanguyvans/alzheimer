@@ -458,7 +458,7 @@ def train(config: dict):
     logger.info("=" * 60)
 
     # Load best model
-    best_checkpoint = torch.load(checkpoints_dir / 'best_model.pt', map_location=device)
+    best_checkpoint = torch.load(checkpoints_dir / 'best_model.pt', map_location=device, weights_only=False)
     model.load_state_dict(best_checkpoint['model_state_dict'])
 
     test_metrics = evaluate(model, test_loader, criterion, device, config, "Test")
