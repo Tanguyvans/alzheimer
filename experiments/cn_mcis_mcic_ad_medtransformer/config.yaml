@@ -13,8 +13,8 @@
 # =============================================================================
 data:
   tabular_dir: "/Users/tanguyvans/Desktop/umons/alzheimer/data/tabular"
-  dxsum_csv: "/Users/tanguyvans/Desktop/umons/alzheimer/data/tabular/3D_MPRAGE_Imaging_Cohort_DXSUM_10Oct2025.csv"
-  skull_dir: "/Volumes/KINGSTON/ADNI-skull"
+  dxsum_csv: "/home/maxglo/tanguy/dxsum.csv"
+  skull_dir: "/home/maxglo/tanguy/ADNI-skull"  
 
   splits_dir: "data/splits"
   checkpoints_dir: "data/checkpoints"
@@ -72,7 +72,7 @@ model:
 # =============================================================================
 training:
   batch_size: 4  # Reduced due to memory (3 views × num_slices × ViT)
-  epochs: 50
+  epochs: 20
   learning_rate: 0.0001
   weight_decay: 0.01
   optimizer: "AdamW"
