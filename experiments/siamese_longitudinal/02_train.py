@@ -307,7 +307,9 @@ def main():
 
     train_transform = RandomAugmentation3D(
         flip_prob=aug_config['random_flip_prob'],
-        noise_std=aug_config['noise_std']
+        noise_std=aug_config['noise_std'],
+        rotation_range=aug_config.get('random_rotation', 0),
+        scale_range=aug_config.get('random_scale', None)
     ) if aug_config['enabled'] else None
 
     train_dataset = PairedMRIDataset(
@@ -365,7 +367,8 @@ def main():
     logger.info(f"Model: {model_config['name']}")
     logger.info(f"Parameters: {total_params:,} (trainable: {trainable_params:,})")
 
-    # Class weights for imbalanced data
+    # Class weights for imbalanced data + label smoothing to reduce overfitting
+    label_smoothing = config['training'].get('label_smoothing', 0.1)
     if config['training']['use_weighted_loss']:
         # Compute inverse frequency weights for each class
         class_counts = np.bincount(labels, minlength=num_classes)
@@ -373,9 +376,10 @@ def main():
         class_weights = torch.tensor(class_weights, dtype=torch.float32)
         class_weights = class_weights.to(device)
         logger.info(f"Class weights: {dict(zip(class_names, class_weights.cpu().numpy().round(3)))}")
-        criterion = nn.CrossEntropyLoss(weight=class_weights)
+        logger.info(f"Label smoothing: {label_smoothing}")
+        criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=label_smoothing)
     else:
-        criterion = nn.CrossEntropyLoss()
+        criterion = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
 
     # Optimizer and scheduler
     optimizer = AdamW(

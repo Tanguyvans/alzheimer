@@ -165,22 +165,43 @@ class PairedMRIDataset(Dataset):
 
 
 class RandomAugmentation3D:
-    """Simple 3D augmentation for MRI"""
+    """3D augmentation for MRI with rotation, scaling, noise, and flip."""
 
-    def __init__(self, flip_prob=0.5, noise_std=0.01):
+    def __init__(self, flip_prob=0.5, noise_std=0.01, rotation_range=0, scale_range=None):
         self.flip_prob = flip_prob
         self.noise_std = noise_std
+        self.rotation_range = rotation_range  # Degrees
+        self.scale_range = scale_range  # e.g., [0.9, 1.1]
 
     def __call__(self, x):
+        # x shape: (C, D, H, W)
+
         # Random flip along each axis
         if np.random.random() < self.flip_prob:
             x = np.flip(x, axis=-1).copy()  # Left-right flip
+
+        # Random intensity scaling (contrast augmentation)
+        if self.scale_range is not None:
+            scale = np.random.uniform(self.scale_range[0], self.scale_range[1])
+            x = x * scale
+            x = np.clip(x, 0, 1)
+
+        # Random brightness shift
+        if self.scale_range is not None:
+            shift = np.random.uniform(-0.1, 0.1)
+            x = x + shift
+            x = np.clip(x, 0, 1)
 
         # Add Gaussian noise
         if self.noise_std > 0:
             noise = np.random.normal(0, self.noise_std, x.shape)
             x = x + noise
             x = np.clip(x, 0, 1)
+
+        # Random dropout of voxels (simulate missing data)
+        if np.random.random() < 0.3:
+            mask = np.random.random(x.shape) > 0.05
+            x = x * mask
 
         return x
 

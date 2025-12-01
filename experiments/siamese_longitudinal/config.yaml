@@ -73,7 +73,7 @@ model:
 
   # Classifier
   num_classes: 3
-  dropout: 0.3
+  dropout: 0.5  # Increased to reduce overfitting
 
   # Use time-weighted attention (WeightedSiameseNetwork)
   use_time_weighting: false
@@ -85,7 +85,7 @@ training:
   batch_size: 4
   epochs: 50
   learning_rate: 0.0001
-  weight_decay: 0.0001
+  weight_decay: 0.01  # Increased 100x for stronger L2 regularization
   optimizer: "AdamW"
 
   # Learning rate scheduler
@@ -94,6 +94,7 @@ training:
 
   # Class balancing
   use_weighted_loss: true
+  label_smoothing: 0.1  # Reduce overconfidence
 
   # Gradient clipping
   max_grad_norm: 1.0
@@ -106,9 +107,11 @@ training:
 # =============================================================================
 augmentation:
   enabled: true
-  # 3D augmentations
+  # 3D augmentations - stronger to reduce overfitting
   random_flip_prob: 0.5  # Left-right flip
-  noise_std: 0.01  # Gaussian noise
+  noise_std: 0.03  # Gaussian noise (increased 3x)
+  random_rotation: 10  # Degrees
+  random_scale: [0.9, 1.1]  # Scale range
 
   # Normalization
   normalize: true  # Normalize to [0, 1]
@@ -127,7 +130,7 @@ hardware:
 callbacks:
   early_stopping:
     enabled: true
-    patience: 15
+    patience: 10  # Reduced to stop earlier when overfitting
     monitor: "val_balanced_accuracy"
     mode: "max"
     min_delta: 0.001
