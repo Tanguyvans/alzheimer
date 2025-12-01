@@ -1,0 +1,165 @@
+# Configuration for Siamese Network - Longitudinal MRI Analysis
+# Binary classification: Converter (MCI→AD) vs Non-Converter
+#
+# Architecture: Shared 3D CNN encoder comparing baseline and follow-up MRI scans
+#
+# Usage:
+#   Step 1: python 01_prepare_pairs.py --config config.yaml
+#   Step 2: python 02_train.py --config config.yaml
+
+# =============================================================================
+# DATA PATHS
+# =============================================================================
+data:
+  # Source data
+  dxsum_csv: "/Users/tanguyvans/Desktop/umons/alzheimer/data/tabular/3D_MPRAGE_Imaging_Cohort_DXSUM_10Oct2025.csv"
+  skull_dir: "/Volumes/KINGSTON/ADNI-skull"
+
+  # Output directories
+  pairs_dir: "data"
+  splits_dir: "data"
+  checkpoints_dir: "results"
+  results_dir: "results"
+
+  # Generated files (by 01_prepare_pairs.py)
+  pairs_csv: "data/pairs.csv"
+  train_csv: "data/train_pairs.csv"
+  val_csv: "data/val_pairs.csv"
+  test_csv: "data/test_pairs.csv"
+
+# =============================================================================
+# CLASSES
+# =============================================================================
+classes:
+  num_classes: 2
+  names:
+    - "Non-Converter"
+    - "Converter"
+
+  # Trajectories included
+  trajectories:
+    converter:
+      - "MCI_to_AD"
+    non_converter:
+      - "CN_stable"
+      - "MCI_stable"
+      - "AD_stable"
+
+# =============================================================================
+# PAIR SELECTION
+# =============================================================================
+pair_selection:
+  # Minimum days between baseline and follow-up
+  min_days_between: 180  # ~6 months
+
+  # Use baseline scan as first timepoint
+  use_baseline: true
+
+  # How to select follow-up scan
+  followup_strategy: "last"  # "last", "first_after_min", "random"
+
+# =============================================================================
+# MODEL - SIAMESE NETWORK
+# =============================================================================
+model:
+  name: "SiameseNetwork"  # or "WeightedSiameseNetwork"
+
+  # Input configuration
+  in_channels: 1
+  target_shape: [64, 64, 64]  # (D, H, W) - resize volumes to this shape
+
+  # Encoder architecture
+  base_channels: 32  # First conv layer channels (doubles each block)
+  embedding_dim: 256  # Final embedding size
+
+  # Classifier
+  num_classes: 2
+  dropout: 0.3
+
+  # Use time-weighted attention (WeightedSiameseNetwork)
+  use_time_weighting: false
+
+# =============================================================================
+# TRAINING
+# =============================================================================
+training:
+  batch_size: 4
+  epochs: 50
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  optimizer: "AdamW"
+
+  # Learning rate scheduler
+  scheduler: "CosineAnnealing"
+  lr_min: 0.000001
+
+  # Class balancing
+  use_weighted_loss: true
+
+  # Gradient clipping
+  max_grad_norm: 1.0
+
+  # Reproducibility
+  seed: 42
+
+# =============================================================================
+# AUGMENTATION
+# =============================================================================
+augmentation:
+  enabled: true
+  # 3D augmentations
+  random_flip_prob: 0.5  # Left-right flip
+  noise_std: 0.01  # Gaussian noise
+
+  # Normalization
+  normalize: true  # Normalize to [0, 1]
+
+# =============================================================================
+# HARDWARE
+# =============================================================================
+hardware:
+  device: "auto"  # "cuda", "mps", "cpu", or "auto"
+  num_workers: 4
+  pin_memory: true
+
+# =============================================================================
+# CALLBACKS
+# =============================================================================
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 15
+    monitor: "val_balanced_accuracy"
+    mode: "max"
+    min_delta: 0.001
+
+  checkpoint:
+    save_best: true
+    monitor: "val_balanced_accuracy"
+    mode: "max"
+
+# =============================================================================
+# DATASET SPLITS
+# =============================================================================
+splits:
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  stratify: true  # Stratify by converter label
+  random_seed: 42
+
+# =============================================================================
+# EVALUATION
+# =============================================================================
+evaluation:
+  metrics:
+    - accuracy
+    - balanced_accuracy
+    - precision
+    - recall
+    - f1
+    - auc
+    - confusion_matrix
+  save_predictions: true
+  plot_confusion_matrix: true
+  plot_training_curves: true

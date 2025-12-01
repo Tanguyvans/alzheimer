@@ -6,22 +6,24 @@ Trains a Siamese network to compare baseline and follow-up MRI scans
 and predict conversion to Alzheimer's disease.
 
 Usage:
-    python 02_train.py
-    python 02_train.py --epochs 100 --batch-size 4
+    python 02_train.py --config config.yaml
 """
 
 import argparse
 import logging
 import json
+import yaml
 from pathlib import Path
 from datetime import datetime
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
-from sklearn.metrics import balanced_accuracy_score, roc_auc_score, confusion_matrix
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import balanced_accuracy_score, roc_auc_score, confusion_matrix, classification_report
 import matplotlib.pyplot as plt
 
 from model import SiameseNetwork, WeightedSiameseNetwork
@@ -30,23 +32,58 @@ from dataset import PairedMRIDataset, RandomAugmentation3D
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Paths
 EXPERIMENT_DIR = Path(__file__).parent
-DATA_DIR = EXPERIMENT_DIR / "data"
-RESULTS_DIR = EXPERIMENT_DIR / "results"
+
+
+def load_config(config_path: str = None) -> dict:
+    """Load configuration from YAML file."""
+    if config_path is None:
+        config_path = EXPERIMENT_DIR / "config.yaml"
+
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+
+    return config
+
+
+def get_device(config: dict) -> torch.device:
+    """Get compute device."""
+    device_str = config['hardware']['device']
+
+    if device_str == 'auto':
+        if torch.cuda.is_available():
+            device = torch.device('cuda')
+            logger.info(f"Using GPU: {torch.cuda.get_device_name(0)}")
+        elif torch.backends.mps.is_available():
+            device = torch.device('mps')
+            logger.info("Using Apple MPS")
+        else:
+            device = torch.device('cpu')
+            logger.info("Using CPU")
+    elif device_str == 'cuda' and torch.cuda.is_available():
+        device = torch.device('cuda')
+        logger.info(f"Using GPU: {torch.cuda.get_device_name(0)}")
+    elif device_str == 'mps' and torch.backends.mps.is_available():
+        device = torch.device('mps')
+        logger.info("Using Apple MPS")
+    else:
+        device = torch.device('cpu')
+        logger.info("Using CPU")
+
+    return device
 
 
 class EarlyStopping:
     """Early stopping to prevent overfitting."""
 
-    def __init__(self, patience=15, min_delta=0.001):
+    def __init__(self, patience: int = 15, min_delta: float = 0.001):
         self.patience = patience
         self.min_delta = min_delta
         self.best_score = None
         self.counter = 0
         self.early_stop = False
 
-    def __call__(self, score):
+    def __call__(self, score: float) -> bool:
         if self.best_score is None:
             self.best_score = score
         elif score < self.best_score + self.min_delta:
@@ -59,7 +96,7 @@ class EarlyStopping:
         return self.early_stop
 
 
-def train_epoch(model, loader, criterion, optimizer, device):
+def train_epoch(model, loader, criterion, optimizer, device, max_grad_norm: float = 1.0):
     """Train for one epoch."""
     model.train()
     total_loss = 0
@@ -77,7 +114,7 @@ def train_epoch(model, loader, criterion, optimizer, device):
         loss = criterion(logits, labels)
 
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=max_grad_norm)
         optimizer.step()
 
         total_loss += loss.item()
@@ -115,14 +152,13 @@ def validate(model, loader, criterion, device):
             preds = torch.argmax(logits, dim=1)
 
             all_preds.extend(preds.cpu().numpy())
-            all_probs.extend(probs[:, 1].cpu().numpy())  # Probability of conversion
+            all_probs.extend(probs[:, 1].cpu().numpy())
             all_labels.extend(labels.cpu().numpy())
 
     avg_loss = total_loss / len(loader)
     accuracy = np.mean(np.array(all_preds) == np.array(all_labels))
     balanced_acc = balanced_accuracy_score(all_labels, all_preds)
 
-    # AUC if binary classification
     try:
         auc = roc_auc_score(all_labels, all_probs)
     except:
@@ -131,7 +167,7 @@ def validate(model, loader, criterion, device):
     return avg_loss, accuracy, balanced_acc, auc, all_preds, all_labels
 
 
-def plot_training_curves(history, output_path):
+def plot_training_curves(history: dict, output_path: Path):
     """Plot training curves."""
     fig, axes = plt.subplots(1, 3, figsize=(15, 4))
 
@@ -168,33 +204,37 @@ def plot_training_curves(history, output_path):
     logger.info(f"Saved training curves to {output_path}")
 
 
-def plot_confusion_matrix(y_true, y_pred, output_path):
+def plot_confusion_matrix(y_true, y_pred, class_names: list, output_path: Path):
     """Plot confusion matrix."""
     cm = confusion_matrix(y_true, y_pred)
 
     fig, ax = plt.subplots(figsize=(8, 6))
     im = ax.imshow(cm, cmap='Blues')
 
-    labels = ['Non-Converter', 'Converter']
-    ax.set_xticks(range(len(labels)))
-    ax.set_yticks(range(len(labels)))
-    ax.set_xticklabels(labels)
-    ax.set_yticklabels(labels)
+    ax.set_xticks(range(len(class_names)))
+    ax.set_yticks(range(len(class_names)))
+    ax.set_xticklabels(class_names, fontsize=11)
+    ax.set_yticklabels(class_names, fontsize=11)
 
     # Add text annotations
-    for i in range(len(labels)):
-        for j in range(len(labels)):
-            text = ax.text(j, i, cm[i, j], ha='center', va='center',
-                          fontsize=20, fontweight='bold',
-                          color='white' if cm[i, j] > cm.max()/2 else 'black')
+    for i in range(len(class_names)):
+        for j in range(len(class_names)):
+            text_color = 'white' if cm[i, j] > cm.max() / 2 else 'black'
+            ax.text(j, i, str(cm[i, j]), ha='center', va='center',
+                   fontsize=20, fontweight='bold', color=text_color)
 
     ax.set_xlabel('Predicted', fontsize=12)
     ax.set_ylabel('True', fontsize=12)
     ax.set_title('Siamese Network - Converter Detection', fontsize=14, fontweight='bold')
 
-    # Add colorbar
-    plt.colorbar(im)
+    # Add accuracy annotation
+    accuracy = np.trace(cm) / cm.sum()
+    ax.annotate(f'Accuracy: {accuracy:.1%}',
+                xy=(0.02, 0.98), xycoords='axes fraction',
+                fontsize=12, fontweight='bold',
+                bbox=dict(boxstyle='round', facecolor='white', edgecolor='gray'))
 
+    plt.colorbar(im)
     plt.tight_layout()
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
     plt.close()
@@ -203,116 +243,150 @@ def plot_confusion_matrix(y_true, y_pred, output_path):
 
 def main():
     parser = argparse.ArgumentParser(description='Train Siamese Network')
-    parser.add_argument('--pairs-csv', type=str, default=None, help='Path to pairs CSV')
-    parser.add_argument('--epochs', type=int, default=50, help='Number of epochs')
-    parser.add_argument('--batch-size', type=int, default=4, help='Batch size')
-    parser.add_argument('--lr', type=float, default=1e-4, help='Learning rate')
-    parser.add_argument('--weight-decay', type=float, default=1e-4, help='Weight decay')
-    parser.add_argument('--patience', type=int, default=15, help='Early stopping patience')
-    parser.add_argument('--target-shape', type=int, nargs=3, default=[64, 64, 64], help='Target volume shape')
-    parser.add_argument('--embedding-dim', type=int, default=256, help='Embedding dimension')
-    parser.add_argument('--weighted', action='store_true', help='Use time-weighted model')
-    parser.add_argument('--num-workers', type=int, default=4, help='Data loading workers')
+    parser.add_argument('--config', type=str, default='config.yaml', help='Config file path')
     args = parser.parse_args()
 
-    # Create output directory
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    # Load config
+    config = load_config(args.config)
+
+    # Setup paths
+    data_dir = EXPERIMENT_DIR / config['data']['pairs_dir']
+    results_dir = EXPERIMENT_DIR / config['data']['results_dir']
+    results_dir.mkdir(parents=True, exist_ok=True)
 
     # Device
-    device = torch.device('cuda' if torch.cuda.is_available() else
-                         'mps' if torch.backends.mps.is_available() else 'cpu')
-    logger.info(f"Using device: {device}")
+    device = get_device(config)
 
-    # Find pairs CSV
-    pairs_csv = args.pairs_csv or DATA_DIR / 'pairs.csv'
-    if not Path(pairs_csv).exists():
+    # Check pairs CSV
+    pairs_csv = EXPERIMENT_DIR / config['data']['pairs_csv']
+    if not pairs_csv.exists():
         logger.error(f"Pairs CSV not found: {pairs_csv}")
-        logger.error("Run 01_prepare_pairs.py first to create the paired dataset")
+        logger.error("Run 01_prepare_pairs.py --config config.yaml first")
         return
 
     # Load and split data
-    import pandas as pd
-    from sklearn.model_selection import train_test_split
-
     pairs_df = pd.read_csv(pairs_csv)
     logger.info(f"Loaded {len(pairs_df)} pairs")
 
     # Stratified split
+    seed = config['training']['seed']
+    train_ratio = config['splits']['train_ratio']
+    val_ratio = config['splits']['val_ratio']
+    test_ratio = config['splits']['test_ratio']
+
     labels = pairs_df['is_converter'].values
     train_idx, temp_idx = train_test_split(
-        np.arange(len(pairs_df)), test_size=0.3, stratify=labels, random_state=42
+        np.arange(len(pairs_df)),
+        test_size=(val_ratio + test_ratio),
+        stratify=labels,
+        random_state=seed
     )
     val_idx, test_idx = train_test_split(
-        temp_idx, test_size=0.5, stratify=labels[temp_idx], random_state=42
+        temp_idx,
+        test_size=test_ratio / (val_ratio + test_ratio),
+        stratify=labels[temp_idx],
+        random_state=seed
     )
 
     # Save splits
     for name, idx in [('train', train_idx), ('val', val_idx), ('test', test_idx)]:
         split_df = pairs_df.iloc[idx]
-        split_path = DATA_DIR / f'{name}_pairs.csv'
+        split_path = data_dir / f'{name}_pairs.csv'
         split_df.to_csv(split_path, index=False)
         logger.info(f"{name}: {len(split_df)} pairs (converters: {split_df['is_converter'].sum()})")
 
     # Create datasets
-    target_shape = tuple(args.target_shape)
+    target_shape = tuple(config['model']['target_shape'])
+    aug_config = config['augmentation']
+
+    train_transform = RandomAugmentation3D(
+        flip_prob=aug_config['random_flip_prob'],
+        noise_std=aug_config['noise_std']
+    ) if aug_config['enabled'] else None
 
     train_dataset = PairedMRIDataset(
-        DATA_DIR / 'train_pairs.csv',
-        transform=RandomAugmentation3D(flip_prob=0.5, noise_std=0.01),
+        data_dir / 'train_pairs.csv',
+        transform=train_transform,
+        normalize=aug_config['normalize'],
         target_shape=target_shape
     )
 
     val_dataset = PairedMRIDataset(
-        DATA_DIR / 'val_pairs.csv',
+        data_dir / 'val_pairs.csv',
         transform=None,
+        normalize=aug_config['normalize'],
         target_shape=target_shape
     )
 
     test_dataset = PairedMRIDataset(
-        DATA_DIR / 'test_pairs.csv',
+        data_dir / 'test_pairs.csv',
         transform=None,
+        normalize=aug_config['normalize'],
         target_shape=target_shape
     )
 
     # Create dataloaders
+    batch_size = config['training']['batch_size']
+    num_workers = config['hardware']['num_workers']
+
     train_loader = DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=True,
-        num_workers=args.num_workers, pin_memory=True
+        train_dataset, batch_size=batch_size, shuffle=True,
+        num_workers=num_workers, pin_memory=config['hardware']['pin_memory']
     )
     val_loader = DataLoader(
-        val_dataset, batch_size=args.batch_size, shuffle=False,
-        num_workers=args.num_workers, pin_memory=True
+        val_dataset, batch_size=batch_size, shuffle=False,
+        num_workers=num_workers, pin_memory=config['hardware']['pin_memory']
     )
     test_loader = DataLoader(
-        test_dataset, batch_size=args.batch_size, shuffle=False,
-        num_workers=args.num_workers, pin_memory=True
+        test_dataset, batch_size=batch_size, shuffle=False,
+        num_workers=num_workers, pin_memory=config['hardware']['pin_memory']
     )
 
     # Create model
-    ModelClass = WeightedSiameseNetwork if args.weighted else SiameseNetwork
+    model_config = config['model']
+    ModelClass = WeightedSiameseNetwork if model_config['use_time_weighting'] else SiameseNetwork
     model = ModelClass(
-        in_channels=1,
-        base_channels=32,
-        embedding_dim=args.embedding_dim,
-        num_classes=2  # Binary: converter vs non-converter
+        in_channels=model_config['in_channels'],
+        base_channels=model_config['base_channels'],
+        embedding_dim=model_config['embedding_dim'],
+        num_classes=model_config['num_classes'],
+        dropout=model_config['dropout']
     ).to(device)
 
     # Count parameters
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    logger.info(f"Model parameters: {total_params:,} (trainable: {trainable_params:,})")
+    logger.info(f"Model: {model_config['name']}")
+    logger.info(f"Parameters: {total_params:,} (trainable: {trainable_params:,})")
 
     # Class weights for imbalanced data
-    n_converters = labels.sum()
-    n_non_converters = len(labels) - n_converters
-    class_weights = torch.tensor([n_converters, n_non_converters], dtype=torch.float32)
-    class_weights = class_weights / class_weights.sum()
-    class_weights = class_weights.to(device)
+    if config['training']['use_weighted_loss']:
+        n_converters = labels.sum()
+        n_non_converters = len(labels) - n_converters
+        class_weights = torch.tensor([n_converters, n_non_converters], dtype=torch.float32)
+        class_weights = class_weights / class_weights.sum()
+        class_weights = class_weights.to(device)
+        criterion = nn.CrossEntropyLoss(weight=class_weights)
+    else:
+        criterion = nn.CrossEntropyLoss()
 
-    criterion = nn.CrossEntropyLoss(weight=class_weights)
-    optimizer = AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-6)
-    early_stopping = EarlyStopping(patience=args.patience)
+    # Optimizer and scheduler
+    optimizer = AdamW(
+        model.parameters(),
+        lr=config['training']['learning_rate'],
+        weight_decay=config['training']['weight_decay']
+    )
+    scheduler = CosineAnnealingLR(
+        optimizer,
+        T_max=config['training']['epochs'],
+        eta_min=config['training']['lr_min']
+    )
+
+    # Early stopping
+    early_stopping = EarlyStopping(
+        patience=config['callbacks']['early_stopping']['patience'],
+        min_delta=config['callbacks']['early_stopping']['min_delta']
+    )
 
     # Training history
     history = {
@@ -322,14 +396,18 @@ def main():
 
     best_val_bal_acc = 0
     best_epoch = 0
+    epochs = config['training']['epochs']
+    max_grad_norm = config['training']['max_grad_norm']
 
-    logger.info("Starting training...")
-    logger.info(f"Epochs: {args.epochs}, Batch size: {args.batch_size}, LR: {args.lr}")
+    logger.info("=" * 60)
+    logger.info("STARTING TRAINING")
+    logger.info("=" * 60)
+    logger.info(f"Epochs: {epochs}, Batch size: {batch_size}, LR: {config['training']['learning_rate']}")
 
-    for epoch in range(args.epochs):
+    for epoch in range(epochs):
         # Train
         train_loss, train_acc, train_bal_acc = train_epoch(
-            model, train_loader, criterion, optimizer, device
+            model, train_loader, criterion, optimizer, device, max_grad_norm
         )
 
         # Validate
@@ -350,9 +428,9 @@ def main():
 
         # Log progress
         logger.info(
-            f"Epoch {epoch+1}/{args.epochs} | "
-            f"Train Loss: {train_loss:.4f}, Acc: {train_acc:.3f}, Bal: {train_bal_acc:.3f} | "
-            f"Val Loss: {val_loss:.4f}, Acc: {val_acc:.3f}, Bal: {val_bal_acc:.3f}, AUC: {val_auc:.3f}"
+            f"Epoch {epoch+1}/{epochs} | "
+            f"Train Loss: {train_loss:.4f}, Bal: {train_bal_acc:.3f} | "
+            f"Val Loss: {val_loss:.4f}, Bal: {val_bal_acc:.3f}, AUC: {val_auc:.3f}"
         )
 
         # Save best model
@@ -365,16 +443,17 @@ def main():
                 'optimizer_state_dict': optimizer.state_dict(),
                 'val_bal_acc': val_bal_acc,
                 'val_auc': val_auc,
-            }, RESULTS_DIR / 'best_model.pt')
+                'config': config
+            }, results_dir / 'best_model.pt')
             logger.info(f"  -> New best model (balanced acc: {val_bal_acc:.3f})")
 
         # Early stopping
-        if early_stopping(val_bal_acc):
+        if config['callbacks']['early_stopping']['enabled'] and early_stopping(val_bal_acc):
             logger.info(f"Early stopping at epoch {epoch+1}")
             break
 
     # Load best model for test evaluation
-    checkpoint = torch.load(RESULTS_DIR / 'best_model.pt', map_location=device, weights_only=False)
+    checkpoint = torch.load(results_dir / 'best_model.pt', map_location=device, weights_only=False)
     model.load_state_dict(checkpoint['model_state_dict'])
 
     # Test evaluation
@@ -385,15 +464,23 @@ def main():
     logger.info("\n" + "=" * 60)
     logger.info("TEST RESULTS")
     logger.info("=" * 60)
-    logger.info(f"Accuracy: {test_acc:.3f}")
-    logger.info(f"Balanced Accuracy: {test_bal_acc:.3f}")
-    logger.info(f"AUC: {test_auc:.3f}")
+    logger.info(f"Accuracy: {test_acc:.4f}")
+    logger.info(f"Balanced Accuracy: {test_bal_acc:.4f}")
+    logger.info(f"AUC: {test_auc:.4f}")
 
-    # Plot training curves
-    plot_training_curves(history, RESULTS_DIR / 'training_curves.png')
+    # Classification report
+    class_names = config['classes']['names']
+    report = classification_report(test_labels, test_preds, target_names=class_names, digits=4)
+    logger.info(f"\nClassification Report:\n{report}")
 
-    # Plot confusion matrix
-    plot_confusion_matrix(test_labels, test_preds, RESULTS_DIR / 'confusion_matrix.png')
+    # Plot results
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+
+    if config['evaluation']['plot_training_curves']:
+        plot_training_curves(history, results_dir / f'training_curves_{timestamp}.png')
+
+    if config['evaluation']['plot_confusion_matrix']:
+        plot_confusion_matrix(test_labels, test_preds, class_names, results_dir / f'confusion_matrix_{timestamp}.png')
 
     # Save results
     results = {
@@ -402,21 +489,14 @@ def main():
         'test_accuracy': float(test_acc),
         'test_balanced_accuracy': float(test_bal_acc),
         'test_auc': float(test_auc),
-        'config': {
-            'epochs': args.epochs,
-            'batch_size': args.batch_size,
-            'lr': args.lr,
-            'target_shape': args.target_shape,
-            'embedding_dim': args.embedding_dim,
-            'weighted': args.weighted,
-        },
-        'timestamp': datetime.now().isoformat()
+        'config': config,
+        'timestamp': timestamp
     }
 
-    with open(RESULTS_DIR / 'results.json', 'w') as f:
-        json.dump(results, f, indent=2)
+    with open(results_dir / f'results_{timestamp}.json', 'w') as f:
+        json.dump(results, f, indent=2, default=str)
 
-    logger.info(f"\nResults saved to {RESULTS_DIR}")
+    logger.info(f"\nResults saved to {results_dir}")
 
     # Print summary
     print("\n" + "=" * 60)

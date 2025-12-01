@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
 Dataset for Siamese Network with paired MRI scans.
+
+Supports both NIfTI (.nii, .nii.gz) and NumPy (.npy) files.
 """
 
 import logging
@@ -10,6 +12,12 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader
 from typing import Optional, Tuple
+
+try:
+    import nibabel as nib
+    HAS_NIBABEL = True
+except ImportError:
+    HAS_NIBABEL = False
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -59,14 +67,33 @@ class PairedMRIDataset(Dataset):
         return len(self.pairs_df)
 
     def _load_and_preprocess(self, path: str) -> np.ndarray:
-        """Load and preprocess a single MRI scan"""
-        data = np.load(path)
+        """Load and preprocess a single MRI scan (supports NIfTI and NPY)."""
+        path = str(path)
+
+        # Load based on file extension
+        if path.endswith('.nii.gz') or path.endswith('.nii'):
+            if not HAS_NIBABEL:
+                raise ImportError("nibabel required for NIfTI files: pip install nibabel")
+            nifti_img = nib.load(path)
+            data = nifti_img.get_fdata().astype(np.float32)
+        elif path.endswith('.npy'):
+            data = np.load(path).astype(np.float32)
+        else:
+            # Try numpy first, then nifti
+            try:
+                data = np.load(path).astype(np.float32)
+            except:
+                if HAS_NIBABEL:
+                    nifti_img = nib.load(path)
+                    data = nifti_img.get_fdata().astype(np.float32)
+                else:
+                    raise ValueError(f"Unknown file format: {path}")
 
         # Handle different array shapes
         if data.ndim == 4:
-            data = data[0]  # Remove batch dimension
+            data = data[..., 0] if data.shape[-1] == 1 else data[0]
         if data.ndim == 2:
-            data = np.expand_dims(data, 0)  # Add depth dimension
+            data = np.expand_dims(data, 0)
 
         # Resize if needed
         if self.target_shape is not None:
@@ -76,8 +103,13 @@ class PairedMRIDataset(Dataset):
 
         # Normalize to [0, 1]
         if self.normalize:
-            data = data.astype(np.float32)
-            data = (data - data.min()) / (data.max() - data.min() + 1e-8)
+            # Percentile normalization for brain MRI
+            brain_voxels = data[data > 0]
+            if len(brain_voxels) > 0:
+                p1, p99 = np.percentile(brain_voxels, (1, 99))
+                data = np.clip(data, p1, p99)
+            if data.max() > data.min():
+                data = (data - data.min()) / (data.max() - data.min())
 
         return data
 

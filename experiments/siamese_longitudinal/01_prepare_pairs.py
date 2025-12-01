@@ -5,11 +5,12 @@ Step 1: Prepare paired MRI data for Siamese network training.
 Creates pairs of (baseline_mri, followup_mri) with conversion labels.
 
 Usage:
-    python 01_prepare_pairs.py --npy-dir /path/to/npy --output data/pairs.csv
+    python 01_prepare_pairs.py --config config.yaml
 """
 
 import argparse
 import logging
+import yaml
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -18,125 +19,147 @@ from datetime import datetime
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-DATA_DIR = Path(__file__).parent.parent.parent / "data"
+EXPERIMENT_DIR = Path(__file__).parent
+DATA_DIR = EXPERIMENT_DIR.parent.parent / "data"
 
 
-def parse_scan_filename(filename: str) -> dict:
+def load_config(config_path: str = None) -> dict:
+    """Load configuration from YAML file."""
+    if config_path is None:
+        config_path = EXPERIMENT_DIR / "config.yaml"
+
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+
+    return config
+
+
+def load_diagnosis_data(dxsum_csv: str) -> pd.DataFrame:
+    """Load ADNI diagnosis data and identify patient trajectories."""
+    logger.info("Loading diagnosis data...")
+
+    dx_df = pd.read_csv(dxsum_csv)
+    logger.info(f"Loaded {len(dx_df):,} diagnosis records")
+
+    # Filter valid diagnoses (1=CN, 2=MCI, 3=AD)
+    dx_df = dx_df[dx_df['DIAGNOSIS'].notna()].copy()
+    dx_df['DIAGNOSIS'] = dx_df['DIAGNOSIS'].astype(int)
+    dx_df['EXAMDATE'] = pd.to_datetime(dx_df['EXAMDATE'], errors='coerce')
+
+    # Get baseline diagnosis
+    baseline = dx_df[dx_df['VISCODE'] == 'bl'][['PTID', 'DIAGNOSIS', 'EXAMDATE']].copy()
+    baseline = baseline.rename(columns={'DIAGNOSIS': 'BL_DX', 'EXAMDATE': 'BL_DATE'})
+
+    # Get last diagnosis
+    last = dx_df.sort_values('EXAMDATE').groupby('PTID').last()[['DIAGNOSIS', 'EXAMDATE']].reset_index()
+    last = last.rename(columns={'DIAGNOSIS': 'LAST_DX', 'EXAMDATE': 'LAST_DATE'})
+
+    # Merge to get trajectories
+    trajectories = baseline.merge(last, on='PTID', how='inner')
+
+    # Assign trajectory labels
+    def get_trajectory(row):
+        bl, last = row['BL_DX'], row['LAST_DX']
+        if bl == 1 and last == 1:
+            return 'CN_stable'
+        elif bl == 2 and last == 2:
+            return 'MCI_stable'
+        elif bl == 2 and last == 3:
+            return 'MCI_to_AD'
+        elif bl == 3 and last == 3:
+            return 'AD_stable'
+        elif bl == 1 and last == 2:
+            return 'CN_to_MCI'
+        elif bl == 1 and last == 3:
+            return 'CN_to_AD'
+        else:
+            return 'other'
+
+    trajectories['trajectory'] = trajectories.apply(get_trajectory, axis=1)
+
+    # Binary converter label (MCI→AD = 1, else = 0)
+    trajectories['is_converter'] = (trajectories['trajectory'] == 'MCI_to_AD').astype(int)
+
+    logger.info(f"Identified {len(trajectories)} patient trajectories:")
+    for traj in ['CN_stable', 'MCI_stable', 'MCI_to_AD', 'AD_stable']:
+        count = (trajectories['trajectory'] == traj).sum()
+        logger.info(f"  {traj}: {count}")
+
+    return trajectories
+
+
+def find_mri_pairs(skull_dir: Path, trajectories: pd.DataFrame, min_days: int = 180) -> pd.DataFrame:
     """
-    Parse patient ID and date from scan filename.
-    Expected format: XXX_S_XXXX_YYYYMMDD.npy or similar
-    """
-    stem = Path(filename).stem
-    parts = stem.split('_')
-
-    # Try to extract PTID (format: XXX_S_XXXX)
-    if len(parts) >= 3 and parts[1] == 'S':
-        ptid = '_'.join(parts[:3])
-        # Rest might contain date
-        rest = '_'.join(parts[3:])
-    else:
-        ptid = parts[0]
-        rest = '_'.join(parts[1:])
-
-    # Try to parse date from remaining parts
-    scan_date = None
-    for part in parts:
-        # Try YYYYMMDD format
-        if len(part) == 8 and part.isdigit():
-            try:
-                scan_date = datetime.strptime(part, '%Y%m%d')
-            except:
-                pass
-        # Try YYYY-MM-DD format
-        elif '-' in part:
-            try:
-                scan_date = datetime.strptime(part, '%Y-%m-%d')
-            except:
-                pass
-
-    return {'ptid': ptid, 'date': scan_date, 'filename': filename}
-
-
-def load_clinical_labels():
-    """Load clinical data with conversion labels"""
-    clinical_path = DATA_DIR / "ALL_4class_clinical.csv"
-
-    if not clinical_path.exists():
-        logger.warning(f"Clinical data not found at {clinical_path}")
-        return None
-
-    df = pd.read_csv(clinical_path, low_memory=False)
-
-    # Get patient-level labels
-    # BL_DX: baseline diagnosis (1=CN, 2=MCI, 3=AD)
-    # LAST_DX: last diagnosis
-    patient_labels = df.groupby('PTID').agg({
-        'BL_DX': 'first',
-        'LAST_DX': 'first',
-        'DX': 'first'
-    }).reset_index()
-
-    # Create conversion label
-    # 0 = stable (CN→CN or MCI→MCI)
-    # 1 = converter (MCI→AD)
-    patient_labels['is_converter'] = (
-        (patient_labels['BL_DX'] == 2) & (patient_labels['LAST_DX'] == 3)
-    ).astype(int)
-
-    # Also track trajectory
-    patient_labels['trajectory'] = 'unknown'
-    patient_labels.loc[(patient_labels['BL_DX'] == 1) & (patient_labels['LAST_DX'] == 1), 'trajectory'] = 'CN_stable'
-    patient_labels.loc[(patient_labels['BL_DX'] == 2) & (patient_labels['LAST_DX'] == 2), 'trajectory'] = 'MCI_stable'
-    patient_labels.loc[(patient_labels['BL_DX'] == 2) & (patient_labels['LAST_DX'] == 3), 'trajectory'] = 'MCI_to_AD'
-    patient_labels.loc[(patient_labels['BL_DX'] == 3) & (patient_labels['LAST_DX'] == 3), 'trajectory'] = 'AD_stable'
-
-    return patient_labels
-
-
-def find_scan_pairs(npy_dir: Path, min_days_between: int = 180):
-    """
-    Find pairs of scans for each patient.
+    Find paired MRI scans (baseline + followup) from skull-stripped directory.
 
     Args:
-        npy_dir: Directory containing .npy MRI files
-        min_days_between: Minimum days between baseline and followup
+        skull_dir: Directory with skull-stripped NIfTI files
+        trajectories: DataFrame with patient trajectory information
+        min_days: Minimum days between baseline and followup
 
     Returns:
-        DataFrame with scan pairs
+        DataFrame with paired scan paths
     """
-    npy_files = list(npy_dir.glob("*.npy"))
-    logger.info(f"Found {len(npy_files)} .npy files")
+    logger.info(f"Searching for MRI pairs in {skull_dir}...")
 
-    # Parse all filenames
+    # Find all NIfTI files
+    nifti_files = list(skull_dir.glob("*.nii.gz")) + list(skull_dir.glob("*.nii"))
+    logger.info(f"Found {len(nifti_files)} NIfTI files")
+
+    # Parse filenames to extract PTID and date
     scans = []
-    for f in npy_files:
-        info = parse_scan_filename(f.name)
-        info['filepath'] = str(f)
-        scans.append(info)
+    for f in nifti_files:
+        stem = f.name.replace('.nii.gz', '').replace('.nii', '')
+        parts = stem.split('_')
+
+        # Extract PTID (format: XXX_S_XXXX)
+        ptid = None
+        scan_date = None
+
+        for i in range(len(parts) - 2):
+            if parts[i+1] == 'S':
+                ptid = f"{parts[i]}_S_{parts[i+2]}"
+                break
+
+        # Extract date (YYYYMMDD format)
+        for part in parts:
+            if len(part) == 8 and part.isdigit():
+                try:
+                    scan_date = datetime.strptime(part, '%Y%m%d')
+                    break
+                except:
+                    pass
+
+        if ptid:
+            scans.append({
+                'ptid': ptid,
+                'filepath': str(f),
+                'date': scan_date
+            })
 
     scans_df = pd.DataFrame(scans)
+    logger.info(f"Parsed {len(scans_df)} scans with PTID")
 
-    # Group by patient
+    # Create pairs
     pairs = []
     for ptid, group in scans_df.groupby('ptid'):
         if len(group) < 2:
             continue
 
-        # Sort by date if available
+        # Sort by date
         if group['date'].notna().all():
             group = group.sort_values('date')
+        else:
+            continue  # Skip if dates are missing
 
         # Get baseline (first) and followup (last)
         baseline = group.iloc[0]
         followup = group.iloc[-1]
 
-        # Check time difference
-        if baseline['date'] and followup['date']:
-            days_between = (followup['date'] - baseline['date']).days
-            if days_between < min_days_between:
-                continue
-        else:
-            days_between = None
+        # Check minimum time between scans
+        days_between = (followup['date'] - baseline['date']).days
+        if days_between < min_days:
+            continue
 
         pairs.append({
             'ptid': ptid,
@@ -149,123 +172,79 @@ def find_scan_pairs(npy_dir: Path, min_days_between: int = 180):
         })
 
     pairs_df = pd.DataFrame(pairs)
-    logger.info(f"Created {len(pairs_df)} scan pairs")
+    logger.info(f"Created {len(pairs_df)} scan pairs (≥{min_days} days apart)")
+
+    # Merge with trajectory labels
+    pairs_df = pairs_df.merge(
+        trajectories[['PTID', 'trajectory', 'is_converter', 'BL_DX', 'LAST_DX']],
+        left_on='ptid', right_on='PTID', how='inner'
+    )
+    pairs_df = pairs_df.drop(columns=['PTID'], errors='ignore')
+
+    logger.info(f"Pairs with trajectory labels: {len(pairs_df)}")
 
     return pairs_df
 
 
-def create_pairs_from_metadata(npy_dir: Path, metadata_csv: Path = None):
-    """
-    Create pairs using metadata CSV with proper date information.
-    """
-    # Load MRI metadata
-    if metadata_csv is None:
-        metadata_csv = DATA_DIR / "tabular" / "3D_MPRAGE_Imaging_Cohort_Key_MRI_10Oct2025.csv"
-
-    if not metadata_csv.exists():
-        logger.warning(f"Metadata not found: {metadata_csv}")
-        return None
-
-    mri_df = pd.read_csv(metadata_csv, low_memory=False, encoding='latin-1')
-    logger.info(f"Loaded {len(mri_df)} MRI records from metadata")
-
-    # Parse dates
-    mri_df['image_date'] = pd.to_datetime(mri_df['image_date'], errors='coerce')
-
-    # Map to npy files
-    npy_files = {f.stem: str(f) for f in npy_dir.glob("*.npy")}
-
-    # Try to match by image_id or subject_id
-    pairs = []
-    for ptid, group in mri_df.groupby('subject_id'):
-        if len(group) < 2:
-            continue
-
-        group = group.sort_values('image_date')
-
-        # Get baseline and last scan
-        baseline = group.iloc[0]
-        followup = group.iloc[-1]
-
-        days_between = (followup['image_date'] - baseline['image_date']).days
-        if days_between < 180:  # At least 6 months
-            continue
-
-        # Find corresponding npy files
-        bl_matches = [k for k in npy_files.keys() if ptid in k]
-        if len(bl_matches) < 2:
-            continue
-
-        # Sort matches by any date info in filename
-        bl_matches.sort()
-
-        pairs.append({
-            'ptid': ptid,
-            'baseline_path': npy_files.get(bl_matches[0], ''),
-            'followup_path': npy_files.get(bl_matches[-1], ''),
-            'baseline_date': baseline['image_date'],
-            'followup_date': followup['image_date'],
-            'days_between': days_between,
-            'n_scans': len(group)
-        })
-
-    return pd.DataFrame(pairs)
-
-
 def main():
     parser = argparse.ArgumentParser(description='Prepare MRI pairs for Siamese network')
-    parser.add_argument('--npy-dir', type=str, required=True, help='Directory with .npy MRI files')
-    parser.add_argument('--output', type=str, default='data/pairs.csv', help='Output CSV path')
-    parser.add_argument('--min-days', type=int, default=180, help='Minimum days between scans')
+    parser.add_argument('--config', type=str, default='config.yaml', help='Config file path')
     args = parser.parse_args()
 
-    npy_dir = Path(args.npy_dir)
-    output_path = Path(__file__).parent / args.output
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+    # Load config
+    config = load_config(args.config)
 
-    # Find scan pairs
-    logger.info(f"Scanning {npy_dir} for MRI pairs...")
-    pairs_df = find_scan_pairs(npy_dir, args.min_days)
+    # Paths from config
+    dxsum_csv = config['data']['dxsum_csv']
+    skull_dir = Path(config['data']['skull_dir'])
+    pairs_dir = EXPERIMENT_DIR / config['data']['pairs_dir']
+    min_days = config['pair_selection']['min_days_between']
 
-    if len(pairs_df) == 0:
-        logger.error("No pairs found. Check npy directory and filename format.")
+    # Create output directory
+    pairs_dir.mkdir(parents=True, exist_ok=True)
+
+    # Check if skull directory exists
+    if not skull_dir.exists():
+        logger.error(f"Skull directory not found: {skull_dir}")
+        logger.error("Please mount the external drive or update config.yaml")
         return
 
-    # Load and merge clinical labels
-    labels_df = load_clinical_labels()
-    if labels_df is not None:
-        pairs_df = pairs_df.merge(
-            labels_df[['PTID', 'is_converter', 'trajectory', 'BL_DX', 'LAST_DX']],
-            left_on='ptid', right_on='PTID', how='left'
-        )
-        pairs_df = pairs_df.drop(columns=['PTID'], errors='ignore')
+    # Load diagnosis data
+    trajectories = load_diagnosis_data(dxsum_csv)
 
-        # Filter to patients with labels
-        pairs_df = pairs_df.dropna(subset=['is_converter'])
-        logger.info(f"Pairs with clinical labels: {len(pairs_df)}")
+    # Find MRI pairs
+    pairs_df = find_mri_pairs(skull_dir, trajectories, min_days)
 
-    # Save
+    if len(pairs_df) == 0:
+        logger.error("No valid pairs found!")
+        return
+
+    # Save pairs
+    output_path = pairs_dir / 'pairs.csv'
     pairs_df.to_csv(output_path, index=False)
-    logger.info(f"Saved pairs to {output_path}")
+    logger.info(f"Saved {len(pairs_df)} pairs to {output_path}")
 
     # Summary
     print("\n" + "=" * 60)
-    print("PAIR SUMMARY")
+    print("SIAMESE NETWORK - PAIRED MRI DATA")
     print("=" * 60)
-    print(f"Total pairs: {len(pairs_df)}")
+    print(f"\nTotal pairs: {len(pairs_df)}")
 
-    if 'trajectory' in pairs_df.columns:
-        print(f"\nBy trajectory:")
-        print(pairs_df['trajectory'].value_counts())
+    print(f"\nBy trajectory:")
+    for traj in ['CN_stable', 'MCI_stable', 'MCI_to_AD', 'AD_stable']:
+        count = (pairs_df['trajectory'] == traj).sum()
+        print(f"  {traj}: {count}")
 
-        print(f"\nConverters vs Non-converters:")
-        print(pairs_df['is_converter'].value_counts())
+    print(f"\nConverter vs Non-converter:")
+    converters = pairs_df['is_converter'].sum()
+    non_converters = len(pairs_df) - converters
+    print(f"  Converters (MCI→AD): {converters}")
+    print(f"  Non-converters: {non_converters}")
 
-    if 'days_between' in pairs_df.columns:
-        print(f"\nTime between scans:")
-        print(f"  Mean: {pairs_df['days_between'].mean():.0f} days")
-        print(f"  Min: {pairs_df['days_between'].min():.0f} days")
-        print(f"  Max: {pairs_df['days_between'].max():.0f} days")
+    print(f"\nTime between scans:")
+    print(f"  Mean: {pairs_df['days_between'].mean():.0f} days ({pairs_df['days_between'].mean()/365.25:.1f} years)")
+    print(f"  Min: {pairs_df['days_between'].min():.0f} days")
+    print(f"  Max: {pairs_df['days_between'].max():.0f} days")
 
 
 if __name__ == '__main__':

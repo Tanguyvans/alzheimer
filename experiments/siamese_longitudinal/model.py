@@ -83,9 +83,10 @@ class SiameseNetwork(nn.Module):
         base_channels: Base number of channels in encoder
         embedding_dim: Dimension of embedding space
         num_classes: Number of output classes (2 for binary conversion)
+        dropout: Dropout probability
     """
 
-    def __init__(self, in_channels=1, base_channels=32, embedding_dim=256, num_classes=2):
+    def __init__(self, in_channels=1, base_channels=32, embedding_dim=256, num_classes=2, dropout=0.3):
         super().__init__()
 
         # Shared encoder
@@ -98,10 +99,10 @@ class SiameseNetwork(nn.Module):
         self.classifier = nn.Sequential(
             nn.Linear(classifier_input_dim, 128),
             nn.ReLU(inplace=True),
-            nn.Dropout(0.3),
+            nn.Dropout(dropout),
             nn.Linear(128, 64),
             nn.ReLU(inplace=True),
-            nn.Dropout(0.2),
+            nn.Dropout(dropout * 0.7),  # Slightly lower dropout in deeper layers
             nn.Linear(64, num_classes)
         )
 
@@ -116,11 +117,10 @@ class SiameseNetwork(nn.Module):
         Args:
             baseline: Baseline MRI tensor (B, 1, D, H, W)
             followup: Follow-up MRI tensor (B, 1, D, H, W)
-            time_delta: Time between scans in years (B, 1)
+            time_delta: Time between scans in years (B,) or (B, 1)
 
         Returns:
             logits: Classification logits (B, num_classes)
-            embeddings: Tuple of (baseline_emb, followup_emb) for visualization
         """
         # Get embeddings
         emb_baseline = self.forward_one(baseline)
@@ -141,7 +141,13 @@ class SiameseNetwork(nn.Module):
         # Classify
         logits = self.classifier(combined)
 
-        return logits, (emb_baseline, emb_followup)
+        return logits
+
+    def get_embeddings(self, baseline, followup):
+        """Get embeddings for visualization."""
+        emb_baseline = self.forward_one(baseline)
+        emb_followup = self.forward_one(followup)
+        return emb_baseline, emb_followup
 
 
 class WeightedSiameseNetwork(SiameseNetwork):
@@ -152,8 +158,8 @@ class WeightedSiameseNetwork(SiameseNetwork):
     feature dimensions based on the time delta.
     """
 
-    def __init__(self, in_channels=1, base_channels=32, embedding_dim=256, num_classes=2):
-        super().__init__(in_channels, base_channels, embedding_dim, num_classes)
+    def __init__(self, in_channels=1, base_channels=32, embedding_dim=256, num_classes=2, dropout=0.3):
+        super().__init__(in_channels, base_channels, embedding_dim, num_classes, dropout)
 
         # Temporal attention
         self.temporal_attention = nn.Sequential(
@@ -184,7 +190,7 @@ class WeightedSiameseNetwork(SiameseNetwork):
         # Classify
         logits = self.classifier(combined)
 
-        return logits, (emb_baseline, emb_followup)
+        return logits
 
 
 class ContrastiveLoss(nn.Module):
