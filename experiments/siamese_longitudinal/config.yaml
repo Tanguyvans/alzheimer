@@ -58,18 +58,28 @@ pair_selection:
   followup_strategy: "last"  # "last", "first_after_min", "random"
 
 # =============================================================================
-# MODEL - SIAMESE NETWORK
+# MODEL - LONGITUDINAL 3D CNN
 # =============================================================================
 model:
-  name: "SiameseNetwork"  # or "WeightedSiameseNetwork"
+  # Options: "SiameseNetwork", "Longitudinal3DCNN", "DifferenceNet3D",
+  #          "LongitudinalMedicalNet", "LongitudinalAttentionNet"
+  name: "LongitudinalMedicalNet"  # MedicalNet encoder + LSTM temporal modeling
 
   # Input configuration
   in_channels: 1
   target_shape: [64, 64, 64]  # (D, H, W) - resize volumes to this shape
 
-  # Encoder architecture
+  # Encoder architecture (for non-MedicalNet models)
   base_channels: 32  # First conv layer channels (doubles each block)
   embedding_dim: 256  # Final embedding size
+
+  # MedicalNet configuration
+  resnet_depth: 10  # Options: 10, 18, 34 (10 is smallest, good for limited data)
+  hidden_dim: 256  # LSTM hidden dimension
+  # Path to MedicalNet pretrained weights (download from https://github.com/Tencent/MedicalNet)
+  # Set to null to train from scratch
+  pretrained_path: null  # e.g., "pretrained/resnet_10_23dataset.pth"
+  freeze_encoder: false  # Set true to freeze pretrained weights initially
 
   # Classifier
   num_classes: 3

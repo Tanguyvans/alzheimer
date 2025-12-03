@@ -26,7 +26,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import balanced_accuracy_score, roc_auc_score, confusion_matrix, classification_report
 import matplotlib.pyplot as plt
 
-from model import SiameseNetwork, WeightedSiameseNetwork
+from model import (
+    SiameseNetwork, WeightedSiameseNetwork, Longitudinal3DCNN, DifferenceNet3D,
+    LongitudinalMedicalNet, LongitudinalAttentionNet
+)
 from dataset import PairedMRIDataset, RandomAugmentation3D
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -227,7 +230,7 @@ def plot_confusion_matrix(y_true, y_pred, class_names: list, output_path: Path):
 
     ax.set_xlabel('Predicted', fontsize=12)
     ax.set_ylabel('True', fontsize=12)
-    ax.set_title('Siamese Network - CN/MCI/AD Classification', fontsize=14, fontweight='bold')
+    ax.set_title('Longitudinal MRI - CN/MCI/AD Classification', fontsize=14, fontweight='bold')
 
     # Add accuracy annotation
     accuracy = np.trace(cm) / cm.sum()
@@ -352,19 +355,87 @@ def main():
 
     # Create model
     model_config = config['model']
-    ModelClass = WeightedSiameseNetwork if model_config['use_time_weighting'] else SiameseNetwork
-    model = ModelClass(
-        in_channels=model_config['in_channels'],
-        base_channels=model_config['base_channels'],
-        embedding_dim=model_config['embedding_dim'],
-        num_classes=model_config['num_classes'],
-        dropout=model_config['dropout']
-    ).to(device)
+    model_name = model_config.get('name', 'SiameseNetwork')
+
+    # Model selection
+    if model_name == 'LongitudinalMedicalNet':
+        # MedicalNet encoder with LSTM temporal modeling
+        pretrained_path = model_config.get('pretrained_path')
+        if pretrained_path:
+            pretrained_path = EXPERIMENT_DIR / pretrained_path
+
+        model = LongitudinalMedicalNet(
+            in_channels=model_config['in_channels'],
+            resnet_depth=model_config.get('resnet_depth', 10),
+            hidden_dim=model_config.get('hidden_dim', 256),
+            num_classes=model_config['num_classes'],
+            dropout=model_config['dropout'],
+            pretrained_path=pretrained_path
+        ).to(device)
+
+        # Optionally freeze encoder for transfer learning
+        if model_config.get('freeze_encoder', False):
+            model.freeze_encoder(True)
+            logger.info("Encoder weights frozen - only training LSTM and classifier")
+
+    elif model_name == 'LongitudinalAttentionNet':
+        # MedicalNet encoder with attention temporal modeling
+        pretrained_path = model_config.get('pretrained_path')
+        if pretrained_path:
+            pretrained_path = EXPERIMENT_DIR / pretrained_path
+
+        model = LongitudinalAttentionNet(
+            in_channels=model_config['in_channels'],
+            resnet_depth=model_config.get('resnet_depth', 10),
+            num_classes=model_config['num_classes'],
+            dropout=model_config['dropout'],
+            pretrained_path=pretrained_path
+        ).to(device)
+
+        if model_config.get('freeze_encoder', False):
+            model.freeze_encoder(True)
+            logger.info("Encoder weights frozen - only training attention and classifier")
+
+    elif model_name == 'Longitudinal3DCNN':
+        model = Longitudinal3DCNN(
+            in_channels=2,  # baseline + followup
+            base_channels=model_config['base_channels'],
+            embedding_dim=model_config['embedding_dim'],
+            num_classes=model_config['num_classes'],
+            dropout=model_config['dropout']
+        ).to(device)
+
+    elif model_name == 'DifferenceNet3D':
+        model = DifferenceNet3D(
+            in_channels=3,  # baseline + followup + difference
+            base_channels=model_config['base_channels'],
+            embedding_dim=model_config['embedding_dim'],
+            num_classes=model_config['num_classes'],
+            dropout=model_config['dropout']
+        ).to(device)
+
+    elif model_config.get('use_time_weighting', False):
+        model = WeightedSiameseNetwork(
+            in_channels=model_config['in_channels'],
+            base_channels=model_config['base_channels'],
+            embedding_dim=model_config['embedding_dim'],
+            num_classes=model_config['num_classes'],
+            dropout=model_config['dropout']
+        ).to(device)
+
+    else:
+        model = SiameseNetwork(
+            in_channels=model_config['in_channels'],
+            base_channels=model_config['base_channels'],
+            embedding_dim=model_config['embedding_dim'],
+            num_classes=model_config['num_classes'],
+            dropout=model_config['dropout']
+        ).to(device)
 
     # Count parameters
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    logger.info(f"Model: {model_config['name']}")
+    logger.info(f"Model: {model_name}")
     logger.info(f"Parameters: {total_params:,} (trainable: {trainable_params:,})")
 
     # Class weights for imbalanced data + label smoothing to reduce overfitting
