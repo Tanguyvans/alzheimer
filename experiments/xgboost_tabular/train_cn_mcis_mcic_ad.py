@@ -21,7 +21,7 @@ import xgboost as xgb
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
     accuracy_score, balanced_accuracy_score, classification_report,
-    confusion_matrix, roc_auc_score
+    confusion_matrix, roc_auc_score, roc_curve, auc
 )
 from sklearn.preprocessing import StandardScaler
 import joblib
@@ -39,19 +39,21 @@ CLASS_MAPPING = None
 NUM_CLASSES = None
 
 
+# Fair features: Exclude diagnostic criteria and potential confounds
+# Removed: MMSCORE, CDGLOBAL, BCFAQ (diagnostic), PTTLANG, VSHEIGHT, PTHAND, PTRACCAT (confounds)
 CLINICAL_FEATURES = [
-    # Demographics
-    'AGE', 'PTGENDER', 'PTEDUCAT', 'PTRACCAT', 'PTHAND', 'PTMARRY', 'PTTLANG',
+    # Demographics (legitimate predictors)
+    'AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY',
     # Physical measurements
-    'VSWEIGHT', 'VSHEIGHT', 'BMI',
+    'VSWEIGHT', 'BMI',
     # Medical history
     'MH14ALCH', 'MH17MALI', 'MH16SMOK', 'MH15DRUG', 'MH4CARD',
     'MHPSYCH', 'MH2NEURL', 'MH6HEPAT', 'MH12RENA',
-    # Cognitive scores
-    'MMSCORE', 'TRAASCOR', 'TRABSCOR', 'TRABERRCOM', 'CATANIMSC',
+    # Neuropsychological tests (core cognitive measures)
+    'TRAASCOR', 'TRABSCOR', 'TRABERRCOM', 'CATANIMSC',
     'CLOCKSCOR', 'BNTTOTAL', 'DSPANFOR', 'DSPANBAC',
     # Clinical assessments
-    'CDGLOBAL', 'BCFAQ', 'BCDEPRES',
+    'BCDEPRES',
 ]
 
 
@@ -177,7 +179,7 @@ def patient_level_split(df, train_ratio=0.7, val_ratio=0.15, test_ratio=0.15, se
     return train_df, val_df, test_df
 
 
-def train_xgboost(X_train, y_train, X_val, y_val):
+def train_xgboost(X_train, y_train, X_val, y_val, feature_names=None):
     """Train XGBoost for multiclass classification"""
     params = {
         'objective': 'multi:softprob',
@@ -191,8 +193,8 @@ def train_xgboost(X_train, y_train, X_val, y_val):
         'tree_method': 'hist',
     }
 
-    dtrain = xgb.DMatrix(X_train, label=y_train)
-    dval = xgb.DMatrix(X_val, label=y_val)
+    dtrain = xgb.DMatrix(X_train, label=y_train, feature_names=feature_names)
+    dval = xgb.DMatrix(X_val, label=y_val, feature_names=feature_names)
 
     model = xgb.train(
         params,
@@ -243,9 +245,10 @@ def evaluate_model(model, X, y, feature_names, dataset_name='Test'):
     return metrics, y_pred, y_proba
 
 
-def plot_results(y_true, y_pred, y_proba, metrics, output_dir):
+def plot_results(y_true, y_pred, y_proba, metrics, output_dir, model=None):
     """Generate and save plots"""
     output_dir = Path(output_dir)
+    from sklearn.preprocessing import label_binarize
 
     # Confusion Matrix
     cm = np.array(metrics['confusion_matrix'])
@@ -267,6 +270,24 @@ def plot_results(y_true, y_pred, y_proba, metrics, output_dir):
     plt.ylabel('Actual')
     plt.title(f'Normalized Confusion Matrix - {NUM_CLASSES}-Class Classification')
     plt.savefig(output_dir / 'confusion_matrix_normalized.png', dpi=150, bbox_inches='tight')
+    plt.close()
+
+    # ROC Curve (One-vs-Rest for multiclass)
+    y_bin = label_binarize(y_true, classes=list(range(NUM_CLASSES)))
+    colors = ['#2ecc71', '#3498db', '#e74c3c', '#9b59b6']
+    plt.figure(figsize=(10, 8))
+    for i, (class_name, color) in enumerate(zip(CLASS_NAMES, colors)):
+        fpr, tpr, _ = roc_curve(y_bin[:, i], y_proba[:, i])
+        roc_auc = auc(fpr, tpr)
+        plt.plot(fpr, tpr, color=color, linewidth=2,
+                 label=f'{class_name} (AUC = {roc_auc:.3f})')
+    plt.plot([0, 1], [0, 1], 'k--', linewidth=1)
+    plt.xlabel('False Positive Rate', fontsize=12)
+    plt.ylabel('True Positive Rate', fontsize=12)
+    plt.title(f'ROC Curves - {NUM_CLASSES}-Class (One-vs-Rest)', fontsize=14)
+    plt.legend(loc='lower right', fontsize=10)
+    plt.grid(True, alpha=0.3)
+    plt.savefig(output_dir / 'roc_curve.png', dpi=150, bbox_inches='tight')
     plt.close()
 
     # Per-class metrics bar chart
@@ -295,6 +316,24 @@ def plot_results(y_true, y_pred, y_proba, metrics, output_dir):
 
     plt.savefig(output_dir / 'per_class_metrics.png', dpi=150, bbox_inches='tight')
     plt.close()
+
+    # Feature Importance
+    if model is not None:
+        importance = model.get_score(importance_type='gain')
+        if importance:
+            sorted_imp = sorted(importance.items(), key=lambda x: x[1], reverse=True)
+            top_n = min(15, len(sorted_imp))
+            features = [x[0] for x in sorted_imp[:top_n]][::-1]
+            values = [x[1] for x in sorted_imp[:top_n]][::-1]
+
+            plt.figure(figsize=(10, 8))
+            colors = plt.cm.Blues(np.linspace(0.4, 0.8, len(features)))
+            plt.barh(features, values, color=colors)
+            plt.xlabel('Importance (Gain)', fontsize=12)
+            plt.title(f'Top Feature Importance - XGBoost ({NUM_CLASSES}-class)', fontsize=14)
+            plt.tight_layout()
+            plt.savefig(output_dir / 'feature_importance.png', dpi=150, bbox_inches='tight')
+            plt.close()
 
     logger.info(f"Plots saved to {output_dir}")
 
@@ -336,7 +375,7 @@ def main():
     X_test_scaled = scaler.transform(X_test)
 
     # Train model
-    model = train_xgboost(X_train_scaled, y_train, X_val_scaled, y_val)
+    model = train_xgboost(X_train_scaled, y_train, X_val_scaled, y_val, feature_names)
 
     # Evaluate
     test_metrics, y_pred, y_proba = evaluate_model(model, X_test_scaled, y_test, feature_names, 'Test')
@@ -370,7 +409,7 @@ def main():
     importance_df.to_csv(output_dir / 'feature_importance.csv', index=False)
 
     # Plot results
-    plot_results(y_test, y_pred, y_proba, test_metrics, output_dir)
+    plot_results(y_test, y_pred, y_proba, test_metrics, output_dir, model)
 
     logger.info(f"\nAll results saved to {output_dir}")
     logger.info(f"Final Test Accuracy: {test_metrics['accuracy']*100:.2f}%")

@@ -30,19 +30,21 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
+# Fair features: Exclude diagnostic criteria and potential confounds
+# Removed: MMSCORE, CDGLOBAL, BCFAQ (diagnostic), PTTLANG, VSHEIGHT, PTHAND, PTRACCAT (confounds)
 CLINICAL_FEATURES = [
-    # Demographics
-    'AGE', 'PTGENDER', 'PTEDUCAT', 'PTRACCAT', 'PTHAND', 'PTMARRY', 'PTTLANG',
+    # Demographics (legitimate predictors)
+    'AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY',
     # Physical measurements
-    'VSWEIGHT', 'VSHEIGHT', 'BMI',
+    'VSWEIGHT', 'BMI',
     # Medical history
     'MH14ALCH', 'MH17MALI', 'MH16SMOK', 'MH15DRUG', 'MH4CARD',
     'MHPSYCH', 'MH2NEURL', 'MH6HEPAT', 'MH12RENA',
-    # Cognitive scores
-    'MMSCORE', 'TRAASCOR', 'TRABSCOR', 'TRABERRCOM', 'CATANIMSC',
+    # Neuropsychological tests (core cognitive measures)
+    'TRAASCOR', 'TRABSCOR', 'TRABERRCOM', 'CATANIMSC',
     'CLOCKSCOR', 'BNTTOTAL', 'DSPANFOR', 'DSPANBAC',
     # Clinical assessments
-    'CDGLOBAL', 'BCFAQ', 'BCDEPRES',
+    'BCDEPRES',
 ]
 
 
@@ -125,7 +127,7 @@ def patient_level_split(df, train_ratio=0.7, val_ratio=0.15, test_ratio=0.15, se
     return train_df, val_df, test_df
 
 
-def train_xgboost(X_train, y_train, X_val, y_val, use_class_weights=True):
+def train_xgboost(X_train, y_train, X_val, y_val, feature_names=None, use_class_weights=True):
     """Train XGBoost with early stopping"""
     # Class weights
     if use_class_weights:
@@ -147,8 +149,8 @@ def train_xgboost(X_train, y_train, X_val, y_val, use_class_weights=True):
         'tree_method': 'hist',
     }
 
-    dtrain = xgb.DMatrix(X_train, label=y_train)
-    dval = xgb.DMatrix(X_val, label=y_val)
+    dtrain = xgb.DMatrix(X_train, label=y_train, feature_names=feature_names)
+    dval = xgb.DMatrix(X_val, label=y_val, feature_names=feature_names)
 
     model = xgb.train(
         params,
@@ -190,7 +192,7 @@ def evaluate_model(model, X, y, feature_names, dataset_name='Test'):
     return metrics, y_pred, y_proba
 
 
-def plot_results(y_true, y_proba, metrics, output_dir):
+def plot_results(y_true, y_proba, metrics, output_dir, model=None):
     """Generate and save plots"""
     output_dir = Path(output_dir)
 
@@ -217,6 +219,24 @@ def plot_results(y_true, y_proba, metrics, output_dir):
     plt.title('Confusion Matrix - Binary Classification')
     plt.savefig(output_dir / 'confusion_matrix.png', dpi=150, bbox_inches='tight')
     plt.close()
+
+    # Feature Importance
+    if model is not None:
+        importance = model.get_score(importance_type='gain')
+        if importance:
+            sorted_imp = sorted(importance.items(), key=lambda x: x[1], reverse=True)
+            top_n = min(15, len(sorted_imp))
+            features = [x[0] for x in sorted_imp[:top_n]][::-1]
+            values = [x[1] for x in sorted_imp[:top_n]][::-1]
+
+            plt.figure(figsize=(10, 8))
+            colors = plt.cm.Blues(np.linspace(0.4, 0.8, len(features)))
+            plt.barh(features, values, color=colors)
+            plt.xlabel('Importance (Gain)')
+            plt.title('Top Feature Importance - XGBoost')
+            plt.tight_layout()
+            plt.savefig(output_dir / 'feature_importance.png', dpi=150, bbox_inches='tight')
+            plt.close()
 
     logger.info(f"Plots saved to {output_dir}")
 
@@ -258,7 +278,7 @@ def main():
     X_test_scaled = scaler.transform(X_test)
 
     # Train model
-    model = train_xgboost(X_train_scaled, y_train, X_val_scaled, y_val)
+    model = train_xgboost(X_train_scaled, y_train, X_val_scaled, y_val, feature_names)
 
     # Evaluate
     test_metrics, y_pred, y_proba = evaluate_model(model, X_test_scaled, y_test, feature_names, 'Test')
@@ -273,13 +293,19 @@ def main():
     with open(output_dir / 'metrics.json', 'w') as f:
         json.dump(test_metrics, f, indent=2, default=str)
 
-    # Save predictions
+    # Save predictions with Subject IDs for verification
     pred_df = pd.DataFrame({
+        'Subject': test_df['Subject'].values,
         'y_true': y_test,
         'y_pred': y_pred,
         'y_proba': y_proba
     })
     pred_df.to_csv(output_dir / 'predictions.csv', index=False)
+
+    # Save train/test splits for similarity analysis
+    train_df.to_csv(output_dir / 'train_data.csv', index=False)
+    test_df.to_csv(output_dir / 'test_data.csv', index=False)
+    logger.info(f"Saved train ({len(train_df)}) and test ({len(test_df)}) splits")
 
     # Feature importance
     importance = model.get_score(importance_type='gain')
@@ -290,7 +316,7 @@ def main():
     importance_df.to_csv(output_dir / 'feature_importance.csv', index=False)
 
     # Plot results
-    plot_results(y_test, y_proba, test_metrics, output_dir)
+    plot_results(y_test, y_proba, test_metrics, output_dir, model)
 
     logger.info(f"\nAll results saved to {output_dir}")
     logger.info(f"Final Test Accuracy: {test_metrics['accuracy']*100:.2f}%")

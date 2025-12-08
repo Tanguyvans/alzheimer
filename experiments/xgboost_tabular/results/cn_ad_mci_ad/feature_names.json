@@ -2,12 +2,8 @@
   "AGE",
   "PTGENDER",
   "PTEDUCAT",
-  "PTRACCAT",
-  "PTHAND",
   "PTMARRY",
-  "PTTLANG",
   "VSWEIGHT",
-  "VSHEIGHT",
   "BMI",
   "MH14ALCH",
   "MH17MALI",
@@ -18,7 +14,6 @@
   "MH2NEURL",
   "MH6HEPAT",
   "MH12RENA",
-  "MMSCORE",
   "TRAASCOR",
   "TRABSCOR",
   "TRABERRCOM",
@@ -27,7 +22,5 @@
   "BNTTOTAL",
   "DSPANFOR",
   "DSPANBAC",
-  "CDGLOBAL",
-  "BCFAQ",
   "BCDEPRES"
 ]
