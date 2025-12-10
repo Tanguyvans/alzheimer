@@ -1,0 +1,40 @@
+dataset: adni
+features:
+- AGE
+- PTGENDER
+- PTEDUCAT
+- PTMARRY
+- VSWEIGHT
+- BMI
+- MH14ALCH
+- MH17MALI
+- MH16SMOK
+- MH15DRUG
+- MH4CARD
+- MHPSYCH
+- MH2NEURL
+- MH6HEPAT
+- MH12RENA
+- TRAASCOR
+- TRABSCOR
+- TRABERRCOM
+- CATANIMSC
+- CLOCKSCOR
+- BNTTOTAL
+- DSPANFOR
+- DSPANBAC
+- BCDEPRES
+input_csv: data/adni/ALL_4class_clinical.csv
+output_dir: experiments/xgboost_tabular/results/cn_mcis_mcic_ad_adni
+seed: 42
+task: cn_mcis_mcic_ad
+test_ratio: 0.15
+train_ratio: 0.7
+val_ratio: 0.15
+xgboost:
+  colsample_bytree: 0.8
+  early_stopping_rounds: 20
+  learning_rate: 0.1
+  max_depth: 6
+  num_boost_round: 200
+  subsample: 0.8

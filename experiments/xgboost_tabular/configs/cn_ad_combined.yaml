@@ -1,0 +1,19 @@
+# CN vs AD classification on combined ADNI + OASIS dataset
+task: cn_ad
+dataset: combined
+adni_csv: data/adni/ALL_4class_clinical.csv
+oasis_csv: data/oasis/oasis_all.csv
+output_dir: experiments/xgboost_tabular/results/cn_ad_combined
+
+seed: 42
+train_ratio: 0.7
+val_ratio: 0.15
+test_ratio: 0.15
+
+xgboost:
+  max_depth: 6
+  learning_rate: 0.1
+  subsample: 0.8
+  colsample_bytree: 0.8
+  num_boost_round: 200
+  early_stopping_rounds: 20

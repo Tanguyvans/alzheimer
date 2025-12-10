@@ -1,0 +1,9 @@
+{
+  "classes": [
+    "CN",
+    "MCI",
+    "AD"
+  ],
+  "num_classes": 3,
+  "objective": "multi:softprob"
+}

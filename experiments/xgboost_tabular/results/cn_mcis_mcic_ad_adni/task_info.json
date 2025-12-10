@@ -1,0 +1,10 @@
+{
+  "classes": [
+    "CN",
+    "MCI_stable",
+    "MCI_converter",
+    "AD"
+  ],
+  "num_classes": 4,
+  "objective": "multi:softprob"
+}

@@ -1,0 +1,8 @@
+{
+  "classes": [
+    "CN",
+    "AD"
+  ],
+  "num_classes": 2,
+  "objective": "binary:logistic"
+}
