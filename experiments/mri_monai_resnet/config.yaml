@@ -1,0 +1,76 @@
+# MONAI ResNet3D Configuration
+# For Alzheimer's Disease Classification
+#
+# Supported tasks:
+#   - cn_ad: CN vs AD (2 classes)
+#   - cn_mci_ad: CN vs MCI vs AD (3 classes)
+#   - cn_mcis_mcic_ad: CN vs MCIs vs MCIc vs AD (4 classes)
+
+experiment:
+  name: "monai_resnet50_cn_mci_ad"
+  task: "cn_mci_ad"  # Change this for different tasks
+  description: "3D ResNet50 with MedicalNet pretrained weights"
+
+model:
+  architecture: "resnet50"  # resnet10, resnet18, resnet34, resnet50
+  num_classes: 3  # 2 for cn_ad, 3 for cn_mci_ad, 4 for cn_mcis_mcic_ad
+  in_channels: 1
+  image_size: 96  # 96x96x96 (smaller for memory)
+  dropout: 0.5
+  use_pretrained: true
+  pretrained_path: "pretrained/resnet_50_23dataset.pth"  # Download from MedicalNet
+  freeze_backbone: false
+
+data:
+  # Data paths - update based on task
+  train_csv: "data/cn_mci_ad/train.csv"
+  val_csv: "data/cn_mci_ad/val.csv"
+  test_csv: "data/cn_mci_ad/test.csv"
+  checkpoints_dir: "checkpoints"
+  logs_dir: "logs"
+  results_dir: "results"
+  # Source data for prepare_dataset.py
+  dxsum_csv: "../../data/adni/dxsum.csv"
+  skull_dir: "/path/to/skull/stripped/mri"  # Update this
+
+training:
+  epochs: 100
+  batch_size: 4  # Small batch for 3D volumes
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  lr_min: 0.000001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  use_weighted_loss: true
+  label_smoothing: 0.1
+  seed: 42
+
+augmentation:
+  enabled: true
+  random_flip: true
+  random_rotate: 15
+  random_scale: [0.9, 1.1]
+  random_intensity: 0.1
+
+hardware:
+  device: "mps"  # mps for Mac M1/M2, cuda for GPU
+  num_workers: 4
+  pin_memory: true
+  mixed_precision: false  # Not fully supported on MPS
+
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 15
+    monitor: "val_accuracy"
+  checkpoint:
+    save_best: true
+    save_last: true
+
+wandb:
+  enabled: false
+  project: "alzheimer-classification"
+  entity: null
+  run_name: "monai_resnet50"
+  tags: ["monai", "resnet50", "pretrained", "medicalnet"]
+  notes: "3D ResNet50 with MedicalNet pretrained weights"
