@@ -1,0 +1,37 @@
+# Combined ADNI + OASIS dataset analysis
+name: Combined
+dataset: combined
+adni_csv: data/adni/ALL_4class_clinical.csv
+oasis_csv: data/oasis/oasis_all.csv
+output_dir: experiments/tabular_analysis/reports/combined
+
+# Class mapping (3-class for comparison)
+classes:
+  CN: Cognitively Normal
+  MCI: Mild Cognitive Impairment
+  AD: Alzheimer's Disease
+
+# Common features across both datasets
+features:
+  demographics:
+    - AGE
+    - PTGENDER
+    - PTEDUCAT
+    - PTMARRY
+  vitals:
+    - VSWEIGHT
+    - BMI
+  cognitive:
+    - TRAASCOR
+    - TRABSCOR
+    - CATANIMSC
+    - BNTTOTAL
+    - DSPANFOR
+    - DSPANBAC
+  medical_history:
+    - MH14ALCH
+    - MH16SMOK
+    - MH4CARD
+    - MH2NEURL
+  mood:
+    - BCDEPRES

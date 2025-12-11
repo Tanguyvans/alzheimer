@@ -1,0 +1,43 @@
+# ADNI dataset analysis
+name: ADNI
+input_csv: data/adni/ALL_4class_clinical.csv
+dxsum_csv: data/adni/dxsum.csv  # For real per-visit diagnosis transitions
+output_dir: experiments/tabular_analysis/reports/adni
+
+# Subject and diagnosis columns
+subject_col: Subject
+diagnosis_col: CLASS_4
+
+# Class mapping for analysis
+classes:
+  CN: Cognitively Normal
+  MCI_stable: MCI Stable
+  MCI_to_AD: MCI Converter
+  AD: Alzheimer's Disease
+
+# Features to analyze
+features:
+  demographics:
+    - AGE
+    - PTGENDER
+    - PTEDUCAT
+    - PTMARRY
+  vitals:
+    - VSWEIGHT
+    - VSHEIGHT
+    - BMI
+  cognitive:
+    - TRAASCOR
+    - TRABSCOR
+    - CATANIMSC
+    - CLOCKSCOR
+    - BNTTOTAL
+    - DSPANFOR
+    - DSPANBAC
+  medical_history:
+    - MH14ALCH
+    - MH16SMOK
+    - MH4CARD
+    - MH2NEURL
+  mood:
+    - BCDEPRES
