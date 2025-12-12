@@ -4,10 +4,15 @@ Build OASIS3 master dataset from UDS CSV files.
 
 Merges multiple UDS forms and creates diagnosis labels compatible with ADNI.
 
+IMPORTANT: Only labels as 'AD' if PROBAD=1 or POSSAD=1 (true Alzheimer's).
+Other dementias (DLB, vascular, FTD, etc.) are labeled as 'Other_Dementia'.
+
 Usage:
     python preprocessing/tabular/build_oasis_dataset.py
+    python preprocessing/tabular/build_oasis_dataset.py --mri-dir /path/to/OASIS-nifti
 """
 
+import argparse
 import pandas as pd
 from pathlib import Path
 import logging
@@ -35,11 +40,19 @@ def determine_diagnosis(row) -> str:
     """
     Determine diagnosis label from UDS diagnosis fields.
 
-    Returns: 'CN', 'MCI', 'AD', or 'Other'
+    IMPORTANT: Only returns 'AD' for Probable or Possible Alzheimer's Disease.
+    Other dementias are labeled as 'Other_Dementia'.
+
+    Returns: 'CN', 'MCI', 'AD', 'Other_Dementia', or 'Other'
     """
     # Check for dementia first (most severe)
     if row.get('DEMENTED') == 1:
-        return 'AD'
+        # Only label as AD if it's specifically Alzheimer's
+        if row.get('PROBAD') == 1 or row.get('POSSAD') == 1:
+            return 'AD'
+        else:
+            # Other dementia types (DLB, vascular, FTD, etc.)
+            return 'Other_Dementia'
 
     # Check for MCI (any MCI subtype)
     mci_fields = ['MCIAMEM', 'MCIAPLUS', 'MCINON1', 'MCINON2']
@@ -54,8 +67,33 @@ def determine_diagnosis(row) -> str:
     return 'Other'
 
 
-def build_oasis_dataset():
-    """Build master OASIS dataset from UDS files"""
+def get_subjects_with_mri(mri_dir: Path) -> set:
+    """Get list of subjects that have MRI data available"""
+    if not mri_dir.exists():
+        logger.warning(f"MRI directory not found: {mri_dir}")
+        return set()
+
+    subjects = set()
+    for folder in mri_dir.iterdir():
+        if folder.is_dir() and folder.name.startswith('OAS'):
+            subjects.add(folder.name)
+
+    logger.info(f"Found {len(subjects)} subjects with MRI data")
+    return subjects
+
+
+def build_oasis_dataset(mri_dir: Path = None):
+    """Build master OASIS dataset from UDS files
+
+    Args:
+        mri_dir: Optional path to OASIS MRI directory. If provided, also creates
+                 a filtered dataset with only subjects that have MRI data.
+
+    Outputs:
+        - oasis_tabular.csv: All clinical visits (for tabular analysis)
+        - oasis_mri.csv: Only subjects with MRI (for imaging analysis) - if mri_dir provided
+        - oasis_all_full.csv: Full dataset including Other_Dementia and Other
+    """
 
     logger.info("=" * 60)
     logger.info("BUILDING OASIS3 MASTER DATASET")
@@ -79,9 +117,13 @@ def build_oasis_dataset():
     # Create visit key for merging
     merge_keys = ['OASISID', 'days_to_visit']
 
-    # Start building master dataframe
-    master = diagnoses[['OASISID', 'OASIS_session_label', 'days_to_visit', 'age at visit',
-                        'NORMCOG', 'DEMENTED', 'MCIAMEM', 'MCIAPLUS', 'MCINON1', 'MCINON2']].copy()
+    # Start building master dataframe - include PROBAD and POSSAD for AD determination
+    dx_cols = ['OASISID', 'OASIS_session_label', 'days_to_visit', 'age at visit',
+               'NORMCOG', 'DEMENTED', 'MCIAMEM', 'MCIAPLUS', 'MCINON1', 'MCINON2',
+               'PROBAD', 'POSSAD']
+    # Only include columns that exist
+    dx_cols = [c for c in dx_cols if c in diagnoses.columns]
+    master = diagnoses[dx_cols].copy()
 
     # Determine diagnosis
     master['DX'] = master.apply(determine_diagnosis, axis=1)
@@ -173,28 +215,58 @@ def build_oasis_dataset():
         })
         master = master.merge(gds_subset, on=['Subject', 'days_to_visit'], how='left')
 
-    # Filter to CN, MCI, AD only
+    # Filter to CN, MCI, AD only (exclude Other_Dementia and Other)
     master_filtered = master[master['DX'].isin(['CN', 'MCI', 'AD'])].copy()
 
-    logger.info(f"\n--- Final Dataset ---")
+    # === TABULAR DATASET (all clinical visits) ===
+    logger.info(f"\n--- TABULAR Dataset (all clinical visits) ---")
     logger.info(f"Total visits: {len(master_filtered)}")
     logger.info(f"Unique subjects: {master_filtered['Subject'].nunique()}")
-    logger.info(f"\nClass distribution:")
+    logger.info(f"Class distribution:")
     logger.info(master_filtered['DX'].value_counts().to_string())
-    logger.info(f"\nColumns: {list(master_filtered.columns)}")
 
-    # Save
-    output_path = OASIS_DIR / 'oasis_all.csv'
-    master_filtered.to_csv(output_path, index=False)
-    logger.info(f"\nSaved to: {output_path}")
+    tabular_path = OASIS_DIR / 'oasis_tabular.csv'
+    master_filtered.to_csv(tabular_path, index=False)
+    logger.info(f"Saved to: {tabular_path}")
 
-    # Also save full dataset (including 'Other')
+    # === MRI DATASET (only subjects with MRI) ===
+    if mri_dir is not None:
+        mri_subjects = get_subjects_with_mri(mri_dir)
+        if mri_subjects:
+            master_mri = master_filtered[master_filtered['Subject'].isin(mri_subjects)].copy()
+
+            logger.info(f"\n--- MRI Dataset (subjects with MRI only) ---")
+            logger.info(f"Total visits: {len(master_mri)}")
+            logger.info(f"Unique subjects: {master_mri['Subject'].nunique()}")
+            logger.info(f"Class distribution:")
+            logger.info(master_mri['DX'].value_counts().to_string())
+
+            mri_path = OASIS_DIR / 'oasis_mri.csv'
+            master_mri.to_csv(mri_path, index=False)
+            logger.info(f"Saved to: {mri_path}")
+
+    # === FULL DATASET (including Other_Dementia and Other) ===
+    logger.info(f"\n--- Full Diagnosis Breakdown (all categories) ---")
+    logger.info(master['DX'].value_counts().to_string())
+
     full_path = OASIS_DIR / 'oasis_all_full.csv'
     master.to_csv(full_path, index=False)
     logger.info(f"Full dataset saved to: {full_path}")
 
+    logger.info(f"\nColumns: {list(master_filtered.columns)}")
+
     return master_filtered
 
 
+def main():
+    parser = argparse.ArgumentParser(description='Build OASIS3 master dataset')
+    parser.add_argument('--mri-dir', type=str, default=None,
+                        help='Path to OASIS MRI directory (to filter subjects with MRI only)')
+    args = parser.parse_args()
+
+    mri_dir = Path(args.mri_dir) if args.mri_dir else None
+    build_oasis_dataset(mri_dir=mri_dir)
+
+
 if __name__ == '__main__':
-    build_oasis_dataset()
+    main()

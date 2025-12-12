@@ -2,17 +2,17 @@
 
 ## Overview
 
-- **Total samples**: 7,390
-- **Unique subjects**: 1,330
-- **Average visits per subject**: 5.56
+- **Total samples**: 6,759
+- **Unique subjects**: 1,267
+- **Average visits per subject**: 5.33
 
 ## Class Distribution
 
 | Class | Count | Percentage |
 |-------|-------|------------|
-| CN | 5,792 | 78.4% |
-| AD | 1,378 | 18.6% |
-| MCI | 220 | 3.0% |
+| CN | 5,792 | 85.7% |
+| AD | 747 | 11.1% |
+| MCI | 220 | 3.3% |
 
 ## Feature Availability
 
@@ -22,39 +22,39 @@
 
 | Feature | Missing | Percentage |
 |---------|---------|------------|
-| PTGENDER | 11 | 0.1% |
-| PTEDUCAT | 5,736 | 77.6% |
+| PTGENDER | 11 | 0.2% |
+| PTEDUCAT | 5,220 | 77.2% |
 | PTMARRY | 3 | 0.0% |
-| VSWEIGHT | 898 | 12.2% |
-| BMI | 900 | 12.2% |
-| TRAASCOR | 6,182 | 83.7% |
-| TRABSCOR | 6,201 | 83.9% |
-| CATANIMSC | 6,179 | 83.6% |
-| BNTTOTAL | 6,712 | 90.8% |
-| DSPANFOR | 6,712 | 90.8% |
-| DSPANBAC | 6,713 | 90.8% |
-| MH14ALCH | 3,245 | 43.9% |
-| MH16SMOK | 3,242 | 43.9% |
-| MH4CARD | 3,239 | 43.8% |
-| MH2NEURL | 3,241 | 43.9% |
-| BCDEPRES | 892 | 12.1% |
+| VSWEIGHT | 729 | 10.8% |
+| BMI | 731 | 10.8% |
+| TRAASCOR | 5,670 | 83.9% |
+| TRABSCOR | 5,681 | 84.1% |
+| CATANIMSC | 5,666 | 83.8% |
+| BNTTOTAL | 6,125 | 90.6% |
+| DSPANFOR | 6,125 | 90.6% |
+| DSPANBAC | 6,125 | 90.6% |
+| MH14ALCH | 2,745 | 40.6% |
+| MH16SMOK | 2,742 | 40.6% |
+| MH4CARD | 2,739 | 40.5% |
+| MH2NEURL | 2,740 | 40.5% |
+| BCDEPRES | 724 | 10.7% |
 
 ## Diagnosis Transitions
 
-**Total subjects**: 1202
+**Total subjects**: 1121
 
-### CN (916 patients)
-- **Stable (CN → CN)**: 752 (82.1%)
-- **CN → MCI**: 19 (2.1%)
-- **CN → AD**: 145 (15.8%)
+### CN (920 patients)
+- **Stable (CN → CN)**: 821 (89.2%)
+- **CN → MCI**: 45 (4.9%)
+- **CN → AD**: 54 (5.9%)
 
-### MCI (43 patients)
-- **Stable (MCI → MCI)**: 5 (11.6%)
-- **MCI → CN**: 17 (39.5%)
-- **MCI → AD**: 21 (48.8%)
+### MCI (39 patients)
+- **Stable (MCI → MCI)**: 10 (25.6%)
+- **MCI → CN**: 21 (53.8%)
+- **MCI → AD**: 8 (20.5%)
 
-### AD (243 patients)
-- **Stable (AD → AD)**: 220 (90.5%)
-- **AD → CN**: 19 (7.8%)
-- **AD → MCI**: 4 (1.6%)
+### AD (162 patients)
+- **Stable (AD → AD)**: 142 (87.7%)
+- **AD → CN**: 14 (8.6%)
+- **AD → MCI**: 6 (3.7%)
 

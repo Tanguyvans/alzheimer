@@ -1,0 +1,68 @@
+# CN vs AD-Trajectory (MCIc + AD) Classification
+# Then classify MCIs (stable MCI) to analyze where they fall
+
+experiment:
+  name: "cn_vs_ad_trajectory"
+  description: "Binary classification: CN vs (MCI-converters + AD), then analyze MCI-stable"
+
+data:
+  input_csv: "data/adni/ALL_4class_clinical.csv"
+  dataset: "adni"
+
+# Classes definition
+# Training: CN (label=0) vs AD-trajectory (MCIc + AD, label=1)
+# Inference: Apply to MCIs (not seen during training)
+classes:
+  training:
+    - name: "CN"
+      source_labels: ["CN"]
+      label: 0
+    - name: "AD_trajectory"
+      source_labels: ["MCI_to_AD", "AD"]  # MCIc + AD combined
+      label: 1
+  holdout:
+    - name: "MCI_stable"
+      source_labels: ["MCI_stable"]
+
+# Multi-seed ensemble for uncertainty quantification
+ensemble:
+  enabled: true
+  n_seeds: 10
+  base_seed: 42
+
+# Data split
+split:
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+
+# XGBoost parameters
+xgboost:
+  max_depth: 6
+  learning_rate: 0.1
+  subsample: 0.8
+  colsample_bytree: 0.8
+  num_boost_round: 200
+  early_stopping_rounds: 20
+
+# Analysis settings
+analysis:
+  calibration:
+    enabled: true
+    n_bins: 10
+
+  umap:
+    enabled: true
+    n_neighbors: 15
+    min_dist: 0.1
+
+  shap:
+    enabled: true
+    max_samples: 500
+
+  confidence_threshold:
+    low: 0.3
+    high: 0.7
+
+# Output
+output_dir: "experiments/tabular_cn_vs_ad_trajectory/results"

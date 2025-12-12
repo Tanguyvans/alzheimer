@@ -51,6 +51,13 @@ TASK_CONFIGS = {
         'classes': ['CN', 'MCIs', 'MCIc', 'AD'],
         'description': '4-class: CN vs Stable MCI vs Converting MCI vs AD'
     },
+    'cn_ad_trajectory': {
+        'name': 'CN vs AD-trajectory',
+        'num_classes': 2,
+        'classes': ['CN', 'AD_trajectory'],
+        'description': 'Binary: CN vs (MCI-converters + AD). MCIs held out for analysis.',
+        'holdout': 'MCIs'
+    },
 }
 
 
@@ -68,6 +75,7 @@ class DatasetPreparator:
 
         self.dx_df = None
         self.dataset_df = None
+        self.holdout_df = None  # For MCIs in cn_ad_trajectory task
 
     def load_diagnosis_data(self):
         """Load ADNI diagnosis data"""
@@ -96,6 +104,8 @@ class DatasetPreparator:
             return self._identify_cn_mci_ad_patients()
         elif self.task == 'cn_mcis_mcic_ad':
             return self._identify_4class_patients()
+        elif self.task == 'cn_ad_trajectory':
+            return self._identify_cn_ad_trajectory_patients()
 
     def _identify_cn_ad_patients(self):
         """CN vs AD: stable CN and stable AD patients"""
@@ -197,6 +207,72 @@ class DatasetPreparator:
 
         return result
 
+    def _identify_cn_ad_trajectory_patients(self):
+        """
+        CN vs AD-trajectory: Binary classification
+        - CN (label=0): Stable cognitively normal
+        - AD_trajectory (label=1): MCI-converters + stable AD
+
+        MCIs (stable MCI) are held out for later analysis
+        """
+        # Sort by date to track progression
+        self.dx_df['EXAMDATE'] = pd.to_datetime(self.dx_df['EXAMDATE'])
+        dx_sorted = self.dx_df.sort_values(['RID', 'EXAMDATE'])
+
+        patient_diagnoses = dx_sorted.groupby('RID')['DIAGNOSIS'].apply(list).reset_index()
+        patient_diagnoses.columns = ['RID', 'dx_sequence']
+
+        # Get first PTID for each RID
+        ptid_map = self.dx_df.drop_duplicates('RID').set_index('RID')['PTID'].to_dict()
+
+        patients = []
+        holdout_patients = []
+
+        for _, row in patient_diagnoses.iterrows():
+            rid = row['RID']
+            ptid = ptid_map.get(rid)
+            dx_seq = row['dx_sequence']
+            unique_dx = set(dx_seq)
+
+            # Stable CN: only diagnosis 1
+            if unique_dx == {1}:
+                patients.append({'RID': rid, 'PTID': ptid, 'group': 'CN', 'label': 0})
+
+            # Stable AD: only diagnosis 3 -> AD trajectory
+            elif unique_dx == {3}:
+                patients.append({'RID': rid, 'PTID': ptid, 'group': 'AD', 'label': 1})
+
+            # MCI converter: started as 2, progressed to 3 -> AD trajectory
+            elif 2 in unique_dx and 3 in unique_dx:
+                if dx_seq[0] == 2:  # Started with MCI
+                    patients.append({'RID': rid, 'PTID': ptid, 'group': 'MCIc', 'label': 1})
+
+            # Stable MCI: only diagnosis 2 -> HOLDOUT (not in training)
+            elif unique_dx == {2}:
+                holdout_patients.append({'RID': rid, 'PTID': ptid, 'group': 'MCIs', 'label': -1})
+
+        result = pd.DataFrame(patients)
+        holdout_df = pd.DataFrame(holdout_patients)
+
+        # Log statistics
+        cn_count = len(result[result['group'] == 'CN'])
+        ad_count = len(result[result['group'] == 'AD'])
+        mcic_count = len(result[result['group'] == 'MCIc'])
+        mcis_count = len(holdout_df)
+
+        logger.info(f"\n--- Training Set ---")
+        logger.info(f"CN (label=0): {cn_count}")
+        logger.info(f"AD_trajectory (label=1): {ad_count + mcic_count}")
+        logger.info(f"  - Stable AD: {ad_count}")
+        logger.info(f"  - MCI converters: {mcic_count}")
+        logger.info(f"\n--- Holdout (for analysis) ---")
+        logger.info(f"MCI stable: {mcis_count}")
+
+        # Save holdout separately
+        self.holdout_df = holdout_df
+
+        return result
+
     def find_mri_scans(self, patients_df):
         """Map patients to their MRI scan files"""
         logger.info("\n" + "="*60)
@@ -254,6 +330,42 @@ class DatasetPreparator:
 
         return self.dataset_df
 
+    def _find_scans_for_holdout(self):
+        """Find MRI scans for holdout patients (MCIs)"""
+        if self.holdout_df is None or len(self.holdout_df) == 0:
+            return pd.DataFrame()
+
+        scan_data = []
+        for _, row in self.holdout_df.iterrows():
+            ptid = row['PTID']
+            patient_folder = self.skull_dir / ptid
+
+            if not patient_folder.exists():
+                continue
+
+            scans = list(patient_folder.glob('*_registered_skull_stripped.nii.gz'))
+            if not scans:
+                scans = list(patient_folder.glob('*_mni_norm.nii.gz'))
+            if not scans:
+                scans = list(patient_folder.glob('*.nii.gz'))
+
+            if not scans:
+                continue
+
+            scan_path = scans[0]
+            if scan_path.stat().st_size < 1024:
+                continue
+
+            scan_data.append({
+                'PTID': ptid,
+                'RID': row['RID'],
+                'group': row['group'],
+                'label': row['label'],
+                'scan_path': str(scan_path)
+            })
+
+        return pd.DataFrame(scan_data)
+
     def create_splits(self, train_ratio=0.7, val_ratio=0.15, test_ratio=0.15, seed=42):
         """Create stratified train/val/test splits"""
         logger.info("\n" + "="*60)
@@ -308,6 +420,15 @@ class DatasetPreparator:
         complete = pd.concat([train, val, test], ignore_index=True)
         complete.to_csv(self.output_dir / 'dataset_complete.csv', index=False)
 
+        # Save holdout MCIs if available (for cn_ad_trajectory task)
+        holdout_samples = 0
+        if self.holdout_df is not None and len(self.holdout_df) > 0:
+            holdout_with_scans = self._find_scans_for_holdout()
+            if len(holdout_with_scans) > 0:
+                holdout_with_scans.to_csv(self.output_dir / 'holdout_mcis.csv', index=False)
+                holdout_samples = len(holdout_with_scans)
+                logger.info(f"  holdout_mcis.csv: {holdout_samples} samples (for post-hoc analysis)")
+
         # Save metadata
         metadata = {
             'task': self.task,
@@ -320,9 +441,10 @@ class DatasetPreparator:
             'train_samples': len(train),
             'val_samples': len(val),
             'test_samples': len(test),
+            'holdout_samples': holdout_samples,
             'class_distribution': {
                 group: len(complete[complete['group'] == group])
-                for group in self.task_config['classes']
+                for group in set(complete['group'])
             }
         }
 
@@ -356,7 +478,7 @@ def main():
     parser = argparse.ArgumentParser(description='Prepare MRI dataset for classification')
 
     parser.add_argument('--task', type=str, required=True,
-                       choices=['cn_ad', 'cn_mci_ad', 'cn_mcis_mcic_ad'],
+                       choices=['cn_ad', 'cn_mci_ad', 'cn_mcis_mcic_ad', 'cn_ad_trajectory'],
                        help='Classification task')
     parser.add_argument('--dxsum', type=str, required=True,
                        help='Path to dxsum.csv')
