@@ -7,13 +7,13 @@
 #   - cn_mcis_mcic_ad: CN vs MCIs vs MCIc vs AD (4 classes)
 
 experiment:
-  name: "monai_resnet50_cn_mci_ad"
-  task: "cn_mci_ad"  # Change this for different tasks
+  name: "monai_resnet50_cn_ad_trajectory"
+  task: "cn_ad_trajectory"  # Binary: CN vs (MCIc + AD)
   description: "3D ResNet50 with MedicalNet pretrained weights"
 
 model:
   architecture: "resnet50"  # resnet10, resnet18, resnet34, resnet50
-  num_classes: 3  # 2 for cn_ad, 3 for cn_mci_ad, 4 for cn_mcis_mcic_ad
+  num_classes: 2  # Binary: CN vs AD_trajectory
   in_channels: 1
   image_size: 96  # 96x96x96 (smaller for memory)
   dropout: 0.5
@@ -23,9 +23,9 @@ model:
 
 data:
   # Data paths - update based on task
-  train_csv: "data/cn_mci_ad/train.csv"
-  val_csv: "data/cn_mci_ad/val.csv"
-  test_csv: "data/cn_mci_ad/test.csv"
+  train_csv: "data/cn_ad_trajectory/train.csv"
+  val_csv: "data/cn_ad_trajectory/val.csv"
+  test_csv: "data/cn_ad_trajectory/test.csv"
   checkpoints_dir: "checkpoints"
   logs_dir: "logs"
   results_dir: "results"
