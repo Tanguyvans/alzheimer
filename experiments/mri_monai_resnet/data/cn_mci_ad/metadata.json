@@ -1,0 +1,21 @@
+{
+  "task": "cn_mci_ad",
+  "task_name": "CN vs MCI vs AD",
+  "num_classes": 3,
+  "classes": [
+    "CN",
+    "MCI",
+    "AD"
+  ],
+  "description": "3-class: CN vs Mild Cognitive Impairment vs AD",
+  "created": "2025-12-11T21:52:26.250216",
+  "total_samples": 1676,
+  "train_samples": 1172,
+  "val_samples": 252,
+  "test_samples": 252,
+  "class_distribution": {
+    "CN": 738,
+    "MCI": 591,
+    "AD": 347
+  }
+}
