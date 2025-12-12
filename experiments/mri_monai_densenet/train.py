@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Training script for MONAI ResNet3D with MedicalNet pretrained weights
+Training script for MONAI DenseNet3D with MedicalNet pretrained weights
 
 Usage:
     python train.py --config config.yaml
@@ -23,7 +23,7 @@ import argparse
 import json
 from datetime import datetime
 
-from model import ResNet3DClassifier, get_resnet_model
+from model import DenseNet3DClassifier, get_densenet_model
 from dataset import get_dataloaders, ADNIDataset
 
 # Optional imports
@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 
 
 class Trainer:
-    """Trainer for MONAI ResNet3D"""
+    """Trainer for MONAI DenseNet3D"""
 
     def __init__(self, config: Dict):
         self.config = config
@@ -118,7 +118,7 @@ class Trainer:
                 logger.warning("  https://github.com/Tencent/MedicalNet")
                 pretrained_path = None
 
-        model = ResNet3DClassifier(
+        model = DenseNet3DClassifier(
             architecture=cfg['architecture'],
             num_classes=cfg['num_classes'],
             in_channels=cfg['in_channels'],
@@ -475,7 +475,7 @@ def load_config(config_path: str) -> Dict:
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Train MONAI ResNet3D')
+    parser = argparse.ArgumentParser(description='Train MONAI DenseNet3D')
     parser.add_argument('--config', type=str, default='config.yaml', help='Config file path')
     parser.add_argument('--test-only', action='store_true', help='Only run test evaluation')
     args = parser.parse_args()

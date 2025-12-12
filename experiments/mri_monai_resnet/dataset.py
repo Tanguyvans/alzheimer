@@ -72,7 +72,16 @@ class MRIDataset(Dataset):
 
         if 'label' in self.df.columns:
             label_counts = self.df['label'].value_counts().sort_index()
-            class_names = {0: 'CN', 1: 'MCI', 2: 'AD'}
+
+            # Build class names from 'group' column if available
+            if 'group' in self.df.columns:
+                # Map label -> group name(s)
+                class_names = {}
+                for label in label_counts.index:
+                    groups = self.df[self.df['label'] == label]['group'].unique()
+                    class_names[label] = '+'.join(sorted(groups))
+            else:
+                class_names = {0: 'CN', 1: 'MCI', 2: 'AD'}
 
             for label, count in label_counts.items():
                 name = class_names.get(label, f'Class {label}')
