@@ -48,6 +48,94 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
+def get_layer_wise_lr_decay_params(model, base_lr: float, weight_decay: float, lr_decay: float = 0.75):
+    """
+    Create parameter groups with layer-wise learning rate decay.
+
+    As per the MICCAI 2024 paper:
+    - Head gets highest LR (base_lr)
+    - Deeper transformer blocks get progressively lower LR
+    - Patch embed and pos_embed get lowest LR
+
+    Args:
+        model: ViT3DClassifier model
+        base_lr: Base learning rate for the head
+        weight_decay: Weight decay for regularization
+        lr_decay: Decay factor per layer (default 0.75 from paper)
+
+    Returns:
+        List of parameter group dicts for optimizer
+    """
+    param_groups = []
+
+    # Count transformer blocks (should be 12)
+    num_blocks = len(model.blocks)
+
+    # Layer ordering from top (highest LR) to bottom (lowest LR):
+    # head -> norm -> blocks[11] -> blocks[10] -> ... -> blocks[0] -> embeddings
+
+    # Layer 0: Classification head (highest LR)
+    head_params = list(model.head.parameters())
+    if head_params:
+        param_groups.append({
+            'params': head_params,
+            'lr': base_lr,
+            'weight_decay': weight_decay,
+            'layer_name': 'head'
+        })
+
+    # Layer 1: Final norm
+    norm_params = list(model.norm.parameters())
+    if norm_params:
+        param_groups.append({
+            'params': norm_params,
+            'lr': base_lr * lr_decay,
+            'weight_decay': weight_decay,
+            'layer_name': 'norm'
+        })
+
+    # Layers 2 to num_blocks+1: Transformer blocks (reverse order - last block first)
+    for i in range(num_blocks - 1, -1, -1):
+        block_params = list(model.blocks[i].parameters())
+        layer_idx = num_blocks - i + 1  # 2 for block[11], 13 for block[0]
+        lr = base_lr * (lr_decay ** layer_idx)
+
+        if block_params:
+            param_groups.append({
+                'params': block_params,
+                'lr': lr,
+                'weight_decay': weight_decay,
+                'layer_name': f'blocks.{i}'
+            })
+
+    # Last layers: Embeddings (lowest LR)
+    embed_layer_idx = num_blocks + 2
+    embed_lr = base_lr * (lr_decay ** embed_layer_idx)
+
+    embed_params = []
+    embed_params.extend([model.cls_token, model.pos_embed])
+    embed_params.extend(list(model.patch_embed.parameters()))
+    embed_params.append(model.pos_drop.p) if hasattr(model.pos_drop, 'p') else None
+
+    # Filter out non-parameters and None
+    embed_params = [p for p in embed_params if isinstance(p, torch.nn.Parameter)]
+
+    if embed_params:
+        param_groups.append({
+            'params': embed_params,
+            'lr': embed_lr,
+            'weight_decay': weight_decay,
+            'layer_name': 'embeddings'
+        })
+
+    # Log LR distribution
+    logger.info("Layer-wise learning rate decay:")
+    for pg in param_groups:
+        logger.info(f"  {pg['layer_name']}: lr={pg['lr']:.2e}")
+
+    return param_groups
+
+
 class Trainer:
     """Trainer for 3D ViT"""
 
@@ -157,6 +245,11 @@ class Trainer:
         cfg = self.config
         image_size = cfg['model']['image_size']
 
+        # Get preprocessing settings (default to paper settings if not specified)
+        preproc = cfg.get('preprocessing', {})
+        use_paper_preprocessing = preproc.get('use_paper_preprocessing', True)
+        target_spacing = preproc.get('target_spacing', 1.75)
+
         train_loader, val_loader, test_loader = get_dataloaders(
             train_csv=cfg['data']['train_csv'],
             val_csv=cfg['data']['val_csv'],
@@ -166,19 +259,37 @@ class Trainer:
             num_workers=cfg['hardware']['num_workers'],
             pin_memory=cfg['hardware']['pin_memory'],
             augment=cfg['augmentation']['enabled'],
+            use_paper_preprocessing=use_paper_preprocessing,
+            target_spacing=target_spacing,
         )
 
         return train_loader, val_loader, test_loader
 
     def build_optimizer(self, model: nn.Module) -> Tuple[optim.Optimizer, optim.lr_scheduler._LRScheduler]:
-        """Build optimizer and scheduler with warmup"""
+        """Build optimizer and scheduler with warmup and optional layer-wise LR decay"""
         cfg = self.config['training']
 
-        optimizer = optim.AdamW(
-            model.parameters(),
-            lr=cfg['learning_rate'],
-            weight_decay=cfg['weight_decay']
-        )
+        # Check if layer-wise LR decay is enabled
+        use_layer_lr_decay = cfg.get('layer_wise_lr_decay', 0.0)
+
+        if use_layer_lr_decay > 0:
+            # Use layer-wise learning rate decay (paper uses 0.75)
+            param_groups = get_layer_wise_lr_decay_params(
+                model,
+                base_lr=cfg['learning_rate'],
+                weight_decay=cfg['weight_decay'],
+                lr_decay=use_layer_lr_decay
+            )
+            optimizer = optim.AdamW(param_groups)
+            logger.info(f"Optimizer: AdamW with layer-wise LR decay (factor={use_layer_lr_decay})")
+        else:
+            # Standard optimizer - all parameters with same LR
+            optimizer = optim.AdamW(
+                model.parameters(),
+                lr=cfg['learning_rate'],
+                weight_decay=cfg['weight_decay']
+            )
+            logger.info(f"Optimizer: AdamW (lr={cfg['learning_rate']}, weight_decay={cfg['weight_decay']})")
 
         # Main scheduler (cosine annealing)
         main_scheduler = optim.lr_scheduler.CosineAnnealingLR(
@@ -201,11 +312,9 @@ class Trainer:
                 schedulers=[warmup_scheduler, main_scheduler],
                 milestones=[warmup_epochs]
             )
-            logger.info(f"Optimizer: AdamW (lr={cfg['learning_rate']}, weight_decay={cfg['weight_decay']})")
             logger.info(f"Scheduler: CosineAnnealingLR with {warmup_epochs} warmup epochs")
         else:
             scheduler = main_scheduler
-            logger.info(f"Optimizer: AdamW (lr={cfg['learning_rate']})")
             logger.info(f"Scheduler: CosineAnnealingLR")
 
         return optimizer, scheduler
