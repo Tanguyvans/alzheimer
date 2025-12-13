@@ -281,6 +281,19 @@ class ViT3DClassifier(nn.Module):
         if pretrained_path and Path(pretrained_path).exists():
             self._load_pretrained(pretrained_path)
 
+    def freeze_backbone(self):
+        """Freeze all layers except classification head"""
+        for name, param in self.named_parameters():
+            if 'head' not in name:
+                param.requires_grad = False
+        logger.info("Backbone frozen - only training classification head")
+
+    def unfreeze_backbone(self):
+        """Unfreeze all layers"""
+        for param in self.parameters():
+            param.requires_grad = True
+        logger.info("Backbone unfrozen - training all layers")
+
     def _init_weights(self):
         """Initialize weights"""
         # Initialize position embeddings

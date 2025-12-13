@@ -350,9 +350,22 @@ class Trainer:
 
         num_epochs = self.config['training']['epochs']
         patience = self.config['callbacks']['early_stopping']['patience']
+        freeze_epochs = self.config['training'].get('freeze_backbone_epochs', 0)
+
+        # Freeze backbone for initial epochs if specified
+        if freeze_epochs > 0 and hasattr(model, 'freeze_backbone'):
+            model.freeze_backbone()
+            logger.info(f"Backbone frozen for first {freeze_epochs} epochs")
 
         for epoch in range(num_epochs):
             self.current_epoch = epoch
+
+            # Unfreeze backbone after freeze_epochs
+            if epoch == freeze_epochs and freeze_epochs > 0 and hasattr(model, 'unfreeze_backbone'):
+                model.unfreeze_backbone()
+                # Reset optimizer for full model training
+                for param_group in optimizer.param_groups:
+                    param_group['lr'] = self.config['training']['learning_rate']
 
             # Train
             train_metrics = self.train_epoch(model, train_loader, optimizer, criterion)

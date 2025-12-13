@@ -13,7 +13,7 @@ model:
   in_channels: 1
   image_size: 128  # 128x128x128 (paper uses this size, must be divisible by patch_size=16)
   dropout: 0.1  # Dropout in transformer blocks
-  classifier_dropout: 0.5  # Dropout before classification head
+  classifier_dropout: 0.1  # Reduced from 0.5 - too much dropout hurts learning
   drop_path_rate: 0.1  # Stochastic depth
   use_pretrained: true
   pretrained_path: "pretrained/vit_mae75_pretrained.pth"
@@ -35,8 +35,9 @@ training:
   optimizer: "adamw"
   scheduler: "cosine"
   warmup_epochs: 5  # Warmup for transformer training
+  freeze_backbone_epochs: 5  # Train only head for first N epochs, then unfreeze
   use_weighted_loss: true
-  label_smoothing: 0.1
+  label_smoothing: 0.0  # Disabled - can hurt with small datasets
   seed: 42
 
 augmentation:
