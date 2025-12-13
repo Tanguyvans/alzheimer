@@ -1,0 +1,70 @@
+# ViT for Alzheimer's Disease Classification
+# Based on MICCAI 2024: "Training ViT with Limited Data for Alzheimer's"
+# GitHub: https://github.com/qasymjomart/ViT_recipe_for_AD
+
+experiment:
+  name: "vit_base_cn_ad_trajectory"
+  task: "cn_ad_trajectory"  # Binary: CN vs (MCIc + AD)
+  description: "3D ViT-B with MAE pre-trained weights on MRI data"
+
+model:
+  architecture: "vit_base"  # vit_tiny, vit_small, vit_base
+  num_classes: 2  # Binary: CN vs AD_trajectory
+  in_channels: 1
+  image_size: 96  # 96x96x96 (must be divisible by patch_size)
+  dropout: 0.1  # Dropout in transformer blocks
+  classifier_dropout: 0.5  # Dropout before classification head
+  use_pretrained: true
+  pretrained_path: "pretrained/vit_mae75_pretrained.pth"
+
+data:
+  # Use same data splits as ResNet for fair comparison
+  train_csv: "../mri_monai_resnet/data/cn_ad_trajectory/train.csv"
+  val_csv: "../mri_monai_resnet/data/cn_ad_trajectory/val.csv"
+  test_csv: "../mri_monai_resnet/data/cn_ad_trajectory/test.csv"
+  checkpoints_dir: "checkpoints"
+  logs_dir: "logs"
+  results_dir: "results"
+
+training:
+  epochs: 100
+  batch_size: 4  # ViT needs more memory than ResNet
+  learning_rate: 0.0001  # Lower LR for fine-tuning
+  weight_decay: 0.05  # Higher weight decay for ViT (as per paper)
+  lr_min: 0.000001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  warmup_epochs: 5  # Warmup for transformer training
+  use_weighted_loss: true
+  label_smoothing: 0.1
+  seed: 42
+
+augmentation:
+  enabled: true
+  random_flip: true
+  random_rotate: 15
+  random_scale: [0.9, 1.1]
+  random_intensity: 0.1
+
+hardware:
+  device: "cuda"  # mps for Mac M1/M2, cuda for GPU
+  num_workers: 4
+  pin_memory: true
+  mixed_precision: false
+
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 20  # More patience for ViT
+    monitor: "val_accuracy"
+  checkpoint:
+    save_best: true
+    save_last: true
+
+wandb:
+  enabled: false
+  project: "alzheimer-classification"
+  entity: null
+  run_name: "vit_base_mae"
+  tags: ["vit", "transformer", "mae", "pretrained", "miccai2024"]
+  notes: "3D ViT-B with MAE self-supervised pre-training"
