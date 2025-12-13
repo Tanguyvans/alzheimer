@@ -127,10 +127,11 @@ class Trainer:
             architecture=cfg['architecture'],
             num_classes=cfg['num_classes'],
             in_channels=cfg['in_channels'],
-            image_size=(image_size, image_size, image_size),
+            image_size=image_size,  # Pass as int, not tuple
             pretrained_path=str(pretrained_path) if pretrained_path else None,
             dropout=cfg['dropout'],
             classifier_dropout=cfg['classifier_dropout'],
+            drop_path_rate=cfg.get('drop_path_rate', 0.1),
         )
 
         model = model.to(self.device)

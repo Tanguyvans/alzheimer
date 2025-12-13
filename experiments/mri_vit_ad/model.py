@@ -5,227 +5,203 @@
 Based on: "Training ViT with Limited Data for Alzheimer's Disease Classification" (MICCAI 2024)
 GitHub: https://github.com/qasymjomart/ViT_recipe_for_AD
 
-Supports:
-- MONAI's native ViT implementation
-- Loading MAE pre-trained weights from the paper
-- Custom classification head
-
-Pre-trained weights:
-- Download from paper's Google Drive (link in their GitHub)
-- Place in pretrained/vit_b_75mask.pth
+This implementation matches the paper's custom ViT3D architecture:
+- 128x128x128 input with 16x16x16 patches -> 512 patches
+- cls_token prepended to patch embeddings
+- Standard transformer blocks (no cross-attention like MONAI)
+- When loading MAE weights, only transformer blocks are loaded (pos_embed, patch_embed reinitialized)
 """
 
 import torch
 import torch.nn as nn
-from monai.networks.nets import ViT
+import torch.nn.functional as F
 from typing import Optional, Tuple
 import logging
 from pathlib import Path
+import math
 
 logger = logging.getLogger(__name__)
 
 
-# ViT-B configuration (matches the paper)
+# ViT configurations matching the paper
 VIT_CONFIGS = {
     'vit_base': {
-        'hidden_size': 768,
-        'mlp_dim': 3072,
-        'num_layers': 12,
+        'embed_dim': 768,
+        'depth': 12,
         'num_heads': 12,
-        'patch_size': (16, 16, 16),
+        'mlp_ratio': 4.0,
+        'patch_size': 16,
     },
     'vit_small': {
-        'hidden_size': 384,
-        'mlp_dim': 1536,
-        'num_layers': 12,
+        'embed_dim': 384,
+        'depth': 12,
         'num_heads': 6,
-        'patch_size': (16, 16, 16),
+        'mlp_ratio': 4.0,
+        'patch_size': 16,
     },
     'vit_tiny': {
-        'hidden_size': 192,
-        'mlp_dim': 768,
-        'num_layers': 12,
+        'embed_dim': 192,
+        'depth': 12,
         'num_heads': 3,
-        'patch_size': (16, 16, 16),
+        'mlp_ratio': 4.0,
+        'patch_size': 16,
     },
 }
 
 
-def get_vit_model(
-    architecture: str = 'vit_base',
-    num_classes: int = 2,
-    in_channels: int = 1,
-    image_size: Tuple[int, int, int] = (96, 96, 96),
-    pretrained_path: Optional[str] = None,
-    dropout: float = 0.1,
-) -> nn.Module:
-    """
-    Create a 3D ViT model with optional MAE pre-trained weights.
+class PatchEmbed3D(nn.Module):
+    """3D Patch Embedding using Conv3D"""
 
-    Args:
-        architecture: One of 'vit_base', 'vit_small', 'vit_tiny'
-        num_classes: Number of output classes
-        in_channels: Number of input channels (1 for grayscale MRI)
-        image_size: Input image size (D, H, W)
-        pretrained_path: Path to MAE pre-trained weights (.pth file)
-        dropout: Dropout rate
+    def __init__(
+        self,
+        img_size: int = 128,
+        patch_size: int = 16,
+        in_channels: int = 1,
+        embed_dim: int = 768,
+    ):
+        super().__init__()
+        self.img_size = img_size
+        self.patch_size = patch_size
+        self.num_patches = (img_size // patch_size) ** 3
 
-    Returns:
-        ViT model
-    """
-    if architecture not in VIT_CONFIGS:
-        raise ValueError(f"Unknown architecture: {architecture}. Choose from {list(VIT_CONFIGS.keys())}")
+        self.proj = nn.Conv3d(
+            in_channels, embed_dim,
+            kernel_size=patch_size,
+            stride=patch_size
+        )
 
-    config = VIT_CONFIGS[architecture]
-
-    # Create MONAI ViT
-    model = ViT(
-        in_channels=in_channels,
-        img_size=image_size,
-        patch_size=config['patch_size'],
-        hidden_size=config['hidden_size'],
-        mlp_dim=config['mlp_dim'],
-        num_layers=config['num_layers'],
-        num_heads=config['num_heads'],
-        classification=True,
-        num_classes=num_classes,
-        dropout_rate=dropout,
-        spatial_dims=3,
-    )
-
-    logger.info(f"Created {architecture} (image_size={image_size}, patch_size={config['patch_size']})")
-    logger.info(f"  Hidden: {config['hidden_size']}, MLP: {config['mlp_dim']}, Layers: {config['num_layers']}, Heads: {config['num_heads']}")
-
-    # Load pretrained weights if specified
-    if pretrained_path and Path(pretrained_path).exists():
-        model = load_mae_weights(model, pretrained_path)
-
-    return model
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # x: (B, C, D, H, W)
+        x = self.proj(x)  # (B, embed_dim, D', H', W')
+        x = x.flatten(2)  # (B, embed_dim, num_patches)
+        x = x.transpose(1, 2)  # (B, num_patches, embed_dim)
+        return x
 
 
-def load_mae_weights(
-    model: nn.Module,
-    pretrained_path: str,
-) -> nn.Module:
-    """
-    Load MAE pre-trained weights into MONAI ViT.
+class Attention(nn.Module):
+    """Multi-head self-attention"""
 
-    The MAE weights are from self-supervised pre-training on BraTS, IXI, OASIS3.
+    def __init__(
+        self,
+        dim: int,
+        num_heads: int = 12,
+        qkv_bias: bool = True,
+        attn_drop: float = 0.0,
+        proj_drop: float = 0.0,
+    ):
+        super().__init__()
+        self.num_heads = num_heads
+        self.head_dim = dim // num_heads
+        self.scale = self.head_dim ** -0.5
 
-    Args:
-        model: MONAI ViT model
-        pretrained_path: Path to MAE checkpoint (.pth file)
+        self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
+        self.attn_drop = nn.Dropout(attn_drop)
+        self.proj = nn.Linear(dim, dim)
+        self.proj_drop = nn.Dropout(proj_drop)
 
-    Returns:
-        Model with loaded weights
-    """
-    logger.info(f"Loading MAE pre-trained weights from {pretrained_path}")
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        B, N, C = x.shape
+        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, self.head_dim)
+        qkv = qkv.permute(2, 0, 3, 1, 4)  # (3, B, heads, N, head_dim)
+        q, k, v = qkv.unbind(0)
 
-    # Load checkpoint
-    checkpoint = torch.load(pretrained_path, map_location='cpu')
+        attn = (q @ k.transpose(-2, -1)) * self.scale
+        attn = attn.softmax(dim=-1)
+        attn = self.attn_drop(attn)
 
-    # Handle different checkpoint formats
-    if 'net' in checkpoint:
-        pretrained_dict = checkpoint['net']
-    elif 'state_dict' in checkpoint:
-        pretrained_dict = checkpoint['state_dict']
-    elif 'model' in checkpoint:
-        pretrained_dict = checkpoint['model']
-    else:
-        pretrained_dict = checkpoint
-
-    # Remove 'module.' prefix (from DataParallel training)
-    pretrained_dict = {k.replace('module.', ''): v for k, v in pretrained_dict.items()}
-
-    # Get model state dict
-    model_dict = model.state_dict()
-
-    # Try to match keys
-    loaded_count = 0
-    skipped_count = 0
-    mismatched_keys = []
-
-    for key, value in pretrained_dict.items():
-        # Skip classification head (we train from scratch)
-        if 'classification_head' in key or 'fc' in key or 'head' in key:
-            logger.debug(f"  Skipping {key} (classification layer)")
-            skipped_count += 1
-            continue
-
-        # Skip decoder layers (MAE decoder not used for classification)
-        if 'decoder' in key:
-            logger.debug(f"  Skipping {key} (decoder layer)")
-            skipped_count += 1
-            continue
-
-        # Check if key exists in model
-        if key in model_dict:
-            if value.shape == model_dict[key].shape:
-                model_dict[key] = value
-                loaded_count += 1
-            else:
-                mismatched_keys.append((key, value.shape, model_dict[key].shape))
-                skipped_count += 1
-        else:
-            # Try common key mappings
-            mapped_key = map_key(key)
-            if mapped_key and mapped_key in model_dict:
-                if value.shape == model_dict[mapped_key].shape:
-                    model_dict[mapped_key] = value
-                    loaded_count += 1
-                else:
-                    mismatched_keys.append((mapped_key, value.shape, model_dict[mapped_key].shape))
-                    skipped_count += 1
-            else:
-                logger.debug(f"  Key not found: {key}")
-                skipped_count += 1
-
-    # Load updated state dict
-    model.load_state_dict(model_dict, strict=False)
-
-    logger.info(f"Loaded {loaded_count} layers, skipped {skipped_count}")
-    if mismatched_keys:
-        logger.warning(f"Shape mismatches: {len(mismatched_keys)}")
-        for key, pretrained_shape, model_shape in mismatched_keys[:5]:
-            logger.warning(f"  {key}: {pretrained_shape} vs {model_shape}")
-
-    return model
+        x = (attn @ v).transpose(1, 2).reshape(B, N, C)
+        x = self.proj(x)
+        x = self.proj_drop(x)
+        return x
 
 
-def map_key(key: str) -> Optional[str]:
-    """
-    Map pretrained weight keys to MONAI ViT keys.
+class Mlp(nn.Module):
+    """MLP block with GELU activation"""
 
-    Args:
-        key: Key from pretrained checkpoint
+    def __init__(
+        self,
+        in_features: int,
+        hidden_features: Optional[int] = None,
+        out_features: Optional[int] = None,
+        drop: float = 0.0,
+    ):
+        super().__init__()
+        out_features = out_features or in_features
+        hidden_features = hidden_features or in_features
 
-    Returns:
-        Mapped key for MONAI model, or None if no mapping
-    """
-    # Common mappings between different ViT implementations
-    mappings = {
-        'patch_embed': 'patch_embedding',
-        'pos_embed': 'pos_embedding',
-        'norm': 'ln',
-        'mlp.fc1': 'mlp.linear1',
-        'mlp.fc2': 'mlp.linear2',
-        'attn.qkv': 'attn.qkv',
-        'attn.proj': 'attn.out_proj',
-    }
+        self.fc1 = nn.Linear(in_features, hidden_features)
+        self.act = nn.GELU()
+        self.fc2 = nn.Linear(hidden_features, out_features)
+        self.drop = nn.Dropout(drop)
 
-    for old, new in mappings.items():
-        if old in key:
-            return key.replace(old, new)
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.fc1(x)
+        x = self.act(x)
+        x = self.drop(x)
+        x = self.fc2(x)
+        x = self.drop(x)
+        return x
 
-    return None
+
+class DropPath(nn.Module):
+    """Stochastic depth (drop path) for regularization"""
+
+    def __init__(self, drop_prob: float = 0.0):
+        super().__init__()
+        self.drop_prob = drop_prob
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        if self.drop_prob == 0.0 or not self.training:
+            return x
+
+        keep_prob = 1 - self.drop_prob
+        shape = (x.shape[0],) + (1,) * (x.ndim - 1)
+        random_tensor = keep_prob + torch.rand(shape, dtype=x.dtype, device=x.device)
+        random_tensor.floor_()
+        return x.div(keep_prob) * random_tensor
+
+
+class Block(nn.Module):
+    """Transformer block with attention + MLP"""
+
+    def __init__(
+        self,
+        dim: int,
+        num_heads: int,
+        mlp_ratio: float = 4.0,
+        qkv_bias: bool = True,
+        drop: float = 0.0,
+        attn_drop: float = 0.0,
+        drop_path: float = 0.0,
+    ):
+        super().__init__()
+        self.norm1 = nn.LayerNorm(dim)
+        self.attn = Attention(
+            dim, num_heads=num_heads, qkv_bias=qkv_bias,
+            attn_drop=attn_drop, proj_drop=drop
+        )
+        self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
+        self.norm2 = nn.LayerNorm(dim)
+        self.mlp = Mlp(
+            in_features=dim,
+            hidden_features=int(dim * mlp_ratio),
+            drop=drop
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = x + self.drop_path(self.attn(self.norm1(x)))
+        x = x + self.drop_path(self.mlp(self.norm2(x)))
+        return x
 
 
 class ViT3DClassifier(nn.Module):
     """
-    Wrapper around MONAI ViT with additional features:
-    - Dropout before classifier
-    - Feature extraction mode
-    - Flexible classification head
+    3D Vision Transformer matching the paper's architecture.
+
+    Key differences from MONAI's ViT:
+    - Uses cls_token (prepended to patch embeddings)
+    - Standard transformer blocks (no cross-attention)
+    - Learnable position embeddings
     """
 
     def __init__(
@@ -233,51 +209,108 @@ class ViT3DClassifier(nn.Module):
         architecture: str = 'vit_base',
         num_classes: int = 2,
         in_channels: int = 1,
-        image_size: Tuple[int, int, int] = (96, 96, 96),
+        image_size: int = 128,
         pretrained_path: Optional[str] = None,
         dropout: float = 0.1,
         classifier_dropout: float = 0.5,
+        drop_path_rate: float = 0.1,
     ):
         super().__init__()
 
-        self.architecture = architecture
+        config = VIT_CONFIGS.get(architecture, VIT_CONFIGS['vit_base'])
+        self.embed_dim = config['embed_dim']
+        self.depth = config['depth']
+        self.num_heads = config['num_heads']
+        self.mlp_ratio = config['mlp_ratio']
+        self.patch_size = config['patch_size']
+        self.image_size = image_size
         self.num_classes = num_classes
 
-        # Get config
-        config = VIT_CONFIGS.get(architecture, VIT_CONFIGS['vit_base'])
-        hidden_size = config['hidden_size']
+        # Calculate number of patches
+        self.num_patches = (image_size // self.patch_size) ** 3
 
-        # Create base ViT (without built-in classification)
-        self.vit = ViT(
-            in_channels=in_channels,
+        # Patch embedding
+        self.patch_embed = PatchEmbed3D(
             img_size=image_size,
-            patch_size=config['patch_size'],
-            hidden_size=hidden_size,
-            mlp_dim=config['mlp_dim'],
-            num_layers=config['num_layers'],
-            num_heads=config['num_heads'],
-            classification=False,  # We add our own head
-            dropout_rate=dropout,
-            spatial_dims=3,
+            patch_size=self.patch_size,
+            in_channels=in_channels,
+            embed_dim=self.embed_dim,
         )
 
-        # Custom classification head
-        self.classifier = nn.Sequential(
-            nn.LayerNorm(hidden_size),
+        # Class token and position embeddings
+        self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dim))
+        self.pos_embed = nn.Parameter(torch.zeros(1, self.num_patches + 1, self.embed_dim))
+        self.pos_drop = nn.Dropout(p=dropout)
+
+        # Stochastic depth decay rule
+        dpr = [x.item() for x in torch.linspace(0, drop_path_rate, self.depth)]
+
+        # Transformer blocks
+        self.blocks = nn.ModuleList([
+            Block(
+                dim=self.embed_dim,
+                num_heads=self.num_heads,
+                mlp_ratio=self.mlp_ratio,
+                qkv_bias=True,
+                drop=dropout,
+                attn_drop=dropout,
+                drop_path=dpr[i],
+            )
+            for i in range(self.depth)
+        ])
+
+        # Final norm
+        self.norm = nn.LayerNorm(self.embed_dim)
+
+        # Classification head
+        self.head = nn.Sequential(
             nn.Dropout(p=classifier_dropout),
-            nn.Linear(hidden_size, num_classes)
+            nn.Linear(self.embed_dim, num_classes)
         )
+
+        # Initialize weights
+        self._init_weights()
 
         logger.info(f"Created ViT3DClassifier with {architecture}")
-        logger.info(f"  Image size: {image_size}, Classes: {num_classes}")
+        logger.info(f"  Image size: {image_size}x{image_size}x{image_size}")
+        logger.info(f"  Patch size: {self.patch_size}")
+        logger.info(f"  Num patches: {self.num_patches}")
+        logger.info(f"  Embed dim: {self.embed_dim}, Depth: {self.depth}, Heads: {self.num_heads}")
 
         # Load pretrained weights
         if pretrained_path and Path(pretrained_path).exists():
             self._load_pretrained(pretrained_path)
 
+    def _init_weights(self):
+        """Initialize weights"""
+        # Initialize position embeddings
+        nn.init.trunc_normal_(self.pos_embed, std=0.02)
+        nn.init.trunc_normal_(self.cls_token, std=0.02)
+
+        # Initialize other layers
+        self.apply(self._init_weights_module)
+
+    def _init_weights_module(self, m):
+        if isinstance(m, nn.Linear):
+            nn.init.trunc_normal_(m.weight, std=0.02)
+            if m.bias is not None:
+                nn.init.zeros_(m.bias)
+        elif isinstance(m, nn.LayerNorm):
+            nn.init.ones_(m.weight)
+            nn.init.zeros_(m.bias)
+        elif isinstance(m, nn.Conv3d):
+            nn.init.kaiming_normal_(m.weight, mode='fan_out')
+            if m.bias is not None:
+                nn.init.zeros_(m.bias)
+
     def _load_pretrained(self, pretrained_path: str):
-        """Load pretrained weights into ViT backbone with key mapping."""
-        logger.info(f"Loading pre-trained weights from {pretrained_path}")
+        """
+        Load MAE pre-trained weights.
+
+        Following the paper's approach: only load transformer block weights.
+        pos_embed and patch_embed are reinitialized (different image size).
+        """
+        logger.info(f"Loading MAE pre-trained weights from {pretrained_path}")
 
         checkpoint = torch.load(pretrained_path, map_location='cpu')
 
@@ -291,126 +324,127 @@ class ViT3DClassifier(nn.Module):
         else:
             pretrained_dict = checkpoint
 
-        # Clean keys
+        # Clean keys (remove 'module.' prefix from DataParallel)
         pretrained_dict = {k.replace('module.', ''): v for k, v in pretrained_dict.items()}
 
-        # Map checkpoint keys to MONAI ViT keys
-        mapped_dict = {}
+        # Following paper: remove pos_embed, patch_embed, and head
+        # These are reinitialized due to different image size
+        keys_to_remove = [
+            'head.weight', 'head.bias',
+            'pos_embed',
+            'patch_embed.proj.weight', 'patch_embed.proj.bias',
+            'cls_token',  # Also reinitialize cls_token
+        ]
+
+        # Also skip decoder layers (MAE decoder not used for classification)
+        filtered_dict = {}
         for k, v in pretrained_dict.items():
-            # Skip decoder, mask token, and classification layers
-            if 'decoder' in k or 'mask_token' in k or 'head' in k or 'fc' in k:
-                continue
+            skip = False
 
-            new_key = k
+            # Skip decoder layers
+            if 'decoder' in k or 'mask_token' in k:
+                skip = True
 
-            # Map position embedding
-            if k == 'pos_embed':
-                new_key = 'patch_embedding.position_embeddings'
-                target_shape = self.vit.patch_embedding.position_embeddings.shape
-                target_num_patches = target_shape[1]
+            # Skip keys that need reinitialization
+            for remove_key in keys_to_remove:
+                if k == remove_key or k.startswith(remove_key.replace('.weight', '').replace('.bias', '')):
+                    skip = True
+                    break
 
-                # Check if class token is included (num_patches + 1)
-                # Common sizes: 513 = 512+1 (8x8x8 + cls), 217 = 216+1 (6x6x6 + cls)
-                src_num_patches = v.shape[1]
-                has_cls_token = False
+            if not skip:
+                filtered_dict[k] = v
 
-                # Try to detect class token by checking if (n-1) is a perfect cube
-                for offset in [0, 1]:
-                    n = src_num_patches - offset
-                    cube_root = round(n ** (1/3))
-                    if cube_root ** 3 == n:
-                        if offset == 1:
-                            has_cls_token = True
-                            v = v[:, 1:, :]  # Remove class token
-                            logger.info(f"  Removed cls_token from pos_embed: {src_num_patches} -> {v.shape[1]}")
-                        break
+        # Get model state dict for comparison
+        model_dict = self.state_dict()
 
-                # Interpolate if spatial dimensions don't match
-                if v.shape[1] != target_num_patches:
-                    import torch.nn.functional as F
-
-                    src_size = round(v.shape[1] ** (1/3))
-                    tgt_size = round(target_num_patches ** (1/3))
-
-                    logger.info(f"  Interpolating pos_embed: {src_size}^3={v.shape[1]} -> {tgt_size}^3={target_num_patches}")
-
-                    # Reshape to 3D grid: (1, n_patches, hidden) -> (1, hidden, d, h, w)
-                    hidden_dim = v.shape[2]
-                    v = v.permute(0, 2, 1).reshape(1, hidden_dim, src_size, src_size, src_size)
-
-                    # Interpolate
-                    v = F.interpolate(v, size=(tgt_size, tgt_size, tgt_size), mode='trilinear', align_corners=False)
-
-                    # Reshape back: (1, hidden, d, h, w) -> (1, n_patches, hidden)
-                    v = v.reshape(1, hidden_dim, -1).permute(0, 2, 1)
-                    logger.info(f"  Interpolated pos_embed to {v.shape}")
-
-            # Map patch embedding
-            elif k == 'patch_embed.proj.weight':
-                new_key = 'patch_embedding.patch_embeddings.weight'
-            elif k == 'patch_embed.proj.bias':
-                new_key = 'patch_embedding.patch_embeddings.bias'
-
-            # Map transformer blocks
-            elif 'blocks.' in k:
-                # mlp.fc1 -> mlp.linear1
-                new_key = k.replace('mlp.fc1', 'mlp.linear1')
-                # mlp.fc2 -> mlp.linear2
-                new_key = new_key.replace('mlp.fc2', 'mlp.linear2')
-                # attn.proj -> attn.out_proj
-                new_key = new_key.replace('attn.proj.', 'attn.out_proj.')
-
-            # Skip cls_token (MONAI handles this differently)
-            elif k == 'cls_token':
-                continue
-
-            # Skip norm layer at the end (encoder norm)
-            elif k in ['norm.weight', 'norm.bias']:
-                new_key = k.replace('norm.', 'norm.')  # Keep as is, MONAI should have this
-
-            mapped_dict[new_key] = v
-
-        # Get model state dict for shape checking
-        model_dict = self.vit.state_dict()
-
-        # Filter mapped_dict to only include keys that exist in model with matching shapes
-        final_dict = {}
-        for k, v in mapped_dict.items():
+        # Check which keys can be loaded
+        loadable_dict = {}
+        for k, v in filtered_dict.items():
             if k in model_dict:
                 if v.shape == model_dict[k].shape:
-                    final_dict[k] = v
+                    loadable_dict[k] = v
                 else:
-                    logger.warning(f"  Shape mismatch for {k}: checkpoint {v.shape} vs model {model_dict[k].shape}")
+                    logger.warning(f"  Shape mismatch for {k}: {v.shape} vs {model_dict[k].shape}")
             else:
                 logger.debug(f"  Key not in model: {k}")
 
-        # Load weights
-        missing, unexpected = self.vit.load_state_dict(final_dict, strict=False)
+        # Load the filtered weights
+        missing, unexpected = self.load_state_dict(loadable_dict, strict=False)
 
-        logger.info(f"Successfully loaded {len(final_dict)} weights into MONAI ViT")
-        logger.info(f"Missing keys: {len(missing)} (will be randomly initialized)")
-        if len(missing) > 0:
-            logger.debug(f"  Missing: {missing[:5]}...")
+        logger.info(f"Loaded {len(loadable_dict)} pretrained weights")
+        logger.info(f"Skipped keys (reinitialized): pos_embed, patch_embed, cls_token, head")
+        logger.info(f"Missing keys: {len(missing)} (expected for reinitialized layers)")
+
+        if len(loadable_dict) < 50:
+            logger.warning("Very few weights loaded! Check pretrained checkpoint format.")
+            logger.info(f"Loaded keys: {list(loadable_dict.keys())[:10]}...")
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # ViT returns (features, hidden_states) when classification=False
-        features, _ = self.vit(x)
+        B = x.shape[0]
 
-        # Global average pooling over patches
-        # features shape: (B, num_patches, hidden_size)
-        features = features.mean(dim=1)  # (B, hidden_size)
+        # Patch embedding: (B, C, D, H, W) -> (B, num_patches, embed_dim)
+        x = self.patch_embed(x)
 
-        return self.classifier(features)
+        # Prepend cls_token: (B, num_patches, embed_dim) -> (B, num_patches+1, embed_dim)
+        cls_tokens = self.cls_token.expand(B, -1, -1)
+        x = torch.cat([cls_tokens, x], dim=1)
+
+        # Add position embeddings
+        x = x + self.pos_embed
+        x = self.pos_drop(x)
+
+        # Transformer blocks
+        for block in self.blocks:
+            x = block(x)
+
+        # Final norm
+        x = self.norm(x)
+
+        # Use cls_token output for classification
+        cls_output = x[:, 0]
+
+        return self.head(cls_output)
 
     def extract_features(self, x: torch.Tensor) -> torch.Tensor:
-        """Extract features without classification."""
-        features, _ = self.vit(x)
-        return features.mean(dim=1)
+        """Extract features without classification head"""
+        B = x.shape[0]
+
+        x = self.patch_embed(x)
+        cls_tokens = self.cls_token.expand(B, -1, -1)
+        x = torch.cat([cls_tokens, x], dim=1)
+        x = x + self.pos_embed
+        x = self.pos_drop(x)
+
+        for block in self.blocks:
+            x = block(x)
+
+        x = self.norm(x)
+        return x[:, 0]
+
+
+# Convenience function for backward compatibility
+def get_vit_model(
+    architecture: str = 'vit_base',
+    num_classes: int = 2,
+    in_channels: int = 1,
+    image_size: Tuple[int, int, int] = (128, 128, 128),
+    pretrained_path: Optional[str] = None,
+    dropout: float = 0.1,
+) -> nn.Module:
+    """Create a ViT3D model"""
+    return ViT3DClassifier(
+        architecture=architecture,
+        num_classes=num_classes,
+        in_channels=in_channels,
+        image_size=image_size[0] if isinstance(image_size, tuple) else image_size,
+        pretrained_path=pretrained_path,
+        dropout=dropout,
+    )
 
 
 if __name__ == '__main__':
     # Test model creation
-    print("Testing MONAI ViT models...")
+    print("Testing custom ViT3D models...")
 
     for arch in ['vit_tiny', 'vit_small', 'vit_base']:
         print(f"\n{arch}:")
@@ -419,7 +453,7 @@ if __name__ == '__main__':
             architecture=arch,
             num_classes=2,
             in_channels=1,
-            image_size=(96, 96, 96),
+            image_size=128,  # Paper uses 128
             dropout=0.1,
             classifier_dropout=0.5,
         )
@@ -428,7 +462,7 @@ if __name__ == '__main__':
         print(f"  Parameters: {total_params:,}")
 
         # Test forward pass
-        x = torch.randn(1, 1, 96, 96, 96)
+        x = torch.randn(1, 1, 128, 128, 128)
         out = model(x)
         print(f"  Input: {x.shape} -> Output: {out.shape}")
 

@@ -11,9 +11,10 @@ model:
   architecture: "vit_base"  # vit_tiny, vit_small, vit_base
   num_classes: 2  # Binary: CN vs AD_trajectory
   in_channels: 1
-  image_size: 96  # 96x96x96 (must be divisible by patch_size)
+  image_size: 128  # 128x128x128 (paper uses this size, must be divisible by patch_size=16)
   dropout: 0.1  # Dropout in transformer blocks
   classifier_dropout: 0.5  # Dropout before classification head
+  drop_path_rate: 0.1  # Stochastic depth
   use_pretrained: true
   pretrained_path: "pretrained/vit_mae75_pretrained.pth"
 
@@ -27,9 +28,9 @@ data:
 
 training:
   epochs: 100
-  batch_size: 4  # ViT needs more memory than ResNet
-  learning_rate: 0.0001  # Lower LR for fine-tuning
-  weight_decay: 0.05  # Higher weight decay for ViT (as per paper)
+  batch_size: 2  # Paper uses 1, but 2 for efficiency (128^3 uses more memory)
+  learning_rate: 0.00001  # Paper uses 1e-5
+  weight_decay: 0.3  # Paper uses 0.3 for ViT
   lr_min: 0.000001
   optimizer: "adamw"
   scheduler: "cosine"
