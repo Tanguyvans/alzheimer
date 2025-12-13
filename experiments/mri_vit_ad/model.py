@@ -87,7 +87,6 @@ def get_vit_model(
         mlp_dim=config['mlp_dim'],
         num_layers=config['num_layers'],
         num_heads=config['num_heads'],
-        pos_embed='conv',  # Use conv for positional embedding
         classification=True,
         num_classes=num_classes,
         dropout_rate=dropout,
@@ -257,7 +256,6 @@ class ViT3DClassifier(nn.Module):
             mlp_dim=config['mlp_dim'],
             num_layers=config['num_layers'],
             num_heads=config['num_heads'],
-            pos_embed='conv',
             classification=False,  # We add our own head
             dropout_rate=dropout,
             spatial_dims=3,
