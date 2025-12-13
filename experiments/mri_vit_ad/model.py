@@ -276,7 +276,7 @@ class ViT3DClassifier(nn.Module):
             self._load_pretrained(pretrained_path)
 
     def _load_pretrained(self, pretrained_path: str):
-        """Load pretrained weights into ViT backbone."""
+        """Load pretrained weights into ViT backbone with key mapping."""
         logger.info(f"Loading pre-trained weights from {pretrained_path}")
 
         checkpoint = torch.load(pretrained_path, map_location='cpu')
@@ -294,21 +294,103 @@ class ViT3DClassifier(nn.Module):
         # Clean keys
         pretrained_dict = {k.replace('module.', ''): v for k, v in pretrained_dict.items()}
 
-        # Filter for encoder-only weights
-        encoder_dict = {}
+        # Map checkpoint keys to MONAI ViT keys
+        mapped_dict = {}
         for k, v in pretrained_dict.items():
-            if 'decoder' in k or 'head' in k or 'fc' in k or 'classification' in k:
+            # Skip decoder, mask token, and classification layers
+            if 'decoder' in k or 'mask_token' in k or 'head' in k or 'fc' in k:
                 continue
-            encoder_dict[k] = v
 
-        # Load with strict=False to handle mismatches
-        missing, unexpected = self.vit.load_state_dict(encoder_dict, strict=False)
+            new_key = k
 
-        logger.info(f"Loaded {len(encoder_dict)} weights")
-        if missing:
-            logger.info(f"Missing keys: {len(missing)}")
-        if unexpected:
-            logger.info(f"Unexpected keys: {len(unexpected)}")
+            # Map position embedding
+            if k == 'pos_embed':
+                new_key = 'patch_embedding.position_embeddings'
+                target_shape = self.vit.patch_embedding.position_embeddings.shape
+                target_num_patches = target_shape[1]
+
+                # Check if class token is included (num_patches + 1)
+                # Common sizes: 513 = 512+1 (8x8x8 + cls), 217 = 216+1 (6x6x6 + cls)
+                src_num_patches = v.shape[1]
+                has_cls_token = False
+
+                # Try to detect class token by checking if (n-1) is a perfect cube
+                for offset in [0, 1]:
+                    n = src_num_patches - offset
+                    cube_root = round(n ** (1/3))
+                    if cube_root ** 3 == n:
+                        if offset == 1:
+                            has_cls_token = True
+                            v = v[:, 1:, :]  # Remove class token
+                            logger.info(f"  Removed cls_token from pos_embed: {src_num_patches} -> {v.shape[1]}")
+                        break
+
+                # Interpolate if spatial dimensions don't match
+                if v.shape[1] != target_num_patches:
+                    import torch.nn.functional as F
+
+                    src_size = round(v.shape[1] ** (1/3))
+                    tgt_size = round(target_num_patches ** (1/3))
+
+                    logger.info(f"  Interpolating pos_embed: {src_size}^3={v.shape[1]} -> {tgt_size}^3={target_num_patches}")
+
+                    # Reshape to 3D grid: (1, n_patches, hidden) -> (1, hidden, d, h, w)
+                    hidden_dim = v.shape[2]
+                    v = v.permute(0, 2, 1).reshape(1, hidden_dim, src_size, src_size, src_size)
+
+                    # Interpolate
+                    v = F.interpolate(v, size=(tgt_size, tgt_size, tgt_size), mode='trilinear', align_corners=False)
+
+                    # Reshape back: (1, hidden, d, h, w) -> (1, n_patches, hidden)
+                    v = v.reshape(1, hidden_dim, -1).permute(0, 2, 1)
+                    logger.info(f"  Interpolated pos_embed to {v.shape}")
+
+            # Map patch embedding
+            elif k == 'patch_embed.proj.weight':
+                new_key = 'patch_embedding.patch_embeddings.weight'
+            elif k == 'patch_embed.proj.bias':
+                new_key = 'patch_embedding.patch_embeddings.bias'
+
+            # Map transformer blocks
+            elif 'blocks.' in k:
+                # mlp.fc1 -> mlp.linear1
+                new_key = k.replace('mlp.fc1', 'mlp.linear1')
+                # mlp.fc2 -> mlp.linear2
+                new_key = new_key.replace('mlp.fc2', 'mlp.linear2')
+                # attn.proj -> attn.out_proj
+                new_key = new_key.replace('attn.proj.', 'attn.out_proj.')
+
+            # Skip cls_token (MONAI handles this differently)
+            elif k == 'cls_token':
+                continue
+
+            # Skip norm layer at the end (encoder norm)
+            elif k in ['norm.weight', 'norm.bias']:
+                new_key = k.replace('norm.', 'norm.')  # Keep as is, MONAI should have this
+
+            mapped_dict[new_key] = v
+
+        # Get model state dict for shape checking
+        model_dict = self.vit.state_dict()
+
+        # Filter mapped_dict to only include keys that exist in model with matching shapes
+        final_dict = {}
+        for k, v in mapped_dict.items():
+            if k in model_dict:
+                if v.shape == model_dict[k].shape:
+                    final_dict[k] = v
+                else:
+                    logger.warning(f"  Shape mismatch for {k}: checkpoint {v.shape} vs model {model_dict[k].shape}")
+            else:
+                logger.debug(f"  Key not in model: {k}")
+
+        # Load weights
+        missing, unexpected = self.vit.load_state_dict(final_dict, strict=False)
+
+        logger.info(f"Successfully loaded {len(final_dict)} weights into MONAI ViT")
+        logger.info(f"Missing keys: {len(missing)} (will be randomly initialized)")
+        if len(missing) > 0:
+            logger.debug(f"  Missing: {missing[:5]}...")
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # ViT returns (features, hidden_states) when classification=False
