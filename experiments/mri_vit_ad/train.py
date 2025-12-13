@@ -349,36 +349,45 @@ class Trainer:
         optimizer: optim.Optimizer,
         criterion: nn.Module
     ) -> Dict[str, float]:
-        """Train for one epoch"""
+        """Train for one epoch with gradient accumulation"""
         model.train()
         total_loss = 0.0
         correct = 0
         total = 0
 
+        # Gradient accumulation settings
+        accumulation_steps = self.config['training'].get('gradient_accumulation_steps', 1)
+        grad_clip = self.config['training'].get('gradient_clip', 1.0)
+
+        optimizer.zero_grad()
+
         pbar = tqdm(train_loader, desc=f"Epoch {self.current_epoch+1} [Train]")
-        for images, labels in pbar:
+        for step, (images, labels) in enumerate(pbar):
             images = images.to(self.device)
             labels = labels.to(self.device)
-
-            optimizer.zero_grad()
 
             outputs = model(images)
             loss = criterion(outputs, labels)
 
+            # Scale loss for gradient accumulation
+            loss = loss / accumulation_steps
             loss.backward()
 
-            # Gradient clipping (important for transformers)
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-
-            optimizer.step()
-
-            total_loss += loss.item()
+            # Track metrics (use unscaled loss for logging)
+            total_loss += loss.item() * accumulation_steps
             _, predicted = outputs.max(1)
             total += labels.size(0)
             correct += predicted.eq(labels).sum().item()
 
+            # Update weights every accumulation_steps
+            if (step + 1) % accumulation_steps == 0 or (step + 1) == len(train_loader):
+                # Gradient clipping (important for transformers)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=grad_clip)
+                optimizer.step()
+                optimizer.zero_grad()
+
             pbar.set_postfix({
-                'loss': f'{loss.item():.4f}',
+                'loss': f'{loss.item() * accumulation_steps:.4f}',
                 'acc': f'{100.*correct/total:.2f}%'
             })
 
