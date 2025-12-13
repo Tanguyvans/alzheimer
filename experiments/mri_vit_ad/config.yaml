@@ -29,8 +29,8 @@ data:
 training:
   epochs: 100
   batch_size: 2  # Paper uses 1, but 2 for efficiency (128^3 uses more memory)
-  learning_rate: 0.00001  # Paper uses 1e-5
-  weight_decay: 0.3  # Paper uses 0.3 for ViT
+  learning_rate: 0.0001  # Increased from 1e-5 since most weights are pretrained
+  weight_decay: 0.05  # Reduced from 0.3 - high regularization was hurting learning
   lr_min: 0.000001
   optimizer: "adamw"
   scheduler: "cosine"

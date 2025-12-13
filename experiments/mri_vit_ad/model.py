@@ -307,8 +307,13 @@ class ViT3DClassifier(nn.Module):
         """
         Load MAE pre-trained weights.
 
-        Following the paper's approach: only load transformer block weights.
-        pos_embed and patch_embed are reinitialized (different image size).
+        Since we use same image size (128³) as pretraining, we can load:
+        - All transformer blocks
+        - cls_token (same shape)
+        - pos_embed (if shapes match after removing MAE's extra cls_token)
+        - patch_embed (if input channels match)
+
+        Only skip: head (different num_classes) and decoder (not used)
         """
         logger.info(f"Loading MAE pre-trained weights from {pretrained_path}")
 
@@ -327,53 +332,64 @@ class ViT3DClassifier(nn.Module):
         # Clean keys (remove 'module.' prefix from DataParallel)
         pretrained_dict = {k.replace('module.', ''): v for k, v in pretrained_dict.items()}
 
-        # Following paper: remove pos_embed, patch_embed, and head
-        # These are reinitialized due to different image size
-        keys_to_remove = [
-            'head.weight', 'head.bias',
-            'pos_embed',
-            'patch_embed.proj.weight', 'patch_embed.proj.bias',
-            'cls_token',  # Also reinitialize cls_token
-        ]
-
-        # Also skip decoder layers (MAE decoder not used for classification)
-        filtered_dict = {}
-        for k, v in pretrained_dict.items():
-            skip = False
-
-            # Skip decoder layers
-            if 'decoder' in k or 'mask_token' in k:
-                skip = True
-
-            # Skip keys that need reinitialization
-            for remove_key in keys_to_remove:
-                if k == remove_key or k.startswith(remove_key.replace('.weight', '').replace('.bias', '')):
-                    skip = True
-                    break
-
-            if not skip:
-                filtered_dict[k] = v
-
         # Get model state dict for comparison
         model_dict = self.state_dict()
 
-        # Check which keys can be loaded
+        # Process each key
         loadable_dict = {}
-        for k, v in filtered_dict.items():
+        skipped_keys = []
+
+        for k, v in pretrained_dict.items():
+            # Skip decoder layers and mask token (MAE-specific)
+            if 'decoder' in k or 'mask_token' in k:
+                skipped_keys.append(k)
+                continue
+
+            # Skip classification head (different num_classes)
+            if k in ['head.weight', 'head.bias']:
+                skipped_keys.append(k)
+                continue
+
+            # Handle pos_embed - MAE checkpoint has (1, 513, 768) = 512 patches + 1 cls_token
+            if k == 'pos_embed':
+                target_shape = model_dict[k].shape
+                if v.shape == target_shape:
+                    loadable_dict[k] = v
+                    logger.info(f"  Loaded pos_embed directly (shapes match: {v.shape})")
+                elif v.shape[1] == target_shape[1] + 1:
+                    # Remove first token (cls_token position) if MAE has extra
+                    v = v[:, 1:, :]
+                    if v.shape[1] == target_shape[1] - 1:
+                        # Our model expects cls_token in pos_embed, checkpoint doesn't have it there
+                        # Skip and let it be randomly initialized
+                        logger.info(f"  pos_embed shape mismatch after cls removal, reinitializing")
+                        skipped_keys.append(k)
+                    else:
+                        loadable_dict[k] = v
+                        logger.info(f"  Loaded pos_embed after removing cls position: {v.shape}")
+                else:
+                    logger.warning(f"  pos_embed shape mismatch: {v.shape} vs {target_shape}, reinitializing")
+                    skipped_keys.append(k)
+                continue
+
+            # Try to load if key exists and shapes match
             if k in model_dict:
                 if v.shape == model_dict[k].shape:
                     loadable_dict[k] = v
                 else:
                     logger.warning(f"  Shape mismatch for {k}: {v.shape} vs {model_dict[k].shape}")
+                    skipped_keys.append(k)
             else:
                 logger.debug(f"  Key not in model: {k}")
+                skipped_keys.append(k)
 
-        # Load the filtered weights
+        # Load the weights
         missing, unexpected = self.load_state_dict(loadable_dict, strict=False)
 
-        logger.info(f"Loaded {len(loadable_dict)} pretrained weights")
-        logger.info(f"Skipped keys (reinitialized): pos_embed, patch_embed, cls_token, head")
-        logger.info(f"Missing keys: {len(missing)} (expected for reinitialized layers)")
+        logger.info(f"Loaded {len(loadable_dict)} pretrained weights (including pos_embed, cls_token, patch_embed if matched)")
+        logger.info(f"Missing keys: {len(missing)}")
+        if missing:
+            logger.info(f"  Missing: {missing[:5]}{'...' if len(missing) > 5 else ''}")
 
         if len(loadable_dict) < 50:
             logger.warning("Very few weights loaded! Check pretrained checkpoint format.")
