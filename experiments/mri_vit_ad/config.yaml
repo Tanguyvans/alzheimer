@@ -41,7 +41,7 @@ training:
   warmup_epochs: 5  # Paper: 5 epochs
   freeze_backbone_epochs: 0  # Set to 0 when using layer-wise LR decay
   layer_wise_lr_decay: 0.75  # Paper: 0.75 decay factor per layer
-  gradient_accumulation_steps: 4  # Effective batch size = 2 * 4 = 8
+  gradient_accumulation_steps: 1  # No accumulation (paper settings)
   gradient_clip: 1.0  # Default
   use_weighted_loss: true
   label_smoothing: 0.0  # Disabled - can hurt with small datasets
