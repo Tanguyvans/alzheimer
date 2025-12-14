@@ -1,0 +1,23 @@
+{
+  "total_samples": 350,
+  "train_samples": 245,
+  "val_samples": 52,
+  "test_samples": 53,
+  "class_distribution": {
+    "CN": 273,
+    "AD_trajectory": 77
+  },
+  "tabular_features_available": [
+    "AGE",
+    "PTGENDER",
+    "PTEDUCAT",
+    "MMSCORE",
+    "CDGLOBAL",
+    "CLOCKSCOR",
+    "CATANIMSC",
+    "TRAASCOR",
+    "TRABSCOR",
+    "BMI"
+  ],
+  "seed": 42
+}

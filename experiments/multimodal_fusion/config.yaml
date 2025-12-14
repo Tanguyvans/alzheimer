@@ -1,0 +1,83 @@
+# Multi-Modal Fusion: MRI (ViT) + Tabular Features
+# Combines 3D ViT image features with clinical/demographic data
+
+experiment:
+  name: "multimodal_fusion_cn_ad"
+  task: "cn_ad_trajectory"
+  description: "Late fusion of ViT MRI features + tabular clinical data"
+
+model:
+  # ViT backbone (frozen or fine-tuned)
+  vit:
+    architecture: "vit_base"
+    image_size: 128
+    pretrained_path: "../mri_vit_ad/pretrained/vit_mae75_pretrained.pth"
+    freeze_backbone: true  # Freeze ViT, only train fusion layers
+    feature_dim: 768  # ViT-B output dimension
+
+  # Tabular branch
+  tabular:
+    hidden_dims: [128, 64]
+    dropout: 0.3
+
+  # Fusion
+  fusion:
+    method: "concat"  # concat, attention, or gated
+    hidden_dim: 256
+    dropout: 0.5
+
+  num_classes: 2
+
+data:
+  clinical_csv: "../../data/adni/ALL_4class_clinical.csv"
+  train_csv: "data/train.csv"
+  val_csv: "data/val.csv"
+  test_csv: "data/test.csv"
+
+  # Tabular features to use (available in screening visits)
+  tabular_features:
+    - "AGE"
+    - "PTGENDER"
+    - "PTEDUCAT"
+    - "MMSCORE"      # MMSE score
+    - "CDGLOBAL"     # CDR global score
+
+  checkpoints_dir: "checkpoints"
+  results_dir: "results"
+
+preprocessing:
+  use_paper_preprocessing: true
+  target_spacing: 1.75
+
+  # Tabular preprocessing
+  tabular_normalize: true
+  handle_missing: "median"  # median, mean, or drop
+
+training:
+  epochs: 50
+  batch_size: 4
+  learning_rate: 0.0001  # Higher LR since ViT is frozen
+  weight_decay: 0.01
+  lr_min: 0.000001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  warmup_epochs: 3
+  gradient_clip: 1.0
+  use_weighted_loss: true
+  seed: 42
+
+hardware:
+  device: "cuda"
+  num_workers: 4
+  pin_memory: true
+
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 15
+    monitor: "val_accuracy"
+  checkpoint:
+    save_best: true
+
+wandb:
+  enabled: false

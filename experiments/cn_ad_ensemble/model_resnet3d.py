@@ -1,1 +1,0 @@
-../cn_mci_ad_ensemble/model_resnet3d.py

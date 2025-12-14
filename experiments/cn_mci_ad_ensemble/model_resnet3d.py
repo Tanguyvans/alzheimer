@@ -1,1 +1,0 @@
-../cn_mci_ad_medicalnet/model_resnet3d.py

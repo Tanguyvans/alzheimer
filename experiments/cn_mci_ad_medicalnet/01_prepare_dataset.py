@@ -1,1 +1,0 @@
-../cn_mci_ad_3dhcct/01_prepare_dataset.py
