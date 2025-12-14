@@ -34,15 +34,15 @@ training:
   epochs: 100
   batch_size: 2  # Paper uses 1, but 2 for efficiency (128^3 uses more memory)
   learning_rate: 0.00001  # Paper: 1e-5
-  weight_decay: 0.1  # Reduced from 0.3 for more stable training
+  weight_decay: 0.3  # Paper: 0.3
   lr_min: 0.000001
   optimizer: "adamw"
   scheduler: "cosine"
-  warmup_epochs: 10  # Increased warmup for more stable start
+  warmup_epochs: 5  # Paper: 5 epochs
   freeze_backbone_epochs: 0  # Set to 0 when using layer-wise LR decay
   layer_wise_lr_decay: 0.75  # Paper: 0.75 decay factor per layer
   gradient_accumulation_steps: 4  # Effective batch size = 2 * 4 = 8
-  gradient_clip: 0.5  # Reduced from 1.0 for stability
+  gradient_clip: 1.0  # Default
   use_weighted_loss: true
   label_smoothing: 0.0  # Disabled - can hurt with small datasets
   seed: 42
