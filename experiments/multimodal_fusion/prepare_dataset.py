@@ -181,7 +181,7 @@ def prepare_multimodal_dataset(
 def main():
     parser = argparse.ArgumentParser(description='Prepare Multi-Modal Dataset')
     parser.add_argument('--clinical-csv', type=str,
-                       default='../../data/adni/ALL_4class_clinical.csv',
+                       default='../../data/adni/adni_cn_ad_trajectory.csv',
                        help='Path to clinical CSV')
     parser.add_argument('--output-dir', type=str, default='data',
                        help='Output directory')
