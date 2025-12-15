@@ -10,7 +10,7 @@ model:
   # ResNet3D backbone (using MONAI)
   backbone:
     type: "resnet"
-    depth: 50  # Options: 10, 18, 34, 50, 101, 152, 200
+    depth: 18  # Smaller model: 18 uses 512-dim features, less memory
     image_size: 128
     freeze: false  # Fine-tune ResNet for better MRI features
     # feature_dim is automatically determined: 512 for depth<=34, 2048 for depth>=50
