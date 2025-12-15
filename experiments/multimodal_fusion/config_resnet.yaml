@@ -22,7 +22,7 @@ model:
 
   # Fusion
   fusion:
-    method: "gated"  # concat, attention, or gated
+    method: "attention"  # concat, attention, or gated
     hidden_dim: 512
     dropout: 0.3
 
