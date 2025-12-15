@@ -58,9 +58,12 @@ def prepare_multimodal_dataset(
     logger.info(f"Using {len(df)} samples with available MRI")
 
     # Map classes to CN vs AD-trajectory
-    class_col = 'CLASS_4' if 'CLASS_4' in df.columns else 'Group'
-
-    if class_col == 'CLASS_4':
+    # Check for different column formats
+    if 'DX' in df.columns:
+        # New format from adni_all.csv: DX column with 'CN' or 'AD_trajectory'
+        class_mapping = {'CN': 0, 'AD_trajectory': 1}
+        df['label'] = df['DX'].map(class_mapping)
+    elif 'CLASS_4' in df.columns:
         # Map CLASS_4 labels
         class_mapping = {
             'CN': 0,
@@ -68,6 +71,7 @@ def prepare_multimodal_dataset(
             'MCI_to_AD': 1,      # AD trajectory
             'AD': 1              # AD trajectory
         }
+        df['label'] = df['CLASS_4'].map(class_mapping)
     else:
         # Map Group labels
         class_mapping = {
@@ -76,8 +80,7 @@ def prepare_multimodal_dataset(
             'MCIc': 1,     # Converters -> AD trajectory
             'AD': 1
         }
-
-    df['label'] = df[class_col].map(class_mapping)
+        df['label'] = df['Group'].map(class_mapping)
 
     # Remove samples without valid labels (MCIs)
     df = df[df['label'].notna()].copy()
@@ -89,14 +92,18 @@ def prepare_multimodal_dataset(
         name = 'CN' if label == 0 else 'AD_trajectory'
         logger.info(f"  {name}: {count} ({100*count/len(df):.1f}%)")
 
-    # Keep one sample per subject - prefer 'sc' (screening) visits which have tabular data
+    # Keep one sample per subject
+    subject_col = 'subject_id' if 'subject_id' in df.columns else 'Subject'
     if 'VISCODE' in df.columns:
         # Prefer screening (sc) visits which have clinical scores (AGE, MMSCORE, etc.)
-        # bl visits are missing these values
         df['visit_priority'] = df['VISCODE'].apply(lambda x: 0 if x == 'sc' else 1)
-        df = df.sort_values(['Subject', 'visit_priority'])
-        df = df.drop_duplicates(subset=['Subject'], keep='first')
+        df = df.sort_values([subject_col, 'visit_priority'])
+        df = df.drop_duplicates(subset=[subject_col], keep='first')
         df = df.drop(columns=['visit_priority'])
+        logger.info(f"After deduplication: {len(df)} samples")
+    elif df[subject_col].duplicated().any():
+        # Just deduplicate by subject
+        df = df.drop_duplicates(subset=[subject_col], keep='first')
         logger.info(f"After deduplication: {len(df)} samples")
 
     # Filter to samples with complete key tabular features

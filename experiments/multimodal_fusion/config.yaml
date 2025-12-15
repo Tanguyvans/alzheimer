@@ -29,18 +29,40 @@ model:
   num_classes: 2
 
 data:
-  clinical_csv: "../../data/adni/ALL_4class_clinical.csv"
+  clinical_csv: "../../data/adni/adni_cn_ad_trajectory.csv"
   train_csv: "data/train.csv"
   val_csv: "data/val.csv"
   test_csv: "data/test.csv"
 
-  # Tabular features to use (available in screening visits)
+  # Tabular features to use (27 total)
   tabular_features:
+    # Demographics (100%)
     - "AGE"
     - "PTGENDER"
     - "PTEDUCAT"
+    - "PTMARRY"
+    # Cognitive screen (100%)
     - "MMSCORE"      # MMSE score
     - "CDGLOBAL"     # CDR global score
+    # Neuropsych tests (~99%)
+    - "CLOCKSCOR"    # Clock drawing
+    - "CATANIMSC"    # Category fluency (animals)
+    - "TRAASCOR"     # Trail Making A
+    - "TRABSCOR"     # Trail Making B
+    - "TRABERRCOM"   # Trail Making B errors
+    # Neuropsych tests (~60%)
+    - "DSPANFOR"     # Digit span forward
+    - "DSPANBAC"     # Digit span backward
+    - "BNTTOTAL"     # Boston Naming Test
+    # Medical history (~62%)
+    - "MH14ALCH"     # Alcohol abuse
+    - "MH16SMOK"     # Smoking
+    - "MH4CARD"      # Cardiovascular
+    - "MHPSYCH"      # Psychiatric
+    - "MH2NEURL"     # Neurological
+    # Vitals (~99%)
+    - "VSWEIGHT"
+    - "BMI"
 
   checkpoints_dir: "checkpoints"
   results_dir: "results"
