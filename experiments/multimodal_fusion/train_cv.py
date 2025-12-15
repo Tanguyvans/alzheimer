@@ -242,7 +242,11 @@ def create_fold_datasets(
     """Create dataloaders for a single fold with proper scaler handling"""
 
     tabular_features = config['data']['tabular_features']
-    image_size = config['model']['vit']['image_size']
+    # Support both backbone config and legacy vit config
+    if 'backbone' in config['model']:
+        image_size = config['model']['backbone'].get('image_size', 128)
+    else:
+        image_size = config['model']['vit']['image_size']
     preproc = config.get('preprocessing', {})
     batch_size = config['training']['batch_size']
     num_workers = config['hardware']['num_workers']
