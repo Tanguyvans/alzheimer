@@ -106,8 +106,8 @@ def prepare_multimodal_dataset(
         df = df.drop_duplicates(subset=[subject_col], keep='first')
         logger.info(f"After deduplication: {len(df)} samples")
 
-    # Filter to samples with complete key tabular features
-    key_features = ['AGE', 'MMSCORE', 'CDGLOBAL', 'PTEDUCAT']
+    # Filter to samples with complete key tabular features (non-diagnostic)
+    key_features = ['AGE', 'PTEDUCAT']  # Only require demographics, not diagnostic criteria
     available_features = [f for f in key_features if f in df.columns]
     if available_features:
         before = len(df)
@@ -162,8 +162,10 @@ def prepare_multimodal_dataset(
             'AD_trajectory': int((df['label'] == 1).sum())
         },
         'tabular_features_available': [
-            col for col in ['AGE', 'PTGENDER', 'PTEDUCAT', 'MMSCORE', 'CDGLOBAL',
-                           'CLOCKSCOR', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'BMI']
+            col for col in ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'VSWEIGHT', 'BMI',
+                           'CLOCKSCOR', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'TRABERRCOM',
+                           'DSPANFOR', 'DSPANBAC', 'BNTTOTAL',
+                           'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MHPSYCH', 'MH2NEURL']
             if col in df.columns
         ],
         'seed': seed
