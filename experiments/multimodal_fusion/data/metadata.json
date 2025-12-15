@@ -1,11 +1,11 @@
 {
-  "total_samples": 350,
-  "train_samples": 245,
-  "val_samples": 52,
-  "test_samples": 53,
+  "total_samples": 903,
+  "train_samples": 632,
+  "val_samples": 135,
+  "test_samples": 136,
   "class_distribution": {
-    "CN": 273,
-    "AD_trajectory": 77
+    "CN": 424,
+    "AD_trajectory": 479
   },
   "tabular_features_available": [
     "AGE",
