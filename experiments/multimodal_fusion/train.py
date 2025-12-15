@@ -83,7 +83,11 @@ class MultiModalTrainer:
         logger.info("=" * 60)
 
         cfg = self.config
-        image_size = cfg['model']['vit']['image_size']
+        # Get image_size from backbone config or legacy vit config
+        if 'backbone' in cfg['model']:
+            image_size = cfg['model']['backbone'].get('image_size', 128)
+        else:
+            image_size = cfg['model']['vit']['image_size']
         preproc = cfg.get('preprocessing', {})
 
         train_loader, val_loader, test_loader, scaler = get_multimodal_dataloaders(
@@ -128,8 +132,8 @@ class MultiModalTrainer:
         weight_decay = cfg['weight_decay']
         lr_decay = cfg.get('layer_wise_lr_decay', 0.0)
 
-        if lr_decay > 0 and hasattr(model, 'vit'):
-            # Layer-wise LR decay for ViT fine-tuning
+        if lr_decay > 0 and hasattr(model, 'vit') and model.backbone_type == 'vit':
+            # Layer-wise LR decay for ViT fine-tuning (not applicable to ResNet)
             param_groups = []
             vit = model.vit
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Multi-Modal Fusion Model: ViT (MRI) + Tabular Features
+Multi-Modal Fusion Model: MRI backbone (ViT or ResNet3D) + Tabular Features
 
 Architecture:
-- ViT backbone extracts 768-dim features from 3D MRI
+- MRI backbone extracts features from 3D MRI (ViT: 768-dim, ResNet: 512/2048-dim)
 - MLP processes tabular clinical data
 - Late fusion combines both for classification
 """
@@ -20,6 +20,74 @@ spec = importlib.util.spec_from_file_location("mri_vit_model", mri_vit_model_pat
 mri_vit_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mri_vit_module)
 ViT3DClassifier = mri_vit_module.ViT3DClassifier
+
+# Try to import MONAI for ResNet3D
+try:
+    from monai.networks.nets import ResNet
+    MONAI_AVAILABLE = True
+except ImportError:
+    MONAI_AVAILABLE = False
+    print("Warning: MONAI not available, ResNet3D backbone disabled")
+
+
+class ResNet3DBackbone(nn.Module):
+    """3D ResNet backbone for MRI feature extraction using MONAI"""
+
+    # ResNet output dimensions by depth
+    FEATURE_DIMS = {
+        10: 512,
+        18: 512,
+        34: 512,
+        50: 2048,
+        101: 2048,
+        152: 2048,
+        200: 2048
+    }
+
+    def __init__(
+        self,
+        depth: int = 50,
+        in_channels: int = 1,
+        pretrained: bool = False,
+        spatial_dims: int = 3
+    ):
+        super().__init__()
+        if not MONAI_AVAILABLE:
+            raise ImportError("MONAI is required for ResNet3D backbone")
+
+        self.feature_dim = self.FEATURE_DIMS.get(depth, 2048)
+
+        # Create ResNet without classification head
+        self.resnet = ResNet(
+            block='bottleneck' if depth >= 50 else 'basic',
+            layers=self._get_layers(depth),
+            block_inplanes=[64, 128, 256, 512],
+            spatial_dims=spatial_dims,
+            n_input_channels=in_channels,
+            num_classes=self.feature_dim,  # Will extract features before this
+            feed_forward=False  # Don't use final FC layer
+        )
+
+    def _get_layers(self, depth: int):
+        """Get layer configuration for ResNet depth"""
+        configs = {
+            10: [1, 1, 1, 1],
+            18: [2, 2, 2, 2],
+            34: [3, 4, 6, 3],
+            50: [3, 4, 6, 3],
+            101: [3, 4, 23, 3],
+            152: [3, 8, 36, 3],
+            200: [3, 24, 36, 3]
+        }
+        return configs.get(depth, [3, 4, 6, 3])
+
+    def forward(self, x):
+        """Extract features from 3D MRI volume"""
+        features = self.resnet(x)
+        # Global average pool if needed
+        if len(features.shape) > 2:
+            features = features.mean(dim=[2, 3, 4])
+        return features
 
 
 class TabularEncoder(nn.Module):
@@ -107,38 +175,57 @@ class MultiModalFusion(nn.Module):
         self,
         num_tabular_features: int,
         num_classes: int = 2,
-        vit_config: dict = None,
+        backbone_config: dict = None,
         tabular_config: dict = None,
         fusion_config: dict = None,
-        pretrained_vit_path: str = None,
-        freeze_vit: bool = True
+        pretrained_path: str = None,
+        freeze_backbone: bool = True
     ):
         super().__init__()
 
         # Default configs
-        vit_config = vit_config or {}
+        backbone_config = backbone_config or {'type': 'vit'}
         tabular_config = tabular_config or {'hidden_dims': [128, 64], 'dropout': 0.3}
         fusion_config = fusion_config or {'method': 'concat', 'hidden_dim': 256, 'dropout': 0.5}
 
-        # ViT backbone for MRI
-        self.vit = ViT3DClassifier(
-            architecture=vit_config.get('architecture', 'vit_base'),
-            num_classes=num_classes,  # Will be replaced
-            in_channels=1,
-            image_size=vit_config.get('image_size', 128),
-            pretrained_path=pretrained_vit_path,
-            dropout=0.1,
-            classifier_dropout=0.0  # We'll use our own classifier
-        )
+        backbone_type = backbone_config.get('type', 'vit')
+        self.backbone_type = backbone_type
 
-        # Remove ViT's classifier head - we'll use fusion instead
-        self.vit_feature_dim = vit_config.get('feature_dim', 768)
+        # Create MRI backbone based on type
+        if backbone_type == 'resnet':
+            # ResNet3D backbone
+            depth = backbone_config.get('depth', 50)
+            self.mri_backbone = ResNet3DBackbone(
+                depth=depth,
+                in_channels=1,
+                pretrained=False
+            )
+            self.mri_feature_dim = self.mri_backbone.feature_dim
+            print(f"ResNet3D-{depth} backbone: {self.mri_feature_dim}-dim features")
 
-        # Freeze ViT if specified
-        if freeze_vit:
-            for param in self.vit.parameters():
+        else:
+            # ViT backbone (default)
+            self.mri_backbone = ViT3DClassifier(
+                architecture=backbone_config.get('architecture', 'vit_base'),
+                num_classes=num_classes,
+                in_channels=1,
+                image_size=backbone_config.get('image_size', 128),
+                pretrained_path=pretrained_path,
+                dropout=0.1,
+                classifier_dropout=0.0
+            )
+            self.mri_feature_dim = backbone_config.get('feature_dim', 768)
+            print(f"ViT backbone: {self.mri_feature_dim}-dim features")
+
+        # Alias for backwards compatibility
+        self.vit = self.mri_backbone
+        self.vit_feature_dim = self.mri_feature_dim
+
+        # Freeze backbone if specified
+        if freeze_backbone:
+            for param in self.mri_backbone.parameters():
                 param.requires_grad = False
-            print("ViT backbone frozen")
+            print(f"{backbone_type.upper()} backbone frozen")
 
         # Tabular encoder
         self.tabular_encoder = TabularEncoder(
@@ -192,29 +279,37 @@ class MultiModalFusion(nn.Module):
         )
 
         print(f"MultiModalFusion initialized:")
-        print(f"  ViT features: {self.vit_feature_dim}")
+        print(f"  MRI backbone: {backbone_type} ({self.mri_feature_dim}-dim)")
         print(f"  Tabular features: {num_tabular_features} -> {self.tabular_feature_dim}")
         print(f"  Fusion method: {fusion_method}")
         print(f"  Fusion hidden: {fusion_hidden}")
 
+    def extract_mri_features(self, x):
+        """Extract features from MRI backbone (ViT or ResNet)"""
+        if self.backbone_type == 'resnet':
+            # ResNet3D forward
+            return self.mri_backbone(x)
+        else:
+            # ViT forward - extract cls token features
+            x = self.vit.patch_embed(x)
+            B = x.shape[0]
+
+            cls_tokens = self.vit.cls_token.expand(B, -1, -1)
+            x = torch.cat([cls_tokens, x], dim=1)
+            x = x + self.vit.pos_embed
+            x = self.vit.pos_drop(x)
+
+            for block in self.vit.blocks:
+                x = block(x)
+
+            x = self.vit.norm(x)
+
+            # Return cls token features
+            return x[:, 0]
+
+    # Alias for backwards compatibility
     def extract_vit_features(self, x):
-        """Extract features from ViT (before classification head)"""
-        # Forward through ViT up to the cls token
-        x = self.vit.patch_embed(x)
-        B = x.shape[0]
-
-        cls_tokens = self.vit.cls_token.expand(B, -1, -1)
-        x = torch.cat([cls_tokens, x], dim=1)
-        x = x + self.vit.pos_embed
-        x = self.vit.pos_drop(x)
-
-        for block in self.vit.blocks:
-            x = block(x)
-
-        x = self.vit.norm(x)
-
-        # Return cls token features
-        return x[:, 0]
+        return self.extract_mri_features(x)
 
     def forward(self, mri, tabular):
         """
@@ -228,8 +323,8 @@ class MultiModalFusion(nn.Module):
             logits: (B, num_classes)
         """
         # Extract MRI features
-        with torch.set_grad_enabled(not self._is_vit_frozen()):
-            img_features = self.extract_vit_features(mri)
+        with torch.set_grad_enabled(not self._is_backbone_frozen()):
+            img_features = self.extract_mri_features(mri)
 
         # Encode tabular features
         tab_features = self.tabular_encoder(tabular)
@@ -246,9 +341,13 @@ class MultiModalFusion(nn.Module):
 
         return logits
 
+    def _is_backbone_frozen(self):
+        """Check if MRI backbone is frozen"""
+        return not next(self.mri_backbone.parameters()).requires_grad
+
+    # Alias for backwards compatibility
     def _is_vit_frozen(self):
-        """Check if ViT is frozen"""
-        return not next(self.vit.parameters()).requires_grad
+        return self._is_backbone_frozen()
 
     def unfreeze_vit(self, unfreeze_layers: int = -1):
         """
@@ -279,14 +378,31 @@ def build_model(config: dict, num_tabular_features: int) -> MultiModalFusion:
 
     model_cfg = config['model']
 
+    # Support both old 'vit' config and new 'backbone' config
+    if 'backbone' in model_cfg:
+        backbone_config = model_cfg['backbone']
+        pretrained_path = backbone_config.get('pretrained_path')
+        freeze_backbone = backbone_config.get('freeze', True)
+    else:
+        # Legacy: convert 'vit' section to backbone_config
+        vit_cfg = model_cfg.get('vit', {})
+        backbone_config = {
+            'type': 'vit',
+            'architecture': vit_cfg.get('architecture', 'vit_base'),
+            'image_size': vit_cfg.get('image_size', 128),
+            'feature_dim': vit_cfg.get('feature_dim', 768)
+        }
+        pretrained_path = vit_cfg.get('pretrained_path')
+        freeze_backbone = vit_cfg.get('freeze_backbone', True)
+
     model = MultiModalFusion(
         num_tabular_features=num_tabular_features,
         num_classes=model_cfg['num_classes'],
-        vit_config=model_cfg.get('vit', {}),
+        backbone_config=backbone_config,
         tabular_config=model_cfg.get('tabular', {}),
         fusion_config=model_cfg.get('fusion', {}),
-        pretrained_vit_path=model_cfg['vit'].get('pretrained_path'),
-        freeze_vit=model_cfg['vit'].get('freeze_backbone', True)
+        pretrained_path=pretrained_path,
+        freeze_backbone=freeze_backbone
     )
 
     return model

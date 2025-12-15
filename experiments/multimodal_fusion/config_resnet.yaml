@@ -1,0 +1,102 @@
+# Multi-Modal Fusion: MRI (ResNet3D) + Tabular Features
+# Combines 3D ResNet image features with clinical/demographic data
+
+experiment:
+  name: "multimodal_fusion_resnet_cn_ad"
+  task: "cn_ad_trajectory"
+  description: "Late fusion of ResNet3D MRI features + tabular clinical data"
+
+model:
+  # ResNet3D backbone (using MONAI)
+  backbone:
+    type: "resnet"
+    depth: 50  # Options: 10, 18, 34, 50, 101, 152, 200
+    image_size: 128
+    freeze: false  # Fine-tune ResNet for better MRI features
+    # feature_dim is automatically determined: 512 for depth<=34, 2048 for depth>=50
+
+  # Tabular branch
+  tabular:
+    hidden_dims: [128, 64]
+    dropout: 0.3
+
+  # Fusion
+  fusion:
+    method: "gated"  # concat, attention, or gated
+    hidden_dim: 512
+    dropout: 0.3
+
+  num_classes: 2
+
+data:
+  clinical_csv: "../../data/adni/adni_cn_ad_trajectory.csv"
+  train_csv: "data/train.csv"
+  val_csv: "data/val.csv"
+  test_csv: "data/test.csv"
+
+  # Tabular features (matching XGBoost - NO diagnostic criteria like MMSE/CDR)
+  tabular_features:
+    # Demographics
+    - "AGE"
+    - "PTGENDER"
+    - "PTEDUCAT"
+    - "PTMARRY"
+    # Vitals
+    - "VSWEIGHT"
+    - "BMI"
+    # Medical history
+    - "MH14ALCH"     # Alcohol abuse
+    - "MH16SMOK"     # Smoking
+    - "MH4CARD"      # Cardiovascular
+    - "MHPSYCH"      # Psychiatric
+    - "MH2NEURL"     # Neurological
+    # Neuropsych tests (non-diagnostic)
+    - "TRAASCOR"     # Trail Making A
+    - "TRABSCOR"     # Trail Making B
+    - "TRABERRCOM"   # Trail Making B errors
+    - "CATANIMSC"    # Category fluency (animals)
+    - "CLOCKSCOR"    # Clock drawing
+    - "BNTTOTAL"     # Boston Naming Test
+    - "DSPANFOR"     # Digit span forward
+    - "DSPANBAC"     # Digit span backward
+
+  checkpoints_dir: "checkpoints_resnet"
+  results_dir: "results_resnet"
+
+preprocessing:
+  use_paper_preprocessing: true
+  target_spacing: 1.75
+
+  # Tabular preprocessing
+  tabular_normalize: true
+  handle_missing: "median"  # median, mean, or drop
+
+training:
+  epochs: 50
+  batch_size: 4
+  learning_rate: 0.0001  # Higher LR than ViT since training from scratch
+  weight_decay: 0.01
+  lr_min: 0.000001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  warmup_epochs: 5
+  gradient_clip: 1.0
+  use_weighted_loss: true
+  layer_wise_lr_decay: 0.0  # No layer-wise decay for ResNet (no pretrained weights)
+  seed: 42
+
+hardware:
+  device: "cuda"
+  num_workers: 4
+  pin_memory: true
+
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 15
+    monitor: "val_accuracy"
+  checkpoint:
+    save_best: true
+
+wandb:
+  enabled: false
