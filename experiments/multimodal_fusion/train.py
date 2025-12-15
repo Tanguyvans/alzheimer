@@ -122,15 +122,57 @@ class MultiModalTrainer:
         return model
 
     def build_optimizer(self, model: nn.Module):
-        """Build optimizer and scheduler"""
+        """Build optimizer and scheduler with optional layer-wise LR decay"""
         cfg = self.config['training']
+        base_lr = cfg['learning_rate']
+        weight_decay = cfg['weight_decay']
+        lr_decay = cfg.get('layer_wise_lr_decay', 0.0)
 
-        optimizer = optim.AdamW(
-            filter(lambda p: p.requires_grad, model.parameters()),
-            lr=cfg['learning_rate'],
-            weight_decay=cfg['weight_decay']
-        )
-        logger.info(f"Optimizer: AdamW (lr={cfg['learning_rate']}, wd={cfg['weight_decay']})")
+        if lr_decay > 0 and hasattr(model, 'vit'):
+            # Layer-wise LR decay for ViT fine-tuning
+            param_groups = []
+            vit = model.vit
+
+            # Fusion head (highest LR)
+            fusion_params = list(model.fusion.parameters()) + list(model.classifier.parameters())
+            if hasattr(model, 'tabular_encoder'):
+                fusion_params += list(model.tabular_encoder.parameters())
+            param_groups.append({'params': fusion_params, 'lr': base_lr})
+
+            # ViT head and norm
+            if hasattr(vit, 'head'):
+                param_groups.append({'params': list(vit.head.parameters()), 'lr': base_lr * lr_decay})
+            if hasattr(vit, 'norm'):
+                param_groups.append({'params': list(vit.norm.parameters()), 'lr': base_lr * lr_decay})
+
+            # ViT blocks (deeper = lower LR)
+            if hasattr(vit, 'blocks'):
+                num_blocks = len(vit.blocks)
+                for i, block in enumerate(reversed(list(vit.blocks))):
+                    layer_lr = base_lr * (lr_decay ** (i + 2))
+                    param_groups.append({'params': list(block.parameters()), 'lr': layer_lr})
+
+            # Embeddings (lowest LR)
+            embed_params = []
+            if hasattr(vit, 'patch_embed'):
+                embed_params += list(vit.patch_embed.parameters())
+            if hasattr(vit, 'cls_token'):
+                embed_params.append(vit.cls_token)
+            if hasattr(vit, 'pos_embed'):
+                embed_params.append(vit.pos_embed)
+            if embed_params:
+                embed_lr = base_lr * (lr_decay ** (num_blocks + 3))
+                param_groups.append({'params': embed_params, 'lr': embed_lr})
+
+            optimizer = optim.AdamW(param_groups, weight_decay=weight_decay)
+            logger.info(f"Optimizer: AdamW with layer-wise LR decay ({lr_decay})")
+        else:
+            optimizer = optim.AdamW(
+                filter(lambda p: p.requires_grad, model.parameters()),
+                lr=base_lr,
+                weight_decay=weight_decay
+            )
+            logger.info(f"Optimizer: AdamW (lr={base_lr}, wd={weight_decay})")
 
         scheduler = optim.lr_scheduler.CosineAnnealingLR(
             optimizer,

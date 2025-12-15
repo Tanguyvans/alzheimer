@@ -12,7 +12,7 @@ model:
     architecture: "vit_base"
     image_size: 128
     pretrained_path: "../mri_vit_ad/pretrained/vit_mae75_pretrained.pth"
-    freeze_backbone: true  # Freeze ViT, only train fusion layers
+    freeze_backbone: false  # Fine-tune ViT for better MRI features
     feature_dim: 768  # ViT-B output dimension
 
   # Tabular branch
@@ -22,9 +22,9 @@ model:
 
   # Fusion
   fusion:
-    method: "concat"  # concat, attention, or gated
-    hidden_dim: 256
-    dropout: 0.5
+    method: "gated"  # concat, attention, or gated - gated learns optimal weighting
+    hidden_dim: 512
+    dropout: 0.3
 
   num_classes: 2
 
@@ -74,14 +74,15 @@ preprocessing:
 training:
   epochs: 50
   batch_size: 4
-  learning_rate: 0.0001  # Higher LR since ViT is frozen
+  learning_rate: 0.00002  # Lower LR for fine-tuning pretrained ViT
   weight_decay: 0.01
-  lr_min: 0.000001
+  lr_min: 0.0000001
   optimizer: "adamw"
   scheduler: "cosine"
-  warmup_epochs: 3
+  warmup_epochs: 5
   gradient_clip: 1.0
   use_weighted_loss: true
+  layer_wise_lr_decay: 0.75  # Decay LR for deeper layers
   seed: 42
 
 hardware:
