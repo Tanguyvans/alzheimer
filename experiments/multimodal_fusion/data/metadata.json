@@ -11,13 +11,22 @@
     "AGE",
     "PTGENDER",
     "PTEDUCAT",
-    "MMSCORE",
-    "CDGLOBAL",
+    "PTMARRY",
+    "VSWEIGHT",
+    "BMI",
     "CLOCKSCOR",
     "CATANIMSC",
     "TRAASCOR",
     "TRABSCOR",
-    "BMI"
+    "TRABERRCOM",
+    "DSPANFOR",
+    "DSPANBAC",
+    "BNTTOTAL",
+    "MH14ALCH",
+    "MH16SMOK",
+    "MH4CARD",
+    "MHPSYCH",
+    "MH2NEURL"
   ],
   "seed": 42
 }
