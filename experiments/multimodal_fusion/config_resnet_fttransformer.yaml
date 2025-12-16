@@ -1,0 +1,103 @@
+# Multi-Modal Fusion: MRI (ResNet3D) + Tabular (FT-Transformer)
+# Uses FT-Transformer instead of MLP for tabular encoding
+
+experiment:
+  name: "multimodal_fusion_resnet_fttransformer"
+  task: "cn_ad_trajectory"
+  description: "Late fusion of ResNet3D MRI + FT-Transformer tabular"
+
+model:
+  # ResNet3D backbone (using MONAI)
+  backbone:
+    type: "resnet"
+    depth: 18
+    image_size: 128
+    freeze: false
+
+  # FT-Transformer for tabular data (instead of MLP)
+  tabular:
+    type: "ft_transformer"  # NEW: use FT-Transformer
+    embed_dim: 64           # Embedding dimension per feature
+    num_heads: 4            # Attention heads
+    num_layers: 3           # Transformer layers
+    dropout: 0.1
+    output_dim: 64          # Output feature dimension
+
+  # Fusion
+  fusion:
+    method: "attention"
+    hidden_dim: 512
+    dropout: 0.3
+
+  num_classes: 2
+
+data:
+  clinical_csv: "../../data/adni/adni_cn_ad_trajectory.csv"
+  train_csv: "data/train.csv"
+  val_csv: "data/val.csv"
+  test_csv: "data/test.csv"
+
+  # Tabular features (matching XGBoost - NO diagnostic criteria)
+  tabular_features:
+    # Demographics
+    - "AGE"
+    - "PTGENDER"
+    - "PTEDUCAT"
+    - "PTMARRY"
+    # Vitals
+    - "VSWEIGHT"
+    - "BMI"
+    # Medical history
+    - "MH14ALCH"
+    - "MH16SMOK"
+    - "MH4CARD"
+    - "MHPSYCH"
+    - "MH2NEURL"
+    # Neuropsych tests
+    - "TRAASCOR"
+    - "TRABSCOR"
+    - "TRABERRCOM"
+    - "CATANIMSC"
+    - "CLOCKSCOR"
+    - "BNTTOTAL"
+    - "DSPANFOR"
+    - "DSPANBAC"
+
+  checkpoints_dir: "checkpoints_resnet_fttransformer"
+  results_dir: "results_resnet_fttransformer"
+
+preprocessing:
+  use_paper_preprocessing: true
+  target_spacing: 1.75
+  tabular_normalize: true
+  handle_missing: "median"
+
+training:
+  epochs: 50
+  batch_size: 4
+  learning_rate: 0.0001
+  weight_decay: 0.01
+  lr_min: 0.000001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  warmup_epochs: 5
+  gradient_clip: 1.0
+  use_weighted_loss: true
+  layer_wise_lr_decay: 0.0
+  seed: 42
+
+hardware:
+  device: "cuda"
+  num_workers: 4
+  pin_memory: true
+
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 15
+    monitor: "val_accuracy"
+  checkpoint:
+    save_best: true
+
+wandb:
+  enabled: false

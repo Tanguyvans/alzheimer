@@ -135,6 +135,22 @@ def find_oasis_nifti_files(input_dir: Path, sequence_preference: list = None):
     return nifti_files
 
 
+def clean_oasis_filename(filename: str) -> str:
+    """
+    Clean OASIS filename by removing anonymized date/time.
+
+    Input:  OAS30037_MPRAGE_GRAPPA2_1970-01-01_00_00_00.0_I11249201_registered.nii.gz
+    Output: OAS30037_MPRAGE_GRAPPA2_I11249201_registered.nii.gz
+
+    Removes patterns like: _1970-01-01_00_00_00.0 or _YYYY-MM-DD_HH_MM_SS.0
+    """
+    import re
+    # Pattern: _YYYY-MM-DD_HH_MM_SS.0 (date_time with underscores)
+    pattern = r'_\d{4}-\d{2}-\d{2}_\d{2}_\d{2}_\d{2}\.\d'
+    cleaned = re.sub(pattern, '', filename)
+    return cleaned
+
+
 def find_registered_files(input_dir: Path):
     """Find all registered NIfTI files for skull stripping."""
     registered_files = []
@@ -345,7 +361,7 @@ def run_registration(args):
 
 def run_skull_stripping(args):
     """Step 2: Skull stripping with SynthStrip."""
-    from preprocessing.skull_stripping import synthstrip_skull_strip, setup_synthstrip_docker
+    from preprocessing.imaging.skull_stripping import synthstrip_skull_strip, setup_synthstrip_docker
 
     input_dir = Path(args.input)
     output_dir = Path(args.output)
@@ -401,8 +417,11 @@ def run_skull_stripping(args):
             subject_output_dir = output_dir / subject_id
             subject_output_dir.mkdir(parents=True, exist_ok=True)
 
-            output_filename = nifti_path.name.replace('_registered.nii.gz',
-                                                       '_registered_skull_stripped.nii.gz')
+            # Clean filename: remove anonymized date/time part
+            # Input:  OAS30037_MPRAGE_GRAPPA2_1970-01-01_00_00_00.0_I11249201_registered.nii.gz
+            # Output: OAS30037_MPRAGE_GRAPPA2_I11249201_skull_stripped.nii.gz
+            clean_name = clean_oasis_filename(nifti_path.name)
+            output_filename = clean_name.replace('_registered.nii.gz', '_skull_stripped.nii.gz')
             output_file = subject_output_dir / output_filename
 
             if output_file.exists():
@@ -569,9 +588,9 @@ def main():
     # Setup signal handler
     signal.signal(signal.SIGINT, signal_handler)
 
-    # Check external drive
-    if not os.path.exists('/Volumes/KINGSTON'):
-        logger.error("External drive not mounted at /Volumes/KINGSTON")
+    # Verify input/output paths exist
+    if not os.path.exists(args.input):
+        logger.error(f"Input directory not found: {args.input}")
         return
 
     if args.step == 'register':

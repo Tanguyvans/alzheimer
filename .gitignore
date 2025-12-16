@@ -5,6 +5,7 @@ Task04_Hippocampus
 mni_tmeplate
 output
 env
+data/
 
 # Environment variables and secrets
 .env

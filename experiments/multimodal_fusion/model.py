@@ -120,6 +120,109 @@ class TabularEncoder(nn.Module):
         return self.encoder(x)
 
 
+class FTTransformerEncoder(nn.Module):
+    """
+    Feature Tokenizer Transformer (FT-Transformer) for tabular data.
+
+    Each numerical feature is embedded independently, then processed
+    through transformer layers for feature interaction learning.
+
+    Reference: "Revisiting Deep Learning Models for Tabular Data" (Gorishniy et al., 2021)
+    """
+
+    def __init__(
+        self,
+        input_dim: int,
+        embed_dim: int = 64,
+        num_heads: int = 4,
+        num_layers: int = 3,
+        dropout: float = 0.1,
+        output_dim: int = 64
+    ):
+        super().__init__()
+        self.input_dim = input_dim
+        self.embed_dim = embed_dim
+        self.output_dim = output_dim
+
+        # Feature tokenizer: embed each feature independently
+        self.feature_embeddings = nn.ModuleList([
+            nn.Sequential(
+                nn.Linear(1, embed_dim),
+                nn.ReLU(),
+                nn.Linear(embed_dim, embed_dim)
+            ) for _ in range(input_dim)
+        ])
+
+        # Learnable [CLS] token for aggregation
+        self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
+
+        # Positional encoding for features
+        self.pos_embed = nn.Parameter(torch.zeros(1, input_dim + 1, embed_dim))
+
+        # Transformer encoder
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=embed_dim,
+            nhead=num_heads,
+            dim_feedforward=embed_dim * 4,
+            dropout=dropout,
+            activation='gelu',
+            batch_first=True,
+            norm_first=True  # Pre-LN for better training stability
+        )
+        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
+
+        # Output projection
+        self.output_proj = nn.Sequential(
+            nn.LayerNorm(embed_dim),
+            nn.Linear(embed_dim, output_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout)
+        )
+
+        # Initialize weights
+        self._init_weights()
+
+    def _init_weights(self):
+        nn.init.trunc_normal_(self.cls_token, std=0.02)
+        nn.init.trunc_normal_(self.pos_embed, std=0.02)
+
+    def forward(self, x):
+        """
+        Args:
+            x: (batch_size, input_dim) - tabular features
+        Returns:
+            (batch_size, output_dim) - encoded features
+        """
+        B = x.shape[0]
+
+        # Tokenize each feature independently
+        # x[:, i:i+1] has shape (B, 1)
+        tokens = []
+        for i, embed in enumerate(self.feature_embeddings):
+            feat_token = embed(x[:, i:i+1])  # (B, embed_dim)
+            tokens.append(feat_token)
+
+        tokens = torch.stack(tokens, dim=1)  # (B, input_dim, embed_dim)
+
+        # Prepend [CLS] token
+        cls_tokens = self.cls_token.expand(B, -1, -1)  # (B, 1, embed_dim)
+        tokens = torch.cat([cls_tokens, tokens], dim=1)  # (B, input_dim+1, embed_dim)
+
+        # Add positional embeddings
+        tokens = tokens + self.pos_embed
+
+        # Transformer encoding
+        tokens = self.transformer(tokens)
+
+        # Extract [CLS] token output
+        cls_output = tokens[:, 0]  # (B, embed_dim)
+
+        # Project to output dimension
+        output = self.output_proj(cls_output)
+
+        return output
+
+
 class GatedFusion(nn.Module):
     """Gated fusion mechanism for combining modalities"""
 
@@ -227,12 +330,29 @@ class MultiModalFusion(nn.Module):
                 param.requires_grad = False
             print(f"{backbone_type.upper()} backbone frozen")
 
-        # Tabular encoder
-        self.tabular_encoder = TabularEncoder(
-            input_dim=num_tabular_features,
-            hidden_dims=tabular_config.get('hidden_dims', [128, 64]),
-            dropout=tabular_config.get('dropout', 0.3)
-        )
+        # Tabular encoder (MLP or FT-Transformer)
+        tabular_type = tabular_config.get('type', 'mlp')
+        self.tabular_type = tabular_type
+
+        if tabular_type == 'ft_transformer':
+            self.tabular_encoder = FTTransformerEncoder(
+                input_dim=num_tabular_features,
+                embed_dim=tabular_config.get('embed_dim', 64),
+                num_heads=tabular_config.get('num_heads', 4),
+                num_layers=tabular_config.get('num_layers', 3),
+                dropout=tabular_config.get('dropout', 0.1),
+                output_dim=tabular_config.get('output_dim', 64)
+            )
+            print(f"FT-Transformer tabular encoder: {num_tabular_features} -> {self.tabular_encoder.output_dim}")
+        else:
+            # Default MLP encoder
+            self.tabular_encoder = TabularEncoder(
+                input_dim=num_tabular_features,
+                hidden_dims=tabular_config.get('hidden_dims', [128, 64]),
+                dropout=tabular_config.get('dropout', 0.3)
+            )
+            print(f"MLP tabular encoder: {num_tabular_features} -> {self.tabular_encoder.output_dim}")
+
         self.tabular_feature_dim = self.tabular_encoder.output_dim
 
         # Fusion layer
