@@ -6,23 +6,23 @@ XGBoost for Alzheimer's classification using clinical tabular data across multip
 
 | Dataset | Samples (CN vs AD) | Subjects | Features |
 |---------|-------------------|----------|----------|
-| ADNI | 972 (706 CN, 266 AD) | 655 | 24 |
-| OASIS | 6,539 (5,792 CN, 747 AD) | 1,346 | 17 |
+| ADNI | 655 (433 CN, 222 AD) | 655 | 24 |
+| OASIS | 1,218 (1,008 CN, 210 AD) | 1,218 | 17 |
 | NACC | 40,163 (22,760 CN, 17,403 AD) | 40,163 | 19 |
 | NACC (MRI) | 4,743 (3,352 CN, 1,391 AD) | 4,743 | 19 |
-| **ALL** | **47,674** | **42,164** | 16 (common) |
+| **ALL** | **42,036** | **42,036** | 16 (common) |
 
-*Note: NACC datasets use first visit only per subject to avoid data leakage.*
+*Note: All datasets use first visit only per subject to avoid data leakage.*
 
 ## Results (CN vs AD)
 
 | Dataset | Accuracy | Balanced Acc | AUC-ROC | Config |
 |---------|----------|--------------|---------|--------|
-| ADNI | 89.80% | 83.32% | 0.9538 | cn_ad_adni.yaml |
-| OASIS | 84.89% | 75.12% | 0.8446 | cn_ad_oasis.yaml |
+| ADNI | 90.91% | 88.17% | 0.9719 | cn_ad_adni.yaml |
+| OASIS | 77.17% | 66.45% | 0.7763 | cn_ad_oasis.yaml |
 | **NACC** | **89.98%** | **89.70%** | **0.9634** | cn_ad_nacc.yaml |
 | NACC (MRI) | 92.13% | 90.38% | 0.9650 | cn_ad_nacc_mri.yaml |
-| ALL (combined) | 88.56% | 87.99% | 0.9474 | cn_ad_all.yaml |
+| ALL (combined) | 89.41% | 89.17% | 0.9584 | cn_ad_all.yaml |
 
 ## Usage
 

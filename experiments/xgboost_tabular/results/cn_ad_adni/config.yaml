@@ -24,6 +24,7 @@ features:
 - DSPANFOR
 - DSPANBAC
 - BCDEPRES
+first_visit_only: true
 input_csv: data/adni/ALL_4class_clinical.csv
 output_dir: experiments/xgboost_tabular/results/cn_ad_adni
 seed: 42

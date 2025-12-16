@@ -71,6 +71,7 @@ def load_config(config_path: str) -> dict:
     config.setdefault('train_ratio', 0.7)
     config.setdefault('val_ratio', 0.15)
     config.setdefault('test_ratio', 0.15)
+    config.setdefault('first_visit_only', True)
     config.setdefault('features', DEFAULT_FEATURES)
     config.setdefault('xgboost', {})
     config['xgboost'].setdefault('max_depth', 6)
@@ -83,12 +84,22 @@ def load_config(config_path: str) -> dict:
     return config
 
 
-def prepare_data_adni(df: pd.DataFrame, task: str, features: list):
+def prepare_data_adni(df: pd.DataFrame, task: str, features: list, first_visit_only: bool = True):
     """Prepare ADNI data"""
     df_prep = df.copy()
     task_info = TASKS[task]
     class_names = task_info['classes']
     num_classes = task_info['num_classes']
+
+    # Take only first visit (baseline) per subject
+    if first_visit_only and 'VISCODE' in df_prep.columns:
+        before = len(df_prep)
+        # Prefer baseline (bl), then screening (sc)
+        df_prep = df_prep[df_prep['VISCODE'] == 'bl']
+        if len(df_prep) == 0:
+            df_prep = df.copy()
+            df_prep = df_prep.sort_values('VISCODE').groupby('Subject').first().reset_index()
+        logger.info(f"ADNI first visit only: {before:,} -> {len(df_prep):,} samples")
 
     # Calculate AGE
     if 'AGE' not in df_prep.columns:
@@ -142,11 +153,22 @@ def prepare_data_adni(df: pd.DataFrame, task: str, features: list):
     return _finalize_data(df_prep, features, class_names)
 
 
-def prepare_data_oasis(df: pd.DataFrame, task: str, features: list):
+def prepare_data_oasis(df: pd.DataFrame, task: str, features: list, first_visit_only: bool = True):
     """Prepare OASIS data"""
     df_prep = df.copy()
     task_info = TASKS[task]
     class_names = task_info['classes']
+
+    # Take only first visit per subject
+    if first_visit_only and 'Subject' in df_prep.columns:
+        before = len(df_prep)
+        if 'days_to_visit' in df_prep.columns:
+            # Sort by days_to_visit and take first per subject
+            df_prep = df_prep.sort_values(['Subject', 'days_to_visit']).groupby('Subject').first().reset_index()
+        else:
+            # Take first occurrence per subject
+            df_prep = df_prep.groupby('Subject').first().reset_index()
+        logger.info(f"OASIS first visit only: {before:,} -> {len(df_prep):,} samples")
 
     # OASIS already has AGE and DX columns from build_oasis_dataset.py
 
@@ -199,7 +221,7 @@ def prepare_data_nacc(df: pd.DataFrame, task: str, features: list):
     return _finalize_data(df_prep, features, class_names)
 
 
-def prepare_data_combined(adni_csv: str, oasis_csv: str, task: str, features: list, nacc_csv: str = None):
+def prepare_data_combined(adni_csv: str, oasis_csv: str, task: str, features: list, nacc_csv: str = None, first_visit_only: bool = True):
     """Prepare combined ADNI + OASIS + NACC data"""
     task_info = TASKS[task]
     class_names = task_info['classes']
@@ -211,7 +233,7 @@ def prepare_data_combined(adni_csv: str, oasis_csv: str, task: str, features: li
     if adni_csv and Path(adni_csv).exists():
         df_adni = pd.read_csv(adni_csv)
         logger.info(f"Loaded {len(df_adni)} ADNI samples")
-        df_adni_prep, adni_features = prepare_data_adni(df_adni, task, features)
+        df_adni_prep, adni_features = prepare_data_adni(df_adni, task, features, first_visit_only)
         if df_adni_prep is not None:
             df_adni_prep['source'] = 'ADNI'
             df_adni_prep['Subject'] = 'ADNI_' + df_adni_prep['Subject'].astype(str)
@@ -222,14 +244,14 @@ def prepare_data_combined(adni_csv: str, oasis_csv: str, task: str, features: li
     if oasis_csv and Path(oasis_csv).exists():
         df_oasis = pd.read_csv(oasis_csv)
         logger.info(f"Loaded {len(df_oasis)} OASIS samples")
-        df_oasis_prep, oasis_features = prepare_data_oasis(df_oasis, task, features)
+        df_oasis_prep, oasis_features = prepare_data_oasis(df_oasis, task, features, first_visit_only)
         if df_oasis_prep is not None:
             df_oasis_prep['source'] = 'OASIS'
             df_oasis_prep['Subject'] = 'OASIS_' + df_oasis_prep['Subject'].astype(str)
             all_dfs.append((df_oasis_prep, oasis_features))
             all_features.append(set(oasis_features))
 
-    # Prepare NACC data
+    # Prepare NACC data (already first_visit_only from build_nacc_dataset.py)
     if nacc_csv and Path(nacc_csv).exists():
         df_nacc = pd.read_csv(nacc_csv)
         logger.info(f"Loaded {len(df_nacc)} NACC samples")
@@ -521,22 +543,23 @@ def main():
 
     # Load and prepare data based on dataset
     features = config.get('features', DEFAULT_FEATURES)
+    first_visit_only = config.get('first_visit_only', True)
     if dataset == 'combined':
         adni_csv = project_root / config.get('adni_csv', 'data/adni/ALL_4class_clinical.csv')
         oasis_csv = project_root / config.get('oasis_csv', 'data/oasis/oasis_all.csv')
         nacc_csv = config.get('nacc_csv')
         if nacc_csv:
             nacc_csv = project_root / nacc_csv
-        df_features, feature_names = prepare_data_combined(str(adni_csv), str(oasis_csv), task, features, str(nacc_csv) if nacc_csv else None)
+        df_features, feature_names = prepare_data_combined(str(adni_csv), str(oasis_csv), task, features, str(nacc_csv) if nacc_csv else None, first_visit_only)
     else:
         input_csv = project_root / config['input_csv']
         logger.info(f"Loading data from {input_csv}")
         df = pd.read_csv(input_csv)
         logger.info(f"Loaded {len(df)} samples")
         if dataset == 'adni':
-            df_features, feature_names = prepare_data_adni(df, task, features)
+            df_features, feature_names = prepare_data_adni(df, task, features, first_visit_only)
         elif dataset == 'oasis':
-            df_features, feature_names = prepare_data_oasis(df, task, features)
+            df_features, feature_names = prepare_data_oasis(df, task, features, first_visit_only)
         elif dataset == 'nacc':
             df_features, feature_names = prepare_data_nacc(df, task, features)
         else:
