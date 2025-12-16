@@ -44,11 +44,18 @@ class MultiModalTrainer:
         self.device = self._setup_device()
         self.set_seed(config['training']['seed'])
 
-        # Create directories
+        # Create timestamped results directory
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.timestamp = timestamp
+
         self.checkpoint_dir = Path(config['data']['checkpoints_dir'])
-        self.results_dir = Path(config['data']['results_dir'])
+        base_results_dir = Path(config['data']['results_dir'])
+        self.results_dir = base_results_dir / timestamp
+
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
         self.results_dir.mkdir(parents=True, exist_ok=True)
+
+        logger.info(f"Results will be saved to: {self.results_dir}")
 
         # Training state
         self.current_epoch = 0
@@ -368,12 +375,23 @@ class MultiModalTrainer:
         }
         torch.save(checkpoint, self.checkpoint_dir / filename)
 
+    def save_config(self):
+        """Save config to results directory at start of training"""
+        config_path = self.results_dir / 'config.yaml'
+        with open(config_path, 'w') as f:
+            yaml.dump(self.config, f, default_flow_style=False)
+        logger.info(f"Config saved to: {config_path}")
+
     def _save_results(self, metrics: Dict):
         """Save test results"""
         results = {
             'accuracy': float(metrics['accuracy']),
             'balanced_accuracy': float(metrics['balanced_accuracy']),
-            'timestamp': datetime.now().isoformat()
+            'timestamp': datetime.now().isoformat(),
+            'experiment_name': self.config['experiment']['name'],
+            'backbone': self.config['model'].get('backbone', {}).get('type', 'vit'),
+            'tabular_encoder': self.config['model']['tabular'].get('type', 'mlp'),
+            'fusion_method': self.config['model']['fusion']['method']
         }
 
         with open(self.results_dir / 'test_metrics.json', 'w') as f:
@@ -421,6 +439,9 @@ def main():
     model = trainer.build_model()
     optimizer, scheduler = trainer.build_optimizer(model)
     criterion = trainer.build_criterion(train_loader)
+
+    # Save config to results directory
+    trainer.save_config()
 
     if args.test_only:
         trainer.test(model, test_loader, criterion)
