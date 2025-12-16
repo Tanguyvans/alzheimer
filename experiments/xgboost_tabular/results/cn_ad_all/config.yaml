@@ -1,0 +1,37 @@
+adni_csv: data/adni/ALL_4class_clinical.csv
+dataset: combined
+features:
+- AGE
+- PTGENDER
+- PTEDUCAT
+- PTMARRY
+- VSWEIGHT
+- BMI
+- MH14ALCH
+- MH16SMOK
+- MH4CARD
+- MHPSYCH
+- MH2NEURL
+- TRAASCOR
+- TRABSCOR
+- TRABERRCOM
+- CATANIMSC
+- CLOCKSCOR
+- BNTTOTAL
+- DSPANFOR
+- DSPANBAC
+nacc_csv: data/nacc/nacc_tabular.csv
+oasis_csv: data/oasis/oasis_all.csv
+output_dir: experiments/xgboost_tabular/results/cn_ad_all
+seed: 42
+task: cn_ad
+test_ratio: 0.15
+train_ratio: 0.7
+val_ratio: 0.15
+xgboost:
+  colsample_bytree: 0.8
+  early_stopping_rounds: 20
+  learning_rate: 0.1
+  max_depth: 6
+  num_boost_round: 200
+  subsample: 0.8

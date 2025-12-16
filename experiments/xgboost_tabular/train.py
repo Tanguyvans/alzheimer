@@ -171,52 +171,98 @@ def prepare_data_oasis(df: pd.DataFrame, task: str, features: list):
     return _finalize_data(df_prep, features, class_names)
 
 
-def prepare_data_combined(adni_csv: str, oasis_csv: str, task: str, features: list):
-    """Prepare combined ADNI + OASIS data"""
+def prepare_data_nacc(df: pd.DataFrame, task: str, features: list):
+    """Prepare NACC data (from build_nacc_dataset.py output)"""
+    df_prep = df.copy()
     task_info = TASKS[task]
     class_names = task_info['classes']
 
-    # Prepare ADNI data
-    df_adni = pd.read_csv(adni_csv)
-    logger.info(f"Loaded {len(df_adni)} ADNI samples")
-    df_adni_prep, adni_features = prepare_data_adni(df_adni, task, features)
-    if df_adni_prep is not None:
-        df_adni_prep['source'] = 'ADNI'
-        df_adni_prep['Subject'] = 'ADNI_' + df_adni_prep['Subject'].astype(str)
+    # NACC data from build_nacc_dataset.py already has:
+    # - AGE (mapped from NACCAGE)
+    # - DX (mapped from NACCUDSD: CN, MCI, AD)
+    # - All features mapped to ADNI names
 
-    # Prepare OASIS data
-    df_oasis = pd.read_csv(oasis_csv)
-    logger.info(f"Loaded {len(df_oasis)} OASIS samples")
-    df_oasis_prep, oasis_features = prepare_data_oasis(df_oasis, task, features)
-    if df_oasis_prep is not None:
-        df_oasis_prep['source'] = 'OASIS'
-        df_oasis_prep['Subject'] = 'OASIS_' + df_oasis_prep['Subject'].astype(str)
+    # Assign labels based on task
+    if task == 'cn_ad':
+        df_prep = df_prep[df_prep['DX'].isin(['CN', 'AD'])].copy()
+        df_prep['label'] = (df_prep['DX'] == 'AD').astype(int)
 
-    if df_adni_prep is None and df_oasis_prep is None:
+    elif task == 'cn_mci_ad':
+        mapping = {'CN': 0, 'MCI': 1, 'AD': 2}
+        df_prep = df_prep[df_prep['DX'].isin(['CN', 'MCI', 'AD'])].copy()
+        df_prep['label'] = df_prep['DX'].map(mapping)
+
+    elif task == 'cn_mcis_mcic_ad':
+        logger.warning("NACC doesn't have MCI stable/converter distinction")
         return None, None
 
-    # Use common features
-    if df_adni_prep is not None and df_oasis_prep is not None:
-        common_features = [f for f in adni_features if f in oasis_features]
-        logger.info(f"Common features: {len(common_features)}")
-        df_combined = pd.concat([
-            df_adni_prep[common_features + ['label', 'Subject', 'source']],
-            df_oasis_prep[common_features + ['label', 'Subject', 'source']]
-        ], ignore_index=True)
-        feature_names = common_features
-    elif df_adni_prep is not None:
-        df_combined = df_adni_prep
-        feature_names = adni_features
-    else:
-        df_combined = df_oasis_prep
-        feature_names = oasis_features
+    return _finalize_data(df_prep, features, class_names)
+
+
+def prepare_data_combined(adni_csv: str, oasis_csv: str, task: str, features: list, nacc_csv: str = None):
+    """Prepare combined ADNI + OASIS + NACC data"""
+    task_info = TASKS[task]
+    class_names = task_info['classes']
+
+    all_dfs = []
+    all_features = []
+
+    # Prepare ADNI data
+    if adni_csv and Path(adni_csv).exists():
+        df_adni = pd.read_csv(adni_csv)
+        logger.info(f"Loaded {len(df_adni)} ADNI samples")
+        df_adni_prep, adni_features = prepare_data_adni(df_adni, task, features)
+        if df_adni_prep is not None:
+            df_adni_prep['source'] = 'ADNI'
+            df_adni_prep['Subject'] = 'ADNI_' + df_adni_prep['Subject'].astype(str)
+            all_dfs.append((df_adni_prep, adni_features))
+            all_features.append(set(adni_features))
+
+    # Prepare OASIS data
+    if oasis_csv and Path(oasis_csv).exists():
+        df_oasis = pd.read_csv(oasis_csv)
+        logger.info(f"Loaded {len(df_oasis)} OASIS samples")
+        df_oasis_prep, oasis_features = prepare_data_oasis(df_oasis, task, features)
+        if df_oasis_prep is not None:
+            df_oasis_prep['source'] = 'OASIS'
+            df_oasis_prep['Subject'] = 'OASIS_' + df_oasis_prep['Subject'].astype(str)
+            all_dfs.append((df_oasis_prep, oasis_features))
+            all_features.append(set(oasis_features))
+
+    # Prepare NACC data
+    if nacc_csv and Path(nacc_csv).exists():
+        df_nacc = pd.read_csv(nacc_csv)
+        logger.info(f"Loaded {len(df_nacc)} NACC samples")
+        df_nacc_prep, nacc_features = prepare_data_nacc(df_nacc, task, features)
+        if df_nacc_prep is not None:
+            df_nacc_prep['source'] = 'NACC'
+            df_nacc_prep['Subject'] = 'NACC_' + df_nacc_prep['Subject'].astype(str)
+            all_dfs.append((df_nacc_prep, nacc_features))
+            all_features.append(set(nacc_features))
+
+    if not all_dfs:
+        return None, None
+
+    # Find common features across all datasets
+    common_features = list(set.intersection(*all_features)) if len(all_features) > 1 else list(all_features[0])
+    logger.info(f"Common features across {len(all_dfs)} datasets: {len(common_features)}")
+
+    # Combine datasets
+    combined_dfs = []
+    for df_prep, _ in all_dfs:
+        combined_dfs.append(df_prep[common_features + ['label', 'Subject', 'source']])
+
+    df_combined = pd.concat(combined_dfs, ignore_index=True)
 
     logger.info(f"Combined dataset: {len(df_combined)} samples")
+    for source in df_combined['source'].unique():
+        count = (df_combined['source'] == source).sum()
+        logger.info(f"  {source}: {count} samples")
     for i, name in enumerate(class_names):
         count = sum(df_combined['label'] == i)
         logger.info(f"  Class {i} ({name}): {count} samples")
 
-    return df_combined, feature_names
+    return df_combined, common_features
 
 
 def _finalize_data(df_prep, features, class_names):
@@ -478,7 +524,10 @@ def main():
     if dataset == 'combined':
         adni_csv = project_root / config.get('adni_csv', 'data/adni/ALL_4class_clinical.csv')
         oasis_csv = project_root / config.get('oasis_csv', 'data/oasis/oasis_all.csv')
-        df_features, feature_names = prepare_data_combined(adni_csv, oasis_csv, task, features)
+        nacc_csv = config.get('nacc_csv')
+        if nacc_csv:
+            nacc_csv = project_root / nacc_csv
+        df_features, feature_names = prepare_data_combined(str(adni_csv), str(oasis_csv), task, features, str(nacc_csv) if nacc_csv else None)
     else:
         input_csv = project_root / config['input_csv']
         logger.info(f"Loading data from {input_csv}")
@@ -488,6 +537,8 @@ def main():
             df_features, feature_names = prepare_data_adni(df, task, features)
         elif dataset == 'oasis':
             df_features, feature_names = prepare_data_oasis(df, task, features)
+        elif dataset == 'nacc':
+            df_features, feature_names = prepare_data_nacc(df, task, features)
         else:
             raise ValueError(f"Unknown dataset: {dataset}")
 

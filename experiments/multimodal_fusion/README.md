@@ -123,7 +123,7 @@ python train_cv.py --config config_resnet_fttransformer.yaml --n-folds 5
 |------|--------|--------------|-----------------|--------|----------|--------------|-------|
 | 2024-12-15 | config_resnet.yaml | ResNet3D-18 | MLP [128,64] | attention | 84.56% | 84.20% | Single split |
 | 2024-12-16 | config_resnet.yaml | ResNet3D-18 | MLP [128,64] | attention | 83.57% ± 2.65% | 83.38% ± 2.82% | 5-fold CV, 3 seeds |
-| 2024-12-16 | config_resnet_fttransformer.yaml | ResNet3D-18 | FT-Transformer (d=64, h=4, L=3) | attention | - | - | TBD |
+| 2024-12-16 | config_resnet_fttransformer.yaml | ResNet3D-18 | FT-Transformer (d=64, h=4, L=3) | attention | 82.35% | 82.20% | Single split, early stop @21 |
 
 #### Config Details
 

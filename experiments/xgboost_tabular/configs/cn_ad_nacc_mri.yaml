@@ -1,0 +1,45 @@
+# CN vs AD classification on NACC dataset (MRI subjects only)
+# Only includes subjects with T1 MRI scans available
+task: cn_ad
+dataset: nacc
+input_csv: data/nacc/nacc_tabular_mri.csv
+output_dir: experiments/xgboost_tabular/results/cn_ad_nacc_mri
+
+seed: 42
+train_ratio: 0.7
+val_ratio: 0.15
+test_ratio: 0.15
+
+# Features mapped to ADNI names (from build_nacc_dataset.py)
+features:
+  # Demographics
+  - AGE
+  - PTGENDER
+  - PTEDUCAT
+  - PTMARRY
+  # Vitals
+  - VSWEIGHT
+  - BMI
+  # Medical history
+  - MH14ALCH
+  - MH16SMOK
+  - MH4CARD
+  - MHPSYCH
+  - MH2NEURL
+  # Neuropsych tests
+  - TRAASCOR
+  - TRABSCOR
+  - TRABERRCOM
+  - CATANIMSC
+  - CLOCKSCOR
+  - BNTTOTAL
+  - DSPANFOR
+  - DSPANBAC
+
+xgboost:
+  max_depth: 6
+  learning_rate: 0.1
+  subsample: 0.8
+  colsample_bytree: 0.8
+  num_boost_round: 200
+  early_stopping_rounds: 20

@@ -1,0 +1,44 @@
+# CN vs AD classification on NACC dataset
+task: cn_ad
+dataset: nacc
+input_csv: data/nacc/nacc_tabular.csv
+output_dir: experiments/xgboost_tabular/results/cn_ad_nacc
+
+seed: 42
+train_ratio: 0.7
+val_ratio: 0.15
+test_ratio: 0.15
+
+# Features mapped to ADNI names (from build_nacc_dataset.py)
+features:
+  # Demographics
+  - AGE        # NACCAGE
+  - PTGENDER   # SEX
+  - PTEDUCAT   # EDUC
+  - PTMARRY    # MARISTAT
+  # Vitals
+  - VSWEIGHT   # WEIGHT
+  - BMI        # NACCBMI
+  # Medical history
+  - MH14ALCH   # ALCOHOL
+  - MH16SMOK   # TOBAC30
+  - MH4CARD    # CVHATT
+  - MHPSYCH    # NACCADEP
+  - MH2NEURL   # STROKE
+  # Neuropsych tests
+  - TRAASCOR   # TRAILA
+  - TRABSCOR   # TRAILB
+  - TRABERRCOM # TRAILBRR
+  - CATANIMSC  # ANIMALS
+  - CLOCKSCOR  # MOCACLOC
+  - BNTTOTAL   # BOSTON
+  - DSPANFOR   # DIGIF
+  - DSPANBAC   # DIGIB
+
+xgboost:
+  max_depth: 6
+  learning_rate: 0.1
+  subsample: 0.8
+  colsample_bytree: 0.8
+  num_boost_round: 200
+  early_stopping_rounds: 20
