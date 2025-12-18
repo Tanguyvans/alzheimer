@@ -19,9 +19,9 @@ model:
   pretrained_path: "pretrained/vit_mae75_pretrained.pth"
 
 data:
-  train_csv: "data/cn_ad_trajectory/train.csv"
-  val_csv: "data/cn_ad_trajectory/val.csv"
-  test_csv: "data/cn_ad_trajectory/test.csv"
+  train_csv: "../../data/mri/adni_cn_ad_trajectory/train.csv"
+  val_csv: "../../data/mri/adni_cn_ad_trajectory/val.csv"
+  test_csv: "../../data/mri/adni_cn_ad_trajectory/test.csv"
   checkpoints_dir: "checkpoints"
   logs_dir: "logs"
   results_dir: "results"
