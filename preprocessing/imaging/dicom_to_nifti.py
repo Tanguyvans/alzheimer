@@ -186,3 +186,18 @@ def convert_patient_directory(input_root: str, output_root: str, patient_id: str
                         continue
     
     return all_output_files
+
+
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Convert DICOM files to NIfTI format')
+    parser.add_argument('--input', '-i', required=True, help='Input directory containing patient DICOM folders')
+    parser.add_argument('--output', '-o', required=True, help='Output directory for NIfTI files')
+    parser.add_argument('--patient', '-p', default=None, help='Specific patient ID to process (optional)')
+    args = parser.parse_args()
+
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+    output_files = convert_patient_directory(args.input, args.output, args.patient)
+    print(f"\nConversion complete! Total files created: {len(output_files)}")
