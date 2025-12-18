@@ -1,0 +1,14 @@
+{
+  "run_name": "cn_ad_trajectory_oasis_resnet_mlp_gated_20251219_001317",
+  "accuracy": 86.45161290322581,
+  "balanced_accuracy": 87.04318936877075,
+  "timestamp": "2025-12-19T00:53:55.333934",
+  "experiment_name": "multimodal_fusion_oasis",
+  "task": "cn_ad_trajectory",
+  "dataset": "oasis",
+  "backbone": "resnet",
+  "tabular_encoder": "mlp",
+  "fusion_method": "gated",
+  "epochs_trained": 43,
+  "best_val_acc": 87.66233766233766
+}
