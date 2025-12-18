@@ -37,6 +37,12 @@ TASKS = {
         'num_classes': 2,
         'objective': 'binary:logistic',
     },
+    'cn_ad_trajectory': {
+        'classes': ['CN', 'AD_trajectory'],
+        'num_classes': 2,
+        'objective': 'binary:logistic',
+        'description': 'CN vs AD trajectory (AD + MCI converters)',
+    },
     'cn_mci_ad': {
         'classes': ['CN', 'MCI', 'AD'],
         'num_classes': 3,
@@ -73,6 +79,7 @@ def load_config(config_path: str) -> dict:
     config.setdefault('test_ratio', 0.15)
     config.setdefault('first_visit_only', True)
     config.setdefault('features', DEFAULT_FEATURES)
+    config.setdefault('mri_filter_csv', None)  # Filter to patients with MRI
     config.setdefault('xgboost', {})
     config['xgboost'].setdefault('max_depth', 6)
     config['xgboost'].setdefault('learning_rate', 0.1)
@@ -122,6 +129,21 @@ def prepare_data_adni(df: pd.DataFrame, task: str, features: list, first_visit_o
             df_prep = df_prep[df_prep['CLASS_4'].isin(['CN', 'AD'])].copy()
             df_prep['label'] = (df_prep['CLASS_4'] == 'AD').astype(int)
         elif 'Group' in df_prep.columns:
+            df_prep = df_prep[df_prep['Group'].isin(['CN', 'AD'])].copy()
+            df_prep['label'] = (df_prep['Group'] == 'AD').astype(int)
+        elif 'DX' in df_prep.columns:
+            df_prep = df_prep[df_prep['DX'].isin(['CN', 'AD'])].copy()
+            df_prep['label'] = (df_prep['DX'] == 'AD').astype(int)
+
+    elif task == 'cn_ad_trajectory':
+        # CN vs AD trajectory (AD + MCI converters)
+        # Label 0: CN, Label 1: AD or MCI_to_AD (MCI converters)
+        if 'CLASS_4' in df_prep.columns:
+            df_prep = df_prep[df_prep['CLASS_4'].isin(['CN', 'AD', 'MCI_to_AD'])].copy()
+            df_prep['label'] = df_prep['CLASS_4'].apply(lambda x: 0 if x == 'CN' else 1).astype(int)
+            logger.info(f"CN vs AD trajectory: CN={len(df_prep[df_prep['label']==0])}, AD_trajectory={len(df_prep[df_prep['label']==1])}")
+        elif 'Group' in df_prep.columns:
+            # Fallback: just CN vs AD if no trajectory info available
             df_prep = df_prep[df_prep['Group'].isin(['CN', 'AD'])].copy()
             df_prep['label'] = (df_prep['Group'] == 'AD').astype(int)
         elif 'DX' in df_prep.columns:
@@ -180,6 +202,12 @@ def prepare_data_oasis(df: pd.DataFrame, task: str, features: list, first_visit_
     if task == 'cn_ad':
         df_prep = df_prep[df_prep['DX'].isin(['CN', 'AD'])].copy()
         df_prep['label'] = (df_prep['DX'] == 'AD').astype(int)
+
+    elif task == 'cn_ad_trajectory':
+        # CN vs AD trajectory - for OASIS, just use CN vs AD (no MCI converter info)
+        df_prep = df_prep[df_prep['DX'].isin(['CN', 'AD'])].copy()
+        df_prep['label'] = (df_prep['DX'] == 'AD').astype(int)
+        logger.info(f"OASIS CN vs AD trajectory: CN={len(df_prep[df_prep['label']==0])}, AD={len(df_prep[df_prep['label']==1])}")
 
     elif task == 'cn_mci_ad':
         mapping = {'CN': 0, 'MCI': 1, 'AD': 2}
@@ -568,6 +596,25 @@ def main():
     if df_features is None:
         logger.error("Data preparation failed")
         return
+
+    # Filter to patients with MRI if specified
+    mri_filter_csv = config.get('mri_filter_csv')
+    if mri_filter_csv:
+        mri_filter_path = project_root / mri_filter_csv
+        if mri_filter_path.exists():
+            mri_df = pd.read_csv(mri_filter_path)
+            # Get subject IDs from MRI dataset
+            mri_subjects = set()
+            for col in ['subject_id', 'Subject', 'PTID']:
+                if col in mri_df.columns:
+                    mri_subjects.update(mri_df[col].astype(str).values)
+                    break
+
+            before_count = len(df_features)
+            df_features = df_features[df_features['Subject'].astype(str).isin(mri_subjects)]
+            logger.info(f"MRI filter: {before_count} -> {len(df_features)} samples (matched {len(mri_subjects)} MRI subjects)")
+        else:
+            logger.warning(f"MRI filter CSV not found: {mri_filter_path}")
 
     # Split data
     train_df, val_df, test_df = patient_level_split(

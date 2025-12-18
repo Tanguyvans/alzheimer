@@ -12,6 +12,55 @@ Each experiment has:
 
 ## Available Experiments
 
+### 📈 [xgboost_tabular/](xgboost_tabular/)
+**XGBoost on Tabular Clinical Data**
+
+- **Goal**: CN vs AD Trajectory classification using clinical/tabular features
+- **Model**: XGBoost
+- **Task**: `cn_ad_trajectory` (CN vs AD + MCI converters)
+- **Status**: Trained ✅
+
+**Quick start:**
+```bash
+cd experiments/xgboost_tabular
+python train.py --config configs/cn_ad_trajectory_adni.yaml
+python train.py --config configs/cn_ad_trajectory_oasis.yaml
+python train.py --config configs/cn_ad_trajectory_combined.yaml
+```
+
+**Results (CN vs AD Trajectory):**
+
+| Dataset  | Accuracy | AUC-ROC | CN Recall | AD_trajectory Recall |
+|----------|----------|---------|-----------|---------------------|
+| ADNI     | 84.7%    | 0.928   | 89%       | 81%                 |
+| OASIS    | 79.9%    | 0.778   | 86%       | 50%                 |
+| Combined | 79.1%    | 0.879   | 84%       | 68%                 |
+
+**Confusion Matrices:**
+
+| ADNI | OASIS | Combined |
+|------|-------|----------|
+| ![ADNI](xgboost_tabular/results/cn_ad_trajectory_adni/confusion_matrix_normalized.png) | ![OASIS](xgboost_tabular/results/cn_ad_trajectory_oasis/confusion_matrix_normalized.png) | ![Combined](xgboost_tabular/results/cn_ad_trajectory_combined/confusion_matrix_normalized.png) |
+
+---
+
+### 🧠 [mri_vit_ad/](mri_vit_ad/)
+**3D Vision Transformer on MRI Scans**
+
+- **Goal**: CN vs AD Trajectory classification using 3D MRI brain scans
+- **Model**: 3D ViT-B with MAE pre-training (MICCAI 2024 paper)
+- **Task**: `cn_ad_trajectory` (CN vs AD + MCI converters)
+- **Dataset**: ADNI skull-stripped MRI (1610 patients)
+- **Status**: Ready to train ✅
+
+**Quick start:**
+```bash
+cd experiments/mri_vit_ad
+python train.py --config config.yaml
+```
+
+---
+
 ### 📊 [pmci_smci_baseline/](pmci_smci_baseline/)
 **Predicting MCI-to-AD Conversion**
 

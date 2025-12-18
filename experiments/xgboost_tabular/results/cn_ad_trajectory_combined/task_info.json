@@ -1,0 +1,9 @@
+{
+  "classes": [
+    "CN",
+    "AD_trajectory"
+  ],
+  "num_classes": 2,
+  "objective": "binary:logistic",
+  "description": "CN vs AD trajectory (AD + MCI converters)"
+}

@@ -1,0 +1,24 @@
+# CN vs AD Trajectory classification on ADNI dataset
+# FILTERED to only patients with MRI scans (for multimodal comparison)
+# AD Trajectory = AD patients + MCI patients who converted to AD
+task: cn_ad_trajectory
+dataset: adni
+input_csv: data/adni/ALL_4class_clinical.csv
+output_dir: experiments/xgboost_tabular/results/cn_ad_trajectory_adni_mri
+
+# Filter to patients with MRI scans only
+mri_filter_csv: data/mri/adni_cn_ad_trajectory/all.csv
+
+seed: 42
+train_ratio: 0.7
+val_ratio: 0.15
+test_ratio: 0.15
+first_visit_only: true
+
+xgboost:
+  max_depth: 6
+  learning_rate: 0.1
+  subsample: 0.8
+  colsample_bytree: 0.8
+  num_boost_round: 200
+  early_stopping_rounds: 20
