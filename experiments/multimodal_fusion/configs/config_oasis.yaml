@@ -17,17 +17,13 @@ model:
     feature_dim: 512
 
   tabular:
-    type: "fttransformer"
+    type: "mlp"  # mlp (best) or fttransformer
     hidden_dims: [64, 32]  # Smaller due to fewer features
     dropout: 0.3
-    n_blocks: 2
-    d_token: 32
-    attention_dropout: 0.2
-    ffn_dropout: 0.1
 
   fusion:
-    method: "gated"
-    hidden_dim: 256
+    method: "gated"  # concat, attention, or gated
+    hidden_dim: 512
     dropout: 0.3
 
   num_classes: 2
