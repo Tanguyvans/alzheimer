@@ -44,23 +44,47 @@ class MultiModalTrainer:
         self.device = self._setup_device()
         self.set_seed(config['training']['seed'])
 
-        # Create timestamped results directory
+        # Build descriptive experiment name
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.timestamp = timestamp
 
-        self.checkpoint_dir = Path(config['data']['checkpoints_dir'])
+        # Extract config info for naming
+        exp_cfg = config.get('experiment', {})
+        model_cfg = config.get('model', {})
+
+        dataset = exp_cfg.get('dataset', 'unknown')
+        task = exp_cfg.get('task', 'cn_ad_trajectory')
+        backbone = model_cfg.get('backbone', {}).get('type', 'resnet')
+        tabular_type = model_cfg.get('tabular', {}).get('type', 'mlp')
+        fusion_method = model_cfg.get('fusion', {}).get('method', 'concat')
+
+        # Create descriptive run name: task_dataset_backbone_tabular_fusion_timestamp
+        self.run_name = f"{task}_{dataset}_{backbone}_{tabular_type}_{fusion_method}_{timestamp}"
+
+        self.checkpoint_dir = Path(config['data']['checkpoints_dir']) / self.run_name
         base_results_dir = Path(config['data']['results_dir'])
-        self.results_dir = base_results_dir / timestamp
+        self.results_dir = base_results_dir / self.run_name
 
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
         self.results_dir.mkdir(parents=True, exist_ok=True)
 
+        logger.info(f"Experiment: {self.run_name}")
         logger.info(f"Results will be saved to: {self.results_dir}")
 
         # Training state
         self.current_epoch = 0
         self.best_val_acc = 0.0
         self.epochs_without_improvement = 0
+
+        # Training history for plotting curves
+        self.history = {
+            'train_loss': [],
+            'train_acc': [],
+            'val_loss': [],
+            'val_acc': [],
+            'val_balanced_acc': [],
+            'lr': []
+        }
 
     def _setup_device(self) -> torch.device:
         """Setup compute device"""
@@ -314,6 +338,14 @@ class MultiModalTrainer:
 
             current_lr = optimizer.param_groups[0]['lr']
 
+            # Record history
+            self.history['train_loss'].append(train_metrics['loss'])
+            self.history['train_acc'].append(train_metrics['accuracy'])
+            self.history['val_loss'].append(val_metrics['loss'])
+            self.history['val_acc'].append(val_metrics['accuracy'])
+            self.history['val_balanced_acc'].append(val_metrics['balanced_accuracy'])
+            self.history['lr'].append(current_lr)
+
             logger.info(f"\nEpoch {epoch+1}/{num_epochs}")
             logger.info(f"  Train - Loss: {train_metrics['loss']:.4f}, Acc: {train_metrics['accuracy']:.2f}%")
             logger.info(f"  Val   - Loss: {val_metrics['loss']:.4f}, Acc: {val_metrics['accuracy']:.2f}%, "
@@ -336,6 +368,9 @@ class MultiModalTrainer:
                     break
 
         self._save_checkpoint(model, optimizer, 'last.pth')
+
+        # Plot and save training curves
+        self._plot_training_curves()
 
         logger.info("=" * 60)
         logger.info("TRAINING COMPLETE")
@@ -375,6 +410,76 @@ class MultiModalTrainer:
         }
         torch.save(checkpoint, self.checkpoint_dir / filename)
 
+    def _plot_training_curves(self):
+        """Plot and save training/validation curves"""
+        if not SKLEARN_AVAILABLE or len(self.history['train_loss']) == 0:
+            return
+
+        epochs = range(1, len(self.history['train_loss']) + 1)
+
+        # Create figure with 2x2 subplots
+        fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+
+        # Plot 1: Loss curves
+        ax1 = axes[0, 0]
+        ax1.plot(epochs, self.history['train_loss'], 'b-', label='Train Loss', linewidth=2)
+        ax1.plot(epochs, self.history['val_loss'], 'r-', label='Val Loss', linewidth=2)
+        ax1.set_xlabel('Epoch')
+        ax1.set_ylabel('Loss')
+        ax1.set_title('Training and Validation Loss')
+        ax1.legend()
+        ax1.grid(True, alpha=0.3)
+
+        # Plot 2: Accuracy curves
+        ax2 = axes[0, 1]
+        ax2.plot(epochs, self.history['train_acc'], 'b-', label='Train Acc', linewidth=2)
+        ax2.plot(epochs, self.history['val_acc'], 'r-', label='Val Acc', linewidth=2)
+        ax2.plot(epochs, self.history['val_balanced_acc'], 'g--', label='Val Balanced Acc', linewidth=2)
+        ax2.set_xlabel('Epoch')
+        ax2.set_ylabel('Accuracy (%)')
+        ax2.set_title('Training and Validation Accuracy')
+        ax2.legend()
+        ax2.grid(True, alpha=0.3)
+
+        # Plot 3: Learning rate
+        ax3 = axes[1, 0]
+        ax3.plot(epochs, self.history['lr'], 'purple', linewidth=2)
+        ax3.set_xlabel('Epoch')
+        ax3.set_ylabel('Learning Rate')
+        ax3.set_title('Learning Rate Schedule')
+        ax3.set_yscale('log')
+        ax3.grid(True, alpha=0.3)
+
+        # Plot 4: Combined loss and accuracy (dual y-axis)
+        ax4 = axes[1, 1]
+        ax4_acc = ax4.twinx()
+
+        line1, = ax4.plot(epochs, self.history['val_loss'], 'r-', label='Val Loss', linewidth=2)
+        line2, = ax4_acc.plot(epochs, self.history['val_acc'], 'b-', label='Val Acc', linewidth=2)
+
+        ax4.set_xlabel('Epoch')
+        ax4.set_ylabel('Loss', color='r')
+        ax4_acc.set_ylabel('Accuracy (%)', color='b')
+        ax4.set_title('Validation Loss vs Accuracy')
+        ax4.tick_params(axis='y', labelcolor='r')
+        ax4_acc.tick_params(axis='y', labelcolor='b')
+
+        lines = [line1, line2]
+        labels = [l.get_label() for l in lines]
+        ax4.legend(lines, labels, loc='center right')
+        ax4.grid(True, alpha=0.3)
+
+        plt.tight_layout()
+        plt.savefig(self.results_dir / 'training_curves.png', dpi=150, bbox_inches='tight')
+        plt.close()
+
+        # Also save history as JSON
+        history_path = self.results_dir / 'training_history.json'
+        with open(history_path, 'w') as f:
+            json.dump(self.history, f, indent=2)
+
+        logger.info(f"Training curves saved to {self.results_dir / 'training_curves.png'}")
+
     def save_config(self):
         """Save config to results directory at start of training"""
         config_path = self.results_dir / 'config.yaml'
@@ -384,14 +489,25 @@ class MultiModalTrainer:
 
     def _save_results(self, metrics: Dict):
         """Save test results"""
+        exp_cfg = self.config.get('experiment', {})
+        model_cfg = self.config.get('model', {})
+
         results = {
+            'run_name': self.run_name,
             'accuracy': float(metrics['accuracy']),
             'balanced_accuracy': float(metrics['balanced_accuracy']),
             'timestamp': datetime.now().isoformat(),
-            'experiment_name': self.config['experiment']['name'],
-            'backbone': self.config['model'].get('backbone', {}).get('type', 'vit'),
-            'tabular_encoder': self.config['model']['tabular'].get('type', 'mlp'),
-            'fusion_method': self.config['model']['fusion']['method']
+            # Experiment info
+            'experiment_name': exp_cfg.get('name', 'multimodal_fusion'),
+            'task': exp_cfg.get('task', 'cn_ad_trajectory'),
+            'dataset': exp_cfg.get('dataset', 'unknown'),
+            # Model info
+            'backbone': model_cfg.get('backbone', {}).get('type', 'resnet'),
+            'tabular_encoder': model_cfg.get('tabular', {}).get('type', 'mlp'),
+            'fusion_method': model_cfg.get('fusion', {}).get('method', 'concat'),
+            # Training info
+            'epochs_trained': len(self.history['train_loss']),
+            'best_val_acc': float(self.best_val_acc)
         }
 
         with open(self.results_dir / 'test_metrics.json', 'w') as f:
