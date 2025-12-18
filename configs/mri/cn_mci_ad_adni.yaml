@@ -1,0 +1,16 @@
+# CN vs MCI vs AD classification on ADNI MRI dataset
+task: cn_mci_ad
+dataset: adni
+output_dir: data/mri/adni_cn_mci_ad
+
+# MRI directory (skull-stripped scans)
+adni_mri_dir: /Volumes/KINGSTON/ADNI-skull
+
+# Data split
+seed: 42
+train_ratio: 0.7
+val_ratio: 0.15
+test_ratio: 0.15
+
+# Scan selection: 'first' = first scan per patient, 'all' = all scans
+scan_selection: first

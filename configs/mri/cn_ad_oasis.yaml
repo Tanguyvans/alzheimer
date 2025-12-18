@@ -1,0 +1,16 @@
+# CN vs AD classification on OASIS MRI dataset
+task: cn_ad
+dataset: oasis
+output_dir: data/mri/oasis_cn_ad
+
+# MRI directory (registered scans, or skull-stripped when available)
+oasis_mri_dir: /Volumes/KINGSTON/OASIS-registered
+
+# Data split
+seed: 42
+train_ratio: 0.7
+val_ratio: 0.15
+test_ratio: 0.15
+
+# Scan selection: 'first' = first scan per patient, 'all' = all scans
+scan_selection: first
