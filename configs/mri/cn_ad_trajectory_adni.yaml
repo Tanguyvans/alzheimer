@@ -6,7 +6,7 @@ dataset: adni
 output_dir: data/mri/adni_cn_ad_trajectory
 
 # MRI directory (skull-stripped scans)
-adni_mri_dir: /Volumes/KINGSTON/ADNI-skull
+adni_mri_dir: /home/maxglo/tanguy/ADNI-skull
 
 # Data split
 seed: 42

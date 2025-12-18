@@ -4,8 +4,8 @@ dataset: combined
 output_dir: data/mri/combined_cn_ad
 
 # MRI directories
-adni_mri_dir: /Volumes/KINGSTON/ADNI-skull
-oasis_mri_dir: /Volumes/KINGSTON/OASIS-registered
+adni_mri_dir: /home/maxglo/tanguy/ADNI-skull
+oasis_mri_dir: /home/maxglo/tanguy/OASIS-skull
 
 # Data split
 seed: 42

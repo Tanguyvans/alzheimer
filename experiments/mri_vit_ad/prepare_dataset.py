@@ -36,8 +36,8 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
 
 # Default MRI directories
-DEFAULT_ADNI_MRI_DIR = Path("/Volumes/KINGSTON/ADNI-skull")
-DEFAULT_OASIS_MRI_DIR = Path("/Volumes/KINGSTON/OASIS-registered")
+DEFAULT_ADNI_MRI_DIR = Path("/home/maxglo/tanguy/ADNI-skull")
+DEFAULT_OASIS_MRI_DIR = Path("/home/maxglo/tanguy/OASIS-skull")
 
 # Classification task definitions
 TASK_CONFIGS = {
