@@ -1,0 +1,83 @@
+callbacks:
+  checkpoint:
+    save_best: true
+  early_stopping:
+    enabled: true
+    monitor: val_accuracy
+    patience: 15
+data:
+  checkpoints_dir: checkpoints
+  results_dir: results
+  tabular_features:
+  - AGE
+  - PTGENDER
+  - PTEDUCAT
+  - PTMARRY
+  - VSWEIGHT
+  - BMI
+  - MH14ALCH
+  - MH16SMOK
+  - MH4CARD
+  - MHPSYCH
+  - MH2NEURL
+  - CATANIMSC
+  - TRAASCOR
+  - TRABSCOR
+  - TRABERRCOM
+  - CLOCKSCOR
+  - BNTTOTAL
+  - DSPANFOR
+  - DSPANBAC
+  test_csv: data/adni/test.csv
+  train_csv: data/adni/train.csv
+  val_csv: data/adni/val.csv
+experiment:
+  dataset: adni
+  description: Late fusion of MRI features + ADNI tabular clinical data
+  name: multimodal_fusion_adni
+  task: cn_ad_trajectory
+hardware:
+  device: cuda
+  num_workers: 4
+  pin_memory: true
+model:
+  backbone:
+    depth: 18
+    feature_dim: 512
+    freeze: false
+    pretrained: true
+    type: resnet
+  fusion:
+    dropout: 0.3
+    hidden_dim: 256
+    method: gated
+  num_classes: 2
+  tabular:
+    attention_dropout: 0.2
+    d_token: 64
+    dropout: 0.3
+    ffn_dropout: 0.1
+    hidden_dims:
+    - 128
+    - 64
+    n_blocks: 2
+    type: fttransformer
+preprocessing:
+  handle_missing: median
+  tabular_normalize: true
+  target_spacing: 1.75
+  use_paper_preprocessing: true
+training:
+  batch_size: 4
+  epochs: 50
+  gradient_clip: 1.0
+  learning_rate: 0.0001
+  lr_min: 1.0e-07
+  optimizer: adamw
+  scheduler: cosine
+  seed: 42
+  use_weighted_loss: true
+  warmup_epochs: 5
+  weight_decay: 0.01
+wandb:
+  enabled: false
