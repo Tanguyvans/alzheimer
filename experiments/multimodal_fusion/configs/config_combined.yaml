@@ -1,0 +1,87 @@
+# Multi-Modal Fusion: MRI + Tabular - Combined ADNI + OASIS Dataset
+# Uses common features available in both datasets (7 features)
+# Missing values handled by median imputation
+
+experiment:
+  name: "multimodal_fusion_combined"
+  task: "cn_ad_trajectory"
+  dataset: "combined"
+  description: "Late fusion of MRI features + tabular data from ADNI and OASIS"
+
+model:
+  backbone:
+    type: "resnet"
+    depth: 18
+    pretrained: true
+    freeze: false
+    feature_dim: 512
+
+  tabular:
+    type: "fttransformer"
+    hidden_dims: [64, 32]
+    dropout: 0.3
+    n_blocks: 2
+    d_token: 32
+    attention_dropout: 0.2
+    ffn_dropout: 0.1
+
+  fusion:
+    method: "gated"
+    hidden_dim: 256
+    dropout: 0.3
+
+  num_classes: 2
+
+data:
+  train_csv: "data/combined/train.csv"
+  val_csv: "data/combined/val.csv"
+  test_csv: "data/combined/test.csv"
+  checkpoints_dir: "checkpoints"
+  results_dir: "results"
+
+  # Common tabular features across ADNI and OASIS (7 features)
+  tabular_features:
+    # Demographics (4)
+    - "AGE"
+    - "PTGENDER"
+    - "PTEDUCAT"
+    - "PTMARRY"
+    # Neuropsych tests (3)
+    - "CATANIMSC"
+    - "TRAASCOR"
+    - "TRABSCOR"
+
+preprocessing:
+  use_paper_preprocessing: true
+  target_spacing: 1.75
+  tabular_normalize: true
+  handle_missing: "median"
+
+training:
+  epochs: 50
+  batch_size: 4
+  learning_rate: 0.0001
+  weight_decay: 0.01
+  lr_min: 0.0000001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  warmup_epochs: 5
+  gradient_clip: 1.0
+  use_weighted_loss: true
+  seed: 42
+
+hardware:
+  device: "cuda"
+  num_workers: 4
+  pin_memory: true
+
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 15
+    monitor: "val_accuracy"
+  checkpoint:
+    save_best: true
+
+wandb:
+  enabled: false

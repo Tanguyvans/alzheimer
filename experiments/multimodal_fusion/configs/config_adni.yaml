@@ -1,0 +1,101 @@
+# Multi-Modal Fusion: MRI + Tabular - ADNI Dataset
+# Uses all ADNI tabular features (19 features)
+
+experiment:
+  name: "multimodal_fusion_adni"
+  task: "cn_ad_trajectory"
+  dataset: "adni"
+  description: "Late fusion of MRI features + ADNI tabular clinical data"
+
+model:
+  backbone:
+    type: "resnet"  # resnet or vit
+    depth: 18
+    pretrained: true
+    freeze: false
+    feature_dim: 512
+
+  tabular:
+    type: "fttransformer"  # mlp or fttransformer
+    hidden_dims: [128, 64]
+    dropout: 0.3
+    # FT-Transformer specific
+    n_blocks: 2
+    d_token: 64
+    attention_dropout: 0.2
+    ffn_dropout: 0.1
+
+  fusion:
+    method: "gated"  # concat, attention, or gated
+    hidden_dim: 256
+    dropout: 0.3
+
+  num_classes: 2
+
+data:
+  train_csv: "data/adni/train.csv"
+  val_csv: "data/adni/val.csv"
+  test_csv: "data/adni/test.csv"
+  checkpoints_dir: "checkpoints"
+  results_dir: "results"
+
+  # ADNI tabular features (all 19 features)
+  tabular_features:
+    # Demographics (4)
+    - "AGE"
+    - "PTGENDER"
+    - "PTEDUCAT"
+    - "PTMARRY"
+    # Vitals (2)
+    - "VSWEIGHT"
+    - "BMI"
+    # Medical history (5)
+    - "MH14ALCH"
+    - "MH16SMOK"
+    - "MH4CARD"
+    - "MHPSYCH"
+    - "MH2NEURL"
+    # Neuropsych tests (8)
+    - "CATANIMSC"
+    - "TRAASCOR"
+    - "TRABSCOR"
+    - "TRABERRCOM"
+    - "CLOCKSCOR"
+    - "BNTTOTAL"
+    - "DSPANFOR"
+    - "DSPANBAC"
+
+preprocessing:
+  use_paper_preprocessing: true
+  target_spacing: 1.75
+  tabular_normalize: true
+  handle_missing: "median"
+
+training:
+  epochs: 50
+  batch_size: 4
+  learning_rate: 0.0001
+  weight_decay: 0.01
+  lr_min: 0.0000001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  warmup_epochs: 5
+  gradient_clip: 1.0
+  use_weighted_loss: true
+  seed: 42
+
+hardware:
+  device: "cuda"
+  num_workers: 4
+  pin_memory: true
+
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 15
+    monitor: "val_accuracy"
+  checkpoint:
+    save_best: true
+
+wandb:
+  enabled: false
