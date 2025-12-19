@@ -1,0 +1,14 @@
+{
+  "run_name": "cn_ad_trajectory_combined_resnet_mlp_gated_20251219_005857",
+  "accuracy": 87.24137931034483,
+  "balanced_accuracy": 85.85093167701862,
+  "timestamp": "2025-12-19T01:52:35.088494",
+  "experiment_name": "multimodal_fusion_combined",
+  "task": "cn_ad_trajectory",
+  "dataset": "combined",
+  "backbone": "resnet",
+  "tabular_encoder": "mlp",
+  "fusion_method": "gated",
+  "epochs_trained": 32,
+  "best_val_acc": 86.89655172413794
+}
