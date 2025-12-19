@@ -9,16 +9,22 @@ experiment:
 
 model:
   backbone:
-    type: "resnet"  # resnet or vit
-    depth: 18
-    pretrained: true
+    type: "vit"  # resnet or vit
+    architecture: "vit_base"
+    image_size: 128
+    pretrained_path: "../mri_vit_ad/pretrained/vit_mae75_pretrained.pth"
     freeze: false
-    feature_dim: 512
+    feature_dim: 768  # ViT-B output dimension
 
   tabular:
-    type: "mlp"  # mlp (best: 84.6%) or fttransformer
+    type: "fttransformer"  # mlp or fttransformer
     hidden_dims: [128, 64]
     dropout: 0.3
+    # FT-Transformer specific
+    n_blocks: 2
+    d_token: 64
+    attention_dropout: 0.2
+    ffn_dropout: 0.1
 
   fusion:
     method: "gated"  # concat, attention, or gated
@@ -69,7 +75,7 @@ preprocessing:
 training:
   epochs: 50
   batch_size: 4
-  learning_rate: 0.0001
+  learning_rate: 0.00002  # Lower LR for fine-tuning pretrained ViT
   weight_decay: 0.01
   lr_min: 0.0000001
   optimizer: "adamw"
@@ -77,6 +83,7 @@ training:
   warmup_epochs: 5
   gradient_clip: 1.0
   use_weighted_loss: true
+  layer_wise_lr_decay: 0.75  # Decay LR for deeper ViT layers
   seed: 42
 
 hardware:
