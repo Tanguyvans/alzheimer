@@ -1,13 +1,85 @@
 # MRI ViT - ADNI Dataset
-task: cn_ad_trajectory
-dataset: adni
-output_dir: data/mri/adni_cn_ad_trajectory
+# Based on MICCAI 2024: "Training ViT with Limited Data for Alzheimer's"
 
-# MRI directories
-adni_mri_dir: /home/tanguy/medical/ADNI-skull
+experiment:
+  name: "vit_base_adni_cn_ad_trajectory"
+  task: "cn_ad_trajectory"
+  dataset: "adni"
+  description: "3D ViT-B for Alzheimer's classification on ADNI dataset"
 
-# Split ratios
-train_ratio: 0.7
-val_ratio: 0.15
-test_ratio: 0.15
-seed: 42
+model:
+  architecture: "vit_base"
+  num_classes: 2
+  in_channels: 1
+  image_size: 128
+  dropout: 0.1
+  classifier_dropout: 0.5
+  drop_path_rate: 0.1
+  use_pretrained: true
+  pretrained_path: "pretrained/vit_mae75_pretrained.pth"
+
+data:
+  # Data preparation settings
+  output_dir: data/mri/adni_cn_ad_trajectory
+  adni_mri_dir: /home/tanguy/medical/ADNI-skull
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+  # Training data paths (created by prepare_dataset.py)
+  train_csv: "../../data/mri/adni_cn_ad_trajectory/train.csv"
+  val_csv: "../../data/mri/adni_cn_ad_trajectory/val.csv"
+  test_csv: "../../data/mri/adni_cn_ad_trajectory/test.csv"
+  checkpoints_dir: "checkpoints/adni"
+  logs_dir: "logs/adni"
+  results_dir: "results/adni"
+
+preprocessing:
+  use_paper_preprocessing: true
+  target_spacing: 1.75
+
+training:
+  epochs: 100
+  batch_size: 2
+  learning_rate: 0.00001
+  weight_decay: 0.3
+  lr_min: 0.000001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  warmup_epochs: 5
+  freeze_backbone_epochs: 0
+  layer_wise_lr_decay: 0.75
+  gradient_accumulation_steps: 1
+  gradient_clip: 1.0
+  use_weighted_loss: true
+  label_smoothing: 0.0
+  seed: 42
+
+augmentation:
+  enabled: true
+  random_flip: true
+  random_rotate: 15
+  random_scale: [0.9, 1.1]
+  random_intensity: 0.1
+
+hardware:
+  device: "cuda"
+  num_workers: 4
+  pin_memory: true
+  mixed_precision: false
+
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 20
+    monitor: "val_accuracy"
+  checkpoint:
+    save_best: true
+    save_last: true
+
+wandb:
+  enabled: false
+  project: "alzheimer-classification"
+  entity: null
+  run_name: "vit_adni"
+  tags: ["vit", "adni", "transformer"]
+  notes: "3D ViT-B trained on ADNI dataset"

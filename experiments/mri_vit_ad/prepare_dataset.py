@@ -74,18 +74,43 @@ TASK_CONFIGS = {
 
 
 def load_config(config_path: str) -> dict:
-    """Load YAML config file."""
-    with open(config_path, 'r') as f:
-        config = yaml.safe_load(f)
+    """Load YAML config file.
 
-    # Set defaults
-    config.setdefault('seed', 42)
-    config.setdefault('train_ratio', 0.7)
-    config.setdefault('val_ratio', 0.15)
-    config.setdefault('test_ratio', 0.15)
-    config.setdefault('adni_mri_dir', str(DEFAULT_ADNI_MRI_DIR))
-    config.setdefault('oasis_mri_dir', str(DEFAULT_OASIS_MRI_DIR))
-    config.setdefault('nacc_mri_dir', str(DEFAULT_NACC_MRI_DIR))
+    Supports both flat configs (data prep only) and nested configs (full training).
+    Nested configs have 'experiment' and 'data' sections.
+    """
+    with open(config_path, 'r') as f:
+        raw_config = yaml.safe_load(f)
+
+    # Check if this is a nested (full training) config
+    if 'experiment' in raw_config:
+        # Extract from nested structure
+        exp = raw_config.get('experiment', {})
+        data = raw_config.get('data', {})
+        training = raw_config.get('training', {})
+
+        config = {
+            'task': exp.get('task', 'cn_ad_trajectory'),
+            'dataset': exp.get('dataset', 'adni'),
+            'output_dir': data.get('output_dir', 'data/mri/output'),
+            'seed': training.get('seed', 42),
+            'train_ratio': data.get('train_ratio', 0.7),
+            'val_ratio': data.get('val_ratio', 0.15),
+            'test_ratio': data.get('test_ratio', 0.15),
+            'adni_mri_dir': data.get('adni_mri_dir', str(DEFAULT_ADNI_MRI_DIR)),
+            'oasis_mri_dir': data.get('oasis_mri_dir', str(DEFAULT_OASIS_MRI_DIR)),
+            'nacc_mri_dir': data.get('nacc_mri_dir', str(DEFAULT_NACC_MRI_DIR)),
+        }
+    else:
+        # Flat config (backward compatible)
+        config = raw_config
+        config.setdefault('seed', 42)
+        config.setdefault('train_ratio', 0.7)
+        config.setdefault('val_ratio', 0.15)
+        config.setdefault('test_ratio', 0.15)
+        config.setdefault('adni_mri_dir', str(DEFAULT_ADNI_MRI_DIR))
+        config.setdefault('oasis_mri_dir', str(DEFAULT_OASIS_MRI_DIR))
+        config.setdefault('nacc_mri_dir', str(DEFAULT_NACC_MRI_DIR))
 
     return config
 
