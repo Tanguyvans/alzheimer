@@ -3,12 +3,13 @@
 Prepare Multi-Modal Dataset
 
 Creates train/val/test splits with both MRI paths and tabular features.
-Supports ADNI, OASIS, and combined datasets.
+Supports ADNI, OASIS, NACC, and combined datasets.
 
 Usage:
     python prepare_dataset.py --dataset adni --output-dir data/adni
     python prepare_dataset.py --dataset oasis --output-dir data/oasis --oasis-mri-dir /path/to/OASIS-skull
-    python prepare_dataset.py --dataset combined --output-dir data/combined --oasis-mri-dir /path/to/OASIS-skull
+    python prepare_dataset.py --dataset nacc --output-dir data/nacc --nacc-mri-dir /path/to/NACC-skull
+    python prepare_dataset.py --dataset combined --output-dir data/combined --oasis-mri-dir /path/to/OASIS-skull --nacc-mri-dir /path/to/NACC-skull
 """
 
 import pandas as pd
@@ -30,6 +31,9 @@ DATA_DIR = PROJECT_ROOT / "data"
 DEFAULT_ADNI_CSV = DATA_DIR / "adni" / "adni_cn_ad_trajectory.csv"
 DEFAULT_OASIS_CSV = DATA_DIR / "oasis" / "oasis_all_full.csv"
 DEFAULT_OASIS_MRI_DIR = Path("/home/maxglo/tanguy/OASIS-skull")
+DEFAULT_NACC_CSV = DATA_DIR / "nacc" / "nacc_tabular_mri.csv"
+DEFAULT_NACC_MRI_META = DATA_DIR / "nacc" / "nacc-t1_12_16_2025.csv"
+DEFAULT_NACC_MRI_DIR = Path("/home/tanguy/medical/NACC-skull")
 
 # Common tabular features across ADNI and OASIS
 COMMON_FEATURES = [
@@ -130,12 +134,70 @@ def load_oasis_data(oasis_csv: str, oasis_mri_dir: str) -> pd.DataFrame:
     return df
 
 
+def load_nacc_data(nacc_csv: str, nacc_mri_meta: str, nacc_mri_dir: str) -> pd.DataFrame:
+    """Load NACC data and match with MRI paths."""
+    logger.info(f"Loading NACC data from {nacc_csv}")
+    df = pd.read_csv(nacc_csv)
+
+    logger.info(f"Loading NACC MRI metadata from {nacc_mri_meta}")
+    mri_meta = pd.read_csv(nacc_mri_meta)
+
+    # Create mapping from Subject to Image Data ID
+    subject_to_image = mri_meta.set_index('Subject')['Image Data ID'].to_dict()
+
+    # Filter to CN and AD only (for cn_ad_trajectory task)
+    df = df[df['DX'].isin(['CN', 'AD'])].copy()
+    logger.info(f"NACC: {len(df)} samples with CN or AD diagnosis")
+
+    # Find MRI paths
+    nacc_mri_path = Path(nacc_mri_dir)
+    scan_paths = []
+
+    for _, row in df.iterrows():
+        subject = row['Subject']
+        image_id = subject_to_image.get(subject)
+
+        if image_id:
+            subject_dir = nacc_mri_path / subject
+            if subject_dir.exists():
+                # Find skull-stripped NIfTI file containing the image ID
+                nii_files = list(subject_dir.glob(f'*{image_id}*skull_stripped*.nii.gz'))
+                if not nii_files:
+                    nii_files = list(subject_dir.glob('*skull_stripped*.nii.gz'))
+                if not nii_files:
+                    nii_files = list(subject_dir.glob('*.nii.gz'))
+                scan_paths.append(str(nii_files[0]) if nii_files else None)
+            else:
+                scan_paths.append(None)
+        else:
+            scan_paths.append(None)
+
+    df['scan_path'] = scan_paths
+    df['subject_id'] = df['Subject']
+    df['source'] = 'NACC'
+
+    # Map AD to AD_trajectory for consistency
+    df['DX'] = df['DX'].map({'CN': 'CN', 'AD': 'AD_trajectory'})
+    df['label'] = df['DX'].map({'CN': 0, 'AD_trajectory': 1})
+
+    # Filter to samples with MRI
+    before = len(df)
+    df = df[df['scan_path'].notna()].copy()
+    logger.info(f"NACC: {len(df)} samples with MRI (filtered {before - len(df)} without MRI)")
+    logger.info(f"  CN: {(df['label'] == 0).sum()}, AD_trajectory: {(df['label'] == 1).sum()}")
+
+    return df
+
+
 def prepare_multimodal_dataset(
     dataset: str = 'adni',
     output_dir: str = 'data/adni',
     adni_csv: str = None,
     oasis_csv: str = None,
     oasis_mri_dir: str = None,
+    nacc_csv: str = None,
+    nacc_mri_meta: str = None,
+    nacc_mri_dir: str = None,
     train_ratio: float = 0.7,
     val_ratio: float = 0.15,
     test_ratio: float = 0.15,
@@ -146,11 +208,14 @@ def prepare_multimodal_dataset(
     Prepare multi-modal dataset for training.
 
     Args:
-        dataset: 'adni', 'oasis', or 'combined'
+        dataset: 'adni', 'oasis', 'nacc', or 'combined'
         output_dir: Output directory for train/val/test CSVs
         adni_csv: Path to ADNI clinical CSV (with MRI paths)
         oasis_csv: Path to OASIS clinical CSV
         oasis_mri_dir: Path to OASIS MRI directory
+        nacc_csv: Path to NACC tabular CSV
+        nacc_mri_meta: Path to NACC MRI metadata CSV
+        nacc_mri_dir: Path to NACC MRI directory
         train_ratio, val_ratio, test_ratio: Split ratios
         seed: Random seed
         check_mri_exists: If True, verify MRI files exist (slow, requires access to MRI dir)
@@ -159,6 +224,9 @@ def prepare_multimodal_dataset(
     adni_csv = adni_csv or str(DEFAULT_ADNI_CSV)
     oasis_csv = oasis_csv or str(DEFAULT_OASIS_CSV)
     oasis_mri_dir = oasis_mri_dir or str(DEFAULT_OASIS_MRI_DIR)
+    nacc_csv = nacc_csv or str(DEFAULT_NACC_CSV)
+    nacc_mri_meta = nacc_mri_meta or str(DEFAULT_NACC_MRI_META)
+    nacc_mri_dir = nacc_mri_dir or str(DEFAULT_NACC_MRI_DIR)
 
     logger.info(f"=" * 60)
     logger.info(f"Preparing {dataset.upper()} multimodal dataset")
@@ -171,9 +239,13 @@ def prepare_multimodal_dataset(
     elif dataset == 'oasis':
         df = load_oasis_data(oasis_csv, oasis_mri_dir)
         features_to_use = COMMON_FEATURES
+    elif dataset == 'nacc':
+        df = load_nacc_data(nacc_csv, nacc_mri_meta, nacc_mri_dir)
+        features_to_use = ADNI_FEATURES  # NACC has same features mapped to ADNI names
     elif dataset == 'combined':
         adni_df = load_adni_data(adni_csv)
         oasis_df = load_oasis_data(oasis_csv, oasis_mri_dir)
+        nacc_df = load_nacc_data(nacc_csv, nacc_mri_meta, nacc_mri_dir)
 
         # Use only common columns for combined dataset
         common_cols = ['subject_id', 'scan_path', 'DX', 'label', 'source'] + COMMON_FEATURES
@@ -181,8 +253,9 @@ def prepare_multimodal_dataset(
         # Filter to common columns that exist
         adni_cols = [c for c in common_cols if c in adni_df.columns]
         oasis_cols = [c for c in common_cols if c in oasis_df.columns]
+        nacc_cols = [c for c in common_cols if c in nacc_df.columns]
 
-        df = pd.concat([adni_df[adni_cols], oasis_df[oasis_cols]], ignore_index=True)
+        df = pd.concat([adni_df[adni_cols], oasis_df[oasis_cols], nacc_df[nacc_cols]], ignore_index=True)
         features_to_use = COMMON_FEATURES
         logger.info(f"Combined: {len(df)} total samples")
     else:
@@ -267,7 +340,8 @@ def prepare_multimodal_dataset(
     if dataset == 'combined':
         metadata['sources'] = {
             'ADNI': int((df['source'] == 'ADNI').sum()),
-            'OASIS': int((df['source'] == 'OASIS').sum())
+            'OASIS': int((df['source'] == 'OASIS').sum()),
+            'NACC': int((df['source'] == 'NACC').sum())
         }
 
     with open(output_path / 'metadata.json', 'w') as f:
@@ -282,7 +356,7 @@ def prepare_multimodal_dataset(
 def main():
     parser = argparse.ArgumentParser(description='Prepare Multi-Modal Dataset')
     parser.add_argument('--dataset', type=str, default='adni',
-                       choices=['adni', 'oasis', 'combined'],
+                       choices=['adni', 'oasis', 'nacc', 'combined'],
                        help='Dataset to prepare')
     parser.add_argument('--output-dir', type=str, default=None,
                        help='Output directory (default: data/{dataset})')
@@ -292,6 +366,12 @@ def main():
                        help='Path to OASIS clinical CSV')
     parser.add_argument('--oasis-mri-dir', type=str, default=None,
                        help='Path to OASIS MRI directory')
+    parser.add_argument('--nacc-csv', type=str, default=None,
+                       help='Path to NACC tabular CSV')
+    parser.add_argument('--nacc-mri-meta', type=str, default=None,
+                       help='Path to NACC MRI metadata CSV')
+    parser.add_argument('--nacc-mri-dir', type=str, default=None,
+                       help='Path to NACC MRI directory')
     parser.add_argument('--train-ratio', type=float, default=0.7)
     parser.add_argument('--val-ratio', type=float, default=0.15)
     parser.add_argument('--test-ratio', type=float, default=0.15)
@@ -309,6 +389,9 @@ def main():
         adni_csv=args.adni_csv,
         oasis_csv=args.oasis_csv,
         oasis_mri_dir=args.oasis_mri_dir,
+        nacc_csv=args.nacc_csv,
+        nacc_mri_meta=args.nacc_mri_meta,
+        nacc_mri_dir=args.nacc_mri_dir,
         train_ratio=args.train_ratio,
         val_ratio=args.val_ratio,
         test_ratio=args.test_ratio,
