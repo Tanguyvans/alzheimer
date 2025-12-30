@@ -1,0 +1,15 @@
+# MRI ViT - Combined Dataset (ADNI + OASIS + NACC)
+task: cn_ad_trajectory
+dataset: combined
+output_dir: data/mri/combined_cn_ad_trajectory
+
+# MRI directories
+adni_mri_dir: /home/tanguy/medical/ADNI-skull
+oasis_mri_dir: /home/tanguy/medical/OASIS-skull
+nacc_mri_dir: /home/tanguy/medical/NACC-skull
+
+# Split ratios
+train_ratio: 0.7
+val_ratio: 0.15
+test_ratio: 0.15
+seed: 42

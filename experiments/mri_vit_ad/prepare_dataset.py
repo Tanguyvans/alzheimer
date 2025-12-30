@@ -38,6 +38,7 @@ DATA_DIR = PROJECT_ROOT / "data"
 # Default MRI directories
 DEFAULT_ADNI_MRI_DIR = Path("/home/maxglo/tanguy/ADNI-skull")
 DEFAULT_OASIS_MRI_DIR = Path("/home/maxglo/tanguy/OASIS-skull")
+DEFAULT_NACC_MRI_DIR = Path("/home/tanguy/medical/NACC-skull")
 
 # Classification task definitions
 TASK_CONFIGS = {
@@ -84,6 +85,7 @@ def load_config(config_path: str) -> dict:
     config.setdefault('test_ratio', 0.15)
     config.setdefault('adni_mri_dir', str(DEFAULT_ADNI_MRI_DIR))
     config.setdefault('oasis_mri_dir', str(DEFAULT_OASIS_MRI_DIR))
+    config.setdefault('nacc_mri_dir', str(DEFAULT_NACC_MRI_DIR))
 
     return config
 
@@ -201,6 +203,58 @@ class DatasetPreparator:
             logger.info(f"OASIS: {len(df)} patients with first-visit diagnosis")
             return df[['subject_id', 'DX']].dropna(subset=['DX'])
 
+    def load_nacc_diagnosis(self) -> pd.DataFrame:
+        """Load NACC diagnosis data from raw UDS file.
+
+        For 'cn_ad_trajectory' task, identifies patients who converted to dementia.
+        NACC uses NACCUDSD: 1=Normal, 2=Impaired not MCI, 3=MCI, 4=Dementia
+        """
+        nacc_uds_path = DATA_DIR / "nacc" / "investigator_ftldlbd_nacc71.csv"
+        if not nacc_uds_path.exists():
+            raise FileNotFoundError(f"NACC UDS data not found at {nacc_uds_path}")
+
+        # Load only needed columns
+        df = pd.read_csv(nacc_uds_path, usecols=['NACCID', 'NACCVNUM', 'NACCUDSD'], low_memory=False)
+
+        # Map diagnosis codes: 1=CN, 2=Impaired, 3=MCI, 4=Dementia(AD)
+        diag_map = {1: 'CN', 2: 'Impaired', 3: 'MCI', 4: 'AD'}
+        df['DX_raw'] = df['NACCUDSD'].map(diag_map)
+
+        if self.task == 'cn_ad_trajectory':
+            # Find patients who ever had AD/dementia diagnosis
+            patients_with_ad = set(df[df['DX_raw'] == 'AD']['NACCID'].unique())
+
+            # Sort and take first visit (NACCVNUM=1 is baseline)
+            df_first = df.sort_values(['NACCID', 'NACCVNUM']).groupby('NACCID').first().reset_index()
+
+            # Remap: AD and MCI converters -> AD_trajectory, CN stays CN
+            def assign_trajectory(row):
+                if row['NACCID'] in patients_with_ad:
+                    return 'AD_trajectory'
+                elif row['DX_raw'] == 'CN':
+                    return 'CN'
+                else:
+                    return None  # MCI non-converters and Impaired excluded
+
+            df_first['DX'] = df_first.apply(assign_trajectory, axis=1)
+            df_first['subject_id'] = df_first['NACCID']
+
+            result = df_first[['subject_id', 'DX']].dropna(subset=['DX'])
+            n_ad_traj = (result['DX'] == 'AD_trajectory').sum()
+            logger.info(f"NACC: {len(result)} patients for trajectory task ({n_ad_traj} AD trajectory)")
+            return result
+        else:
+            # Standard CN vs AD
+            df = df.sort_values(['NACCID', 'NACCVNUM']).groupby('NACCID').first().reset_index()
+            df['DX'] = df['DX_raw']
+            df['subject_id'] = df['NACCID']
+
+            # Filter to CN and AD only
+            df = df[df['DX'].isin(['CN', 'AD'])]
+
+            logger.info(f"NACC: {len(df)} patients with first-visit diagnosis")
+            return df[['subject_id', 'DX']].dropna(subset=['DX'])
+
     def scan_mri_folder(self, mri_dir: Path, source: str) -> pd.DataFrame:
         """Scan MRI folder and return DataFrame with scan paths."""
         if not mri_dir.exists():
@@ -269,6 +323,19 @@ class DatasetPreparator:
                 oasis_merged['source'] = 'OASIS'
                 all_data.append(oasis_merged)
                 logger.info(f"OASIS: {len(oasis_merged)} samples after filtering")
+
+        # Process NACC
+        if self.dataset in ['nacc', 'combined']:
+            nacc_mri_dir = Path(self.config.get('nacc_mri_dir', DEFAULT_NACC_MRI_DIR))
+            nacc_scans = self.scan_mri_folder(nacc_mri_dir, 'NACC')
+
+            if len(nacc_scans) > 0:
+                nacc_dx = self.load_nacc_diagnosis()
+                nacc_merged = nacc_scans.merge(nacc_dx, on='subject_id', how='inner')
+                nacc_merged = nacc_merged[nacc_merged['DX'].isin(valid_classes)]
+                nacc_merged['source'] = 'NACC'
+                all_data.append(nacc_merged)
+                logger.info(f"NACC: {len(nacc_merged)} samples after filtering")
 
         if not all_data:
             raise ValueError("No data found. Check MRI directories.")
@@ -408,11 +475,12 @@ def main():
     # Command line args (alternative)
     parser.add_argument('--task', type=str, choices=list(TASK_CONFIGS.keys()),
                         help='Classification task')
-    parser.add_argument('--dataset', type=str, choices=['adni', 'oasis', 'combined'],
+    parser.add_argument('--dataset', type=str, choices=['adni', 'oasis', 'nacc', 'combined'],
                         help='Dataset to use')
     parser.add_argument('--output', type=str, help='Output directory')
     parser.add_argument('--adni-mri-dir', type=str, help='ADNI MRI directory')
     parser.add_argument('--oasis-mri-dir', type=str, help='OASIS MRI directory')
+    parser.add_argument('--nacc-mri-dir', type=str, help='NACC MRI directory')
     parser.add_argument('--train-ratio', type=float, default=0.7)
     parser.add_argument('--val-ratio', type=float, default=0.15)
     parser.add_argument('--test-ratio', type=float, default=0.15)
@@ -441,6 +509,8 @@ def main():
             config['adni_mri_dir'] = args.adni_mri_dir
         if args.oasis_mri_dir:
             config['oasis_mri_dir'] = args.oasis_mri_dir
+        if args.nacc_mri_dir:
+            config['nacc_mri_dir'] = args.nacc_mri_dir
 
     logger.info(f"Task: {config['task']}")
     logger.info(f"Dataset: {config['dataset']}")

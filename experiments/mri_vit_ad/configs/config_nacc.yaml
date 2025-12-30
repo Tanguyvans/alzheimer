@@ -1,0 +1,13 @@
+# MRI ViT - NACC Dataset
+task: cn_ad_trajectory
+dataset: nacc
+output_dir: data/mri/nacc_cn_ad_trajectory
+
+# MRI directories
+nacc_mri_dir: /home/tanguy/medical/NACC-skull
+
+# Split ratios
+train_ratio: 0.7
+val_ratio: 0.15
+test_ratio: 0.15
+seed: 42
