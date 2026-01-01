@@ -330,7 +330,7 @@ class ViT3DClassifier(nn.Module):
         """
         logger.info(f"Loading MAE pre-trained weights from {pretrained_path}")
 
-        checkpoint = torch.load(pretrained_path, map_location='cpu')
+        checkpoint = torch.load(pretrained_path, map_location='cpu', weights_only=False)
 
         # Extract state dict
         if 'net' in checkpoint:
