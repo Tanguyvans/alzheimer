@@ -48,6 +48,35 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
+class FocalLoss(nn.Module):
+    """
+    Focal Loss for imbalanced classification.
+
+    FL(p_t) = -alpha_t * (1 - p_t)^gamma * log(p_t)
+
+    Args:
+        alpha: Class weights (tensor of shape [num_classes])
+        gamma: Focusing parameter (default 2.0, higher = more focus on hard examples)
+        reduction: 'mean', 'sum', or 'none'
+    """
+    def __init__(self, alpha=None, gamma=2.0, reduction='mean'):
+        super().__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+        self.reduction = reduction
+
+    def forward(self, inputs, targets):
+        ce_loss = nn.functional.cross_entropy(inputs, targets, reduction='none', weight=self.alpha)
+        pt = torch.exp(-ce_loss)  # p_t = probability of correct class
+        focal_loss = ((1 - pt) ** self.gamma) * ce_loss
+
+        if self.reduction == 'mean':
+            return focal_loss.mean()
+        elif self.reduction == 'sum':
+            return focal_loss.sum()
+        return focal_loss
+
+
 def get_layer_wise_lr_decay_params(model, base_lr: float, weight_decay: float, lr_decay: float = 0.75):
     """
     Create parameter groups with layer-wise learning rate decay.
@@ -320,23 +349,40 @@ class Trainer:
         return optimizer, scheduler
 
     def build_criterion(self, train_loader: DataLoader) -> nn.Module:
-        """Build loss function"""
-        if self.config['training']['use_weighted_loss']:
-            # Calculate class weights from training data
+        """Build loss function with optional focal loss for imbalanced data"""
+        training_cfg = self.config['training']
+        use_focal = training_cfg.get('use_focal_loss', False)
+        focal_gamma = training_cfg.get('focal_gamma', 2.0)
+
+        # Calculate class weights if weighted loss is enabled
+        class_weights = None
+        if training_cfg['use_weighted_loss']:
             labels = [label for _, label in train_loader.dataset]
-            class_counts = np.bincount(labels)
-            class_weights = 1.0 / class_counts
-            class_weights = class_weights / class_weights.sum() * len(class_counts)
+            labels_np = np.array(labels)
+            class_counts = np.bincount(labels_np)
+            n_samples = len(labels_np)
+            n_classes = len(class_counts)
+
+            # Balanced class weights (sklearn formula)
+            class_weights = n_samples / (n_classes * class_counts)
             class_weights = torch.FloatTensor(class_weights).to(self.device)
 
+            logger.info(f"Class distribution: {dict(enumerate(class_counts))}")
+            logger.info(f"Class weights (balanced): {class_weights.cpu().numpy()}")
+
+        # Choose loss function
+        if use_focal:
+            criterion = FocalLoss(alpha=class_weights, gamma=focal_gamma)
+            logger.info(f"Loss: FocalLoss (gamma={focal_gamma}, weighted={class_weights is not None})")
+        elif class_weights is not None:
             criterion = nn.CrossEntropyLoss(
                 weight=class_weights,
-                label_smoothing=self.config['training'].get('label_smoothing', 0.0)
+                label_smoothing=training_cfg.get('label_smoothing', 0.0)
             )
-            logger.info(f"Loss: Weighted CrossEntropyLoss (weights={class_weights.cpu().numpy()})")
+            logger.info("Loss: Weighted CrossEntropyLoss")
         else:
             criterion = nn.CrossEntropyLoss(
-                label_smoothing=self.config['training'].get('label_smoothing', 0.0)
+                label_smoothing=training_cfg.get('label_smoothing', 0.0)
             )
             logger.info("Loss: CrossEntropyLoss")
 
@@ -515,12 +561,20 @@ class Trainer:
                     'lr': current_lr
                 })
 
-            # Save best model
-            if val_metrics['accuracy'] > self.best_val_acc:
-                self.best_val_acc = val_metrics['accuracy']
+            # Save best model (monitor balanced accuracy for imbalanced datasets)
+            monitor_metric = self.config['callbacks']['early_stopping'].get('monitor', 'val_accuracy')
+            if monitor_metric == 'val_balanced_accuracy':
+                current_metric = val_metrics['balanced_accuracy']
+                metric_name = 'balanced_acc'
+            else:
+                current_metric = val_metrics['accuracy']
+                metric_name = 'val_acc'
+
+            if current_metric > self.best_val_acc:
+                self.best_val_acc = current_metric
                 self.epochs_without_improvement = 0
                 self._save_checkpoint(model, optimizer, 'best.pth')
-                logger.info(f"  -> New best model! (val_acc: {self.best_val_acc:.2f}%)")
+                logger.info(f"  -> New best model! ({metric_name}: {self.best_val_acc:.2f}%)")
             else:
                 self.epochs_without_improvement += 1
 

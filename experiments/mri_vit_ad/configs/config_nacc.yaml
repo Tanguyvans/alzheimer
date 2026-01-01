@@ -51,6 +51,8 @@ training:
   gradient_accumulation_steps: 1
   gradient_clip: 1.0
   use_weighted_loss: true
+  use_focal_loss: true  # Better for imbalanced datasets
+  focal_gamma: 2.0  # Focus on hard examples
   label_smoothing: 0.0
   seed: 42
 
@@ -71,7 +73,7 @@ callbacks:
   early_stopping:
     enabled: true
     patience: 20
-    monitor: "val_accuracy"
+    monitor: "val_balanced_accuracy"  # Better for imbalanced data
   checkpoint:
     save_best: true
     save_last: true
