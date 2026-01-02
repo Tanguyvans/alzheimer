@@ -22,18 +22,66 @@ from scipy.ndimage import zoom
 from sklearn.preprocessing import StandardScaler
 import random
 
-# Import MRI preprocessing functions
-import sys
-import importlib.util
-mri_vit_dataset_path = Path(__file__).parent.parent / "mri_vit_ad" / "dataset.py"
-spec = importlib.util.spec_from_file_location("mri_vit_dataset", mri_vit_dataset_path)
-mri_vit_dataset = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(mri_vit_dataset)
-convert_to_ras = mri_vit_dataset.convert_to_ras
-resample_to_spacing = mri_vit_dataset.resample_to_spacing
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# ============================================================================
+# MRI Preprocessing Functions (copied from mri_vit_ad for independence)
+# ============================================================================
+
+def resample_to_spacing(image: np.ndarray, current_spacing: np.ndarray, target_spacing: float = 1.75) -> np.ndarray:
+    """
+    Resample image to target isotropic voxel spacing.
+
+    This matches the MICCAI 2024 paper preprocessing:
+    - Resample to 1.75mm isotropic spacing
+
+    Args:
+        image: Input 3D array
+        current_spacing: Current voxel spacing (D, H, W)
+        target_spacing: Target isotropic spacing in mm (default 1.75)
+
+    Returns:
+        Resampled image array
+    """
+    # Calculate zoom factors to get to target spacing
+    zoom_factors = current_spacing / target_spacing
+
+    # Apply resampling
+    resampled = zoom(image, zoom_factors, order=1, mode='nearest')
+
+    return resampled
+
+
+def convert_to_ras(image: np.ndarray, affine: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Convert image to RAS (Right-Anterior-Superior) orientation.
+
+    Args:
+        image: Input 3D array
+        affine: 4x4 affine transformation matrix
+
+    Returns:
+        Tuple of (reoriented image, new affine)
+    """
+    # Get current orientation
+    current_ornt = nib.orientations.io_orientation(affine)
+
+    # Target RAS orientation
+    ras_ornt = nib.orientations.axcodes2ornt(('R', 'A', 'S'))
+
+    # Get transformation between current and target
+    transform = nib.orientations.ornt_transform(current_ornt, ras_ornt)
+
+    # Apply the transform
+    reoriented = nib.orientations.apply_orientation(image, transform)
+
+    # Update affine
+    new_affine = affine @ nib.orientations.inv_ornt_aff(transform, image.shape)
+
+    return reoriented, new_affine
+
+# ============================================================================
 
 
 class ModalityDropoutDataset(Dataset):

@@ -169,17 +169,34 @@ class MultimodalDatasetPreparator:
             return pd.DataFrame()
 
         df = pd.read_csv(tabular_path)
+        logger.info(f"  Tabular file columns: {list(df.columns[:10])}...")
 
-        # Rename NACCID to subject_id if needed
-        if 'NACCID' in df.columns:
-            df = df.rename(columns={'NACCID': 'subject_id'})
+        # Try to find subject ID column (could be NACCID, subject_id, or similar)
+        subject_col = None
+        for col_name in ['NACCID', 'subject_id', 'Subject_ID', 'ID', 'SubjectID']:
+            if col_name in df.columns:
+                subject_col = col_name
+                break
+
+        if subject_col is None:
+            logger.warning(f"No subject ID column found in tabular file. Columns: {list(df.columns)}")
+            return pd.DataFrame()
+
+        # Rename to subject_id
+        if subject_col != 'subject_id':
+            df = df.rename(columns={subject_col: 'subject_id'})
+            logger.info(f"  Renamed '{subject_col}' to 'subject_id'")
 
         # Keep only relevant columns
-        keep_cols = ['subject_id'] + [c for c in self.tabular_features if c in df.columns]
+        available_features = [c for c in self.tabular_features if c in df.columns]
+        keep_cols = ['subject_id'] + available_features
         df = df[keep_cols]
 
         logger.info(f"Loaded tabular data for {len(df)} NACC subjects")
-        logger.info(f"  Features available: {len(keep_cols) - 1}/{len(self.tabular_features)}")
+        logger.info(f"  Features available: {len(available_features)}/{len(self.tabular_features)}")
+        if len(available_features) < len(self.tabular_features):
+            missing = set(self.tabular_features) - set(available_features)
+            logger.info(f"  Missing features: {missing}")
 
         return df
 
