@@ -29,6 +29,9 @@ from datetime import datetime
 from model import ModalityDropoutFusion, build_model
 from dataset import get_dropout_dataloaders
 
+# Project root for resolving relative paths
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+
 try:
     from sklearn.metrics import classification_report, confusion_matrix, balanced_accuracy_score
     import matplotlib.pyplot as plt
@@ -73,8 +76,9 @@ class Trainer:
         exp_name = config.get('experiment', {}).get('name', 'multimodal_dropout')
         self.run_name = f"{exp_name}_{timestamp}"
 
-        self.checkpoint_dir = Path(config['data']['checkpoints_dir']) / self.run_name
-        self.results_dir = Path(config['data']['results_dir']) / self.run_name
+        # Resolve paths relative to project root
+        self.checkpoint_dir = PROJECT_ROOT / config['data']['checkpoints_dir'] / self.run_name
+        self.results_dir = PROJECT_ROOT / config['data']['results_dir'] / self.run_name
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
         self.results_dir.mkdir(parents=True, exist_ok=True)
 
@@ -119,10 +123,15 @@ class Trainer:
         preproc = cfg.get('preprocessing', {})
         dropout_cfg = cfg.get('modality_dropout', {})
 
+        # Resolve paths relative to project root
+        train_csv = PROJECT_ROOT / cfg['data']['train_csv']
+        val_csv = PROJECT_ROOT / cfg['data']['val_csv']
+        test_csv = PROJECT_ROOT / cfg['data']['test_csv']
+
         train_loader, val_loader, test_loader, scaler = get_dropout_dataloaders(
-            train_csv=cfg['data']['train_csv'],
-            val_csv=cfg['data']['val_csv'],
-            test_csv=cfg['data']['test_csv'],
+            train_csv=str(train_csv),
+            val_csv=str(val_csv),
+            test_csv=str(test_csv),
             tabular_features=cfg['data']['tabular_features'],
             batch_size=cfg['training']['batch_size'],
             target_shape=(image_size, image_size, image_size),
