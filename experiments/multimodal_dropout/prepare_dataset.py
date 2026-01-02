@@ -171,9 +171,9 @@ class MultimodalDatasetPreparator:
         df = pd.read_csv(tabular_path)
         logger.info(f"  Tabular file columns: {list(df.columns[:10])}...")
 
-        # Try to find subject ID column (could be NACCID, subject_id, or similar)
+        # Try to find subject ID column (could be NACCID, Subject, subject_id, or similar)
         subject_col = None
-        for col_name in ['NACCID', 'subject_id', 'Subject_ID', 'ID', 'SubjectID']:
+        for col_name in ['NACCID', 'Subject', 'subject_id', 'Subject_ID', 'ID', 'SubjectID']:
             if col_name in df.columns:
                 subject_col = col_name
                 break
