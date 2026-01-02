@@ -1,0 +1,104 @@
+# Multimodal Dropout - NACC Dataset
+# MRI + Tabular with modality dropout for robustness
+
+experiment:
+  name: "multimodal_dropout_nacc"
+  task: "cn_ad_trajectory"
+  dataset: "nacc"
+  description: "Multimodal fusion with modality dropout on NACC"
+
+model:
+  backbone:
+    type: "vit"
+    architecture: "vit_base"
+    image_size: 128
+    feature_dim: 768
+    pretrained_path: "../mri_vit_ad/pretrained/vit_mae75_pretrained.pth"
+    freeze: false  # Fine-tune backbone
+
+  tabular:
+    hidden_dims: [128, 64]
+    dropout: 0.3
+
+  fusion:
+    method: "concat"  # concat or gated
+    hidden_dim: 256
+    dropout: 0.5
+
+  num_classes: 2
+  use_modality_embeddings: true  # Learn embeddings for modality availability
+
+data:
+  # Data preparation settings
+  output_dir: data/multimodal_dropout/nacc
+  nacc_mri_dir: /home/tanguy/medical/NACC-skull
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+
+  # Training data paths (created by prepare_dataset.py)
+  train_csv: "data/multimodal_dropout/nacc/train.csv"
+  val_csv: "data/multimodal_dropout/nacc/val.csv"
+  test_csv: "data/multimodal_dropout/nacc/test.csv"
+
+  checkpoints_dir: "checkpoints"
+  results_dir: "results"
+
+  # Tabular features
+  tabular_features:
+    - "AGE"
+    - "PTGENDER"
+    - "PTEDUCAT"
+    - "PTMARRY"
+    - "VSWEIGHT"
+    - "BMI"
+    - "MH14ALCH"
+    - "MH16SMOK"
+    - "MH4CARD"
+    - "MHPSYCH"
+    - "MH2NEURL"
+    - "CATANIMSC"
+    - "TRAASCOR"
+    - "TRABSCOR"
+    - "TRABERRCOM"
+    - "CLOCKSCOR"
+    - "BNTTOTAL"
+    - "DSPANFOR"
+    - "DSPANBAC"
+
+# Modality dropout settings
+modality_dropout:
+  mri_dropout_rate: 0.2      # 20% chance to drop MRI during training
+  tabular_dropout_rate: 0.2  # 20% chance to drop tabular during training
+
+preprocessing:
+  use_paper_preprocessing: true
+  target_spacing: 1.75
+
+training:
+  epochs: 100
+  batch_size: 2
+  learning_rate: 0.00002  # Lower LR for multimodal
+  weight_decay: 0.01
+  lr_min: 0.0000001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  warmup_epochs: 5
+  gradient_clip: 1.0
+  use_focal_loss: true
+  focal_gamma: 2.0
+  seed: 42
+
+hardware:
+  device: "cuda"
+  num_workers: 4
+  pin_memory: true
+
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 15
+    monitor: "val_balanced_accuracy"
+  checkpoint:
+    save_best: true
+    save_last: true
