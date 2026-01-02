@@ -97,8 +97,10 @@ class MultimodalDatasetPreparator:
             return pd.DataFrame()
 
         scans = []
-        for scan_file in mri_dir.glob("*.nii.gz"):
-            subject_id = scan_file.stem.replace('.nii', '')
+        # Search recursively for .nii.gz files
+        for scan_file in mri_dir.glob("**/*.nii.gz"):
+            # Extract subject ID from parent folder name (e.g., NACC531822)
+            subject_id = scan_file.parent.name
             scans.append({
                 'subject_id': subject_id,
                 'scan_path': str(scan_file),
