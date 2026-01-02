@@ -92,9 +92,15 @@ class MultimodalDatasetPreparator:
 
     def scan_mri_folder(self, mri_dir: Path, dataset_name: str) -> pd.DataFrame:
         """Scan MRI folder and return dataframe of available scans."""
+        logger.info(f"Scanning MRI directory: {mri_dir}")
+
         if not mri_dir.exists():
             logger.warning(f"{dataset_name} MRI directory not found: {mri_dir}")
             return pd.DataFrame()
+
+        # Check what's in the directory
+        subdirs = list(mri_dir.iterdir())[:5]
+        logger.info(f"  First 5 items in dir: {[s.name for s in subdirs]}")
 
         scans = []
         # Search recursively for .nii.gz files
@@ -108,6 +114,14 @@ class MultimodalDatasetPreparator:
             })
 
         logger.info(f"{dataset_name}: Found {len(scans)} MRI scans")
+
+        # Keep only first scan per subject (avoid duplicates from multiple visits)
+        if len(scans) > 0:
+            df = pd.DataFrame(scans)
+            df = df.drop_duplicates(subset='subject_id', keep='first')
+            logger.info(f"{dataset_name}: {len(df)} unique subjects after deduplication")
+            return df
+
         return pd.DataFrame(scans)
 
     def load_nacc_diagnosis(self) -> pd.DataFrame:
