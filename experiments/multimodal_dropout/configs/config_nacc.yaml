@@ -86,9 +86,15 @@ training:
   warmup_epochs: 5
   layer_wise_lr_decay: 0.75  # Same as mri_vit_ad
   gradient_clip: 1.0
-  use_weighted_loss: true  # Use class weights
-  use_focal_loss: true
-  focal_gamma: 2.0
+
+  # Loss function: vs_focal (recommended), vs, focal, or ce
+  loss_type: "vs_focal"
+  # VS Loss parameters (based on PMC10924683 research)
+  vs_tau: 1.0       # Additive adjustment strength [-1, 2]
+  vs_gamma: 0.3     # Multiplicative adjustment strength [0, 0.5]
+  focal_gamma: 2.0  # Focal loss focusing parameter
+  label_smoothing: 0.1  # Prevents overconfident predictions
+
   seed: 42
 
 hardware:

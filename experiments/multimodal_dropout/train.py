@@ -65,6 +65,112 @@ class FocalLoss(nn.Module):
         return focal_loss
 
 
+class VectorScalingLoss(nn.Module):
+    """
+    Vector Scaling (VS) Loss for class-imbalanced classification.
+
+    Based on: "Class-Balanced Deep Learning with Adaptive Vector Scaling Loss
+    for Dementia Stage Detection" (PMC10924683)
+
+    Combines additive and multiplicative logit adjustments:
+    - Additive: l_k = τ * log(π_k) where π_k is class prior
+    - Multiplicative: Δ_k = (N_k / N_max)^γ
+
+    Args:
+        class_counts: Number of samples per class
+        tau: Additive adjustment strength [-1, 2], default 1.0
+        gamma: Multiplicative adjustment strength [0, 0.5], default 0.3
+        label_smoothing: Label smoothing factor [0, 0.2], default 0.1
+    """
+    def __init__(self, class_counts, tau=1.0, gamma=0.3, label_smoothing=0.1, reduction='mean'):
+        super().__init__()
+        self.reduction = reduction
+        self.label_smoothing = label_smoothing
+        self.num_classes = len(class_counts)
+
+        # Calculate class priors
+        total_samples = sum(class_counts)
+        class_priors = np.array(class_counts) / total_samples
+
+        # Additive adjustment: l_k = τ * log(π_k)
+        # Higher tau = more adjustment for rare classes
+        additive_adj = tau * np.log(class_priors + 1e-8)
+        self.register_buffer('additive_adj', torch.FloatTensor(additive_adj))
+
+        # Multiplicative adjustment: Δ_k = (N_k / N_max)^γ
+        # Scales logits inversely to class frequency
+        max_count = max(class_counts)
+        multiplicative_adj = (np.array(class_counts) / max_count) ** gamma
+        self.register_buffer('multiplicative_adj', torch.FloatTensor(multiplicative_adj))
+
+        logger.info(f"VS Loss initialized:")
+        logger.info(f"  tau={tau}, gamma={gamma}, label_smoothing={label_smoothing}")
+        logger.info(f"  Additive adjustments: {additive_adj}")
+        logger.info(f"  Multiplicative adjustments: {multiplicative_adj}")
+
+    def forward(self, inputs, targets):
+        # Apply multiplicative scaling to logits
+        scaled_logits = inputs * self.multiplicative_adj.unsqueeze(0)
+
+        # Apply additive adjustment (logit adjustment)
+        adjusted_logits = scaled_logits + self.additive_adj.unsqueeze(0)
+
+        # Cross entropy with label smoothing
+        loss = nn.functional.cross_entropy(
+            adjusted_logits,
+            targets,
+            reduction=self.reduction,
+            label_smoothing=self.label_smoothing
+        )
+
+        return loss
+
+
+class VSFocalLoss(nn.Module):
+    """
+    Combined Vector Scaling + Focal Loss.
+    Best of both worlds: VS handles class imbalance, Focal focuses on hard examples.
+    """
+    def __init__(self, class_counts, tau=1.0, gamma_vs=0.3, gamma_focal=2.0,
+                 label_smoothing=0.1, reduction='mean'):
+        super().__init__()
+        self.reduction = reduction
+        self.label_smoothing = label_smoothing
+        self.gamma_focal = gamma_focal
+        self.num_classes = len(class_counts)
+
+        # VS adjustments
+        total_samples = sum(class_counts)
+        class_priors = np.array(class_counts) / total_samples
+        additive_adj = tau * np.log(class_priors + 1e-8)
+        self.register_buffer('additive_adj', torch.FloatTensor(additive_adj))
+
+        max_count = max(class_counts)
+        multiplicative_adj = (np.array(class_counts) / max_count) ** gamma_vs
+        self.register_buffer('multiplicative_adj', torch.FloatTensor(multiplicative_adj))
+
+        logger.info(f"VS-Focal Loss: tau={tau}, gamma_vs={gamma_vs}, gamma_focal={gamma_focal}")
+
+    def forward(self, inputs, targets):
+        # Apply VS adjustments
+        scaled_logits = inputs * self.multiplicative_adj.unsqueeze(0)
+        adjusted_logits = scaled_logits + self.additive_adj.unsqueeze(0)
+
+        # Compute focal loss on adjusted logits
+        ce_loss = nn.functional.cross_entropy(
+            adjusted_logits, targets, reduction='none',
+            label_smoothing=self.label_smoothing
+        )
+        pt = torch.exp(-ce_loss)
+        focal_loss = ((1 - pt) ** self.gamma_focal) * ce_loss
+
+        if self.reduction == 'mean':
+            return focal_loss.mean()
+        elif self.reduction == 'sum':
+            return focal_loss.sum()
+        return focal_loss
+
+
 def get_layer_wise_lr_decay_params(model, base_lr: float, weight_decay: float, lr_decay: float = 0.75):
     """
     Create parameter groups with layer-wise learning rate decay.
@@ -295,37 +401,64 @@ class Trainer:
         return optimizer, scheduler
 
     def build_criterion(self, train_loader: DataLoader) -> nn.Module:
-        """Build loss function with optional focal loss and class weights."""
+        """Build loss function with VS Loss, Focal Loss, or standard CE."""
         training_cfg = self.config['training']
-        use_focal = training_cfg.get('use_focal_loss', False)
-        focal_gamma = training_cfg.get('focal_gamma', 2.0)
-        use_weighted_loss = training_cfg.get('use_weighted_loss', True)
+        loss_type = training_cfg.get('loss_type', 'vs_focal')  # vs, vs_focal, focal, ce
+        label_smoothing = training_cfg.get('label_smoothing', 0.1)
 
-        # Calculate class weights if weighted loss is enabled
-        class_weights = None
-        if use_weighted_loss:
-            labels = train_loader.dataset.get_labels()
-            class_counts = np.bincount(labels)
+        # Get class distribution
+        labels = train_loader.dataset.get_labels()
+        class_counts = list(np.bincount(labels))
+        logger.info(f"Class distribution: {dict(enumerate(class_counts))}")
+
+        # VS Loss parameters
+        vs_tau = training_cfg.get('vs_tau', 1.0)  # [-1, 2]
+        vs_gamma = training_cfg.get('vs_gamma', 0.3)  # [0, 0.5]
+        focal_gamma = training_cfg.get('focal_gamma', 2.0)
+
+        if loss_type == 'vs':
+            # Pure Vector Scaling Loss
+            criterion = VectorScalingLoss(
+                class_counts=class_counts,
+                tau=vs_tau,
+                gamma=vs_gamma,
+                label_smoothing=label_smoothing
+            )
+            logger.info(f"Loss: VectorScalingLoss (tau={vs_tau}, gamma={vs_gamma}, smoothing={label_smoothing})")
+
+        elif loss_type == 'vs_focal':
+            # Combined VS + Focal Loss (recommended)
+            criterion = VSFocalLoss(
+                class_counts=class_counts,
+                tau=vs_tau,
+                gamma_vs=vs_gamma,
+                gamma_focal=focal_gamma,
+                label_smoothing=label_smoothing
+            )
+            logger.info(f"Loss: VSFocalLoss (tau={vs_tau}, gamma_vs={vs_gamma}, "
+                       f"gamma_focal={focal_gamma}, smoothing={label_smoothing})")
+
+        elif loss_type == 'focal':
+            # Standard Focal Loss with class weights
             n_samples = len(labels)
             n_classes = len(class_counts)
-
-            # Balanced class weights (sklearn formula)
-            class_weights = n_samples / (n_classes * class_counts)
+            class_weights = n_samples / (n_classes * np.array(class_counts))
             class_weights = torch.FloatTensor(class_weights).to(self.device)
-
-            logger.info(f"Class distribution: {dict(enumerate(class_counts))}")
-            logger.info(f"Class weights (balanced): {class_weights.cpu().numpy()}")
-
-        # Choose loss function
-        if use_focal:
             criterion = FocalLoss(alpha=class_weights, gamma=focal_gamma)
-            logger.info(f"Loss: FocalLoss (gamma={focal_gamma}, weighted={class_weights is not None})")
-        elif class_weights is not None:
-            criterion = nn.CrossEntropyLoss(weight=class_weights)
-            logger.info("Loss: Weighted CrossEntropyLoss")
-        else:
-            criterion = nn.CrossEntropyLoss()
-            logger.info("Loss: CrossEntropyLoss")
+            logger.info(f"Loss: FocalLoss (gamma={focal_gamma}, weighted=True)")
+
+        else:  # 'ce' or default
+            # Standard CrossEntropy with optional class weights
+            if training_cfg.get('use_weighted_loss', False):
+                n_samples = len(labels)
+                n_classes = len(class_counts)
+                class_weights = n_samples / (n_classes * np.array(class_counts))
+                class_weights = torch.FloatTensor(class_weights).to(self.device)
+                criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=label_smoothing)
+                logger.info(f"Loss: Weighted CrossEntropyLoss (smoothing={label_smoothing})")
+            else:
+                criterion = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
+                logger.info(f"Loss: CrossEntropyLoss (smoothing={label_smoothing})")
 
         return criterion
 
