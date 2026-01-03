@@ -460,7 +460,8 @@ class Trainer:
                 criterion = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
                 logger.info(f"Loss: CrossEntropyLoss (smoothing={label_smoothing})")
 
-        return criterion
+        # Move criterion to device (important for VS Loss buffers)
+        return criterion.to(self.device)
 
     def train_epoch(self, model, train_loader, optimizer, criterion):
         """Train for one epoch."""
