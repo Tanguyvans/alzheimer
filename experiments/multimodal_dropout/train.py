@@ -65,6 +65,85 @@ class FocalLoss(nn.Module):
         return focal_loss
 
 
+def get_layer_wise_lr_decay_params(model, base_lr: float, weight_decay: float, lr_decay: float = 0.75):
+    """
+    Create parameter groups with layer-wise learning rate decay.
+
+    Based on mri_vit_ad strategy:
+    - Head/fusion gets highest LR (base_lr)
+    - Deeper transformer blocks get progressively lower LR
+    """
+    param_groups = []
+
+    # Get the MRI backbone
+    backbone = model.mri_backbone
+    num_blocks = len(backbone.blocks)
+
+    # Layer 0: Classification head + fusion layers (highest LR)
+    head_params = []
+    head_params.extend(list(model.classifier.parameters()))
+    head_params.extend(list(model.fusion.parameters()) if hasattr(model.fusion, 'parameters') else [])
+    head_params.extend(list(model.tabular_encoder.parameters()))
+    if model.use_modality_embeddings:
+        head_params.extend([model.mri_available_embed, model.mri_missing_embed,
+                           model.tab_available_embed, model.tab_missing_embed])
+
+    if head_params:
+        param_groups.append({
+            'params': [p for p in head_params if p.requires_grad],
+            'lr': base_lr,
+            'weight_decay': weight_decay,
+            'layer_name': 'head_fusion'
+        })
+
+    # Layer 1: Backbone norm
+    norm_params = list(backbone.norm.parameters())
+    if norm_params:
+        param_groups.append({
+            'params': norm_params,
+            'lr': base_lr * lr_decay,
+            'weight_decay': weight_decay,
+            'layer_name': 'backbone_norm'
+        })
+
+    # Layers 2+: Transformer blocks (reverse order)
+    for i in range(num_blocks - 1, -1, -1):
+        block_params = list(backbone.blocks[i].parameters())
+        layer_idx = num_blocks - i + 1
+        lr = base_lr * (lr_decay ** layer_idx)
+
+        if block_params:
+            param_groups.append({
+                'params': block_params,
+                'lr': lr,
+                'weight_decay': weight_decay,
+                'layer_name': f'blocks.{i}'
+            })
+
+    # Embeddings (lowest LR)
+    embed_layer_idx = num_blocks + 2
+    embed_lr = base_lr * (lr_decay ** embed_layer_idx)
+
+    embed_params = [backbone.cls_token, backbone.pos_embed]
+    embed_params.extend(list(backbone.patch_embed.parameters()))
+    embed_params = [p for p in embed_params if isinstance(p, torch.nn.Parameter)]
+
+    if embed_params:
+        param_groups.append({
+            'params': embed_params,
+            'lr': embed_lr,
+            'weight_decay': weight_decay,
+            'layer_name': 'embeddings'
+        })
+
+    # Log LR distribution
+    logger.info("Layer-wise learning rate decay:")
+    for pg in param_groups:
+        logger.info(f"  {pg['layer_name']}: lr={pg['lr']:.2e}")
+
+    return param_groups
+
+
 class Trainer:
     """Trainer for Multimodal Dropout Model"""
 
@@ -166,16 +245,33 @@ class Trainer:
         return model
 
     def build_optimizer(self, model: nn.Module):
-        """Build optimizer and scheduler."""
+        """Build optimizer and scheduler with optional layer-wise LR decay."""
         cfg = self.config['training']
 
-        optimizer = optim.AdamW(
-            filter(lambda p: p.requires_grad, model.parameters()),
-            lr=cfg['learning_rate'],
-            weight_decay=cfg['weight_decay']
-        )
+        # Check if layer-wise LR decay is enabled
+        use_layer_lr_decay = cfg.get('layer_wise_lr_decay', 0.0)
 
-        scheduler = optim.lr_scheduler.CosineAnnealingLR(
+        if use_layer_lr_decay > 0:
+            # Use layer-wise learning rate decay (paper uses 0.75)
+            param_groups = get_layer_wise_lr_decay_params(
+                model,
+                base_lr=cfg['learning_rate'],
+                weight_decay=cfg['weight_decay'],
+                lr_decay=use_layer_lr_decay
+            )
+            optimizer = optim.AdamW(param_groups)
+            logger.info(f"Optimizer: AdamW with layer-wise LR decay (factor={use_layer_lr_decay})")
+        else:
+            # Standard optimizer - all parameters with same LR
+            optimizer = optim.AdamW(
+                filter(lambda p: p.requires_grad, model.parameters()),
+                lr=cfg['learning_rate'],
+                weight_decay=cfg['weight_decay']
+            )
+            logger.info(f"Optimizer: AdamW (lr={cfg['learning_rate']}, weight_decay={cfg['weight_decay']})")
+
+        # Main scheduler (cosine annealing)
+        main_scheduler = optim.lr_scheduler.CosineAnnealingLR(
             optimizer,
             T_max=cfg['epochs'] - cfg.get('warmup_epochs', 0),
             eta_min=cfg['lr_min']
@@ -188,34 +284,48 @@ class Trainer:
             )
             scheduler = optim.lr_scheduler.SequentialLR(
                 optimizer,
-                schedulers=[warmup_scheduler, scheduler],
+                schedulers=[warmup_scheduler, main_scheduler],
                 milestones=[warmup_epochs]
             )
             logger.info(f"Scheduler: CosineAnnealingLR with {warmup_epochs} warmup epochs")
         else:
+            scheduler = main_scheduler
             logger.info("Scheduler: CosineAnnealingLR")
 
         return optimizer, scheduler
 
     def build_criterion(self, train_loader: DataLoader) -> nn.Module:
-        """Build loss function (no class weights since sampler handles balance)."""
+        """Build loss function with optional focal loss and class weights."""
         training_cfg = self.config['training']
-        use_focal = training_cfg.get('use_focal_loss', True)
+        use_focal = training_cfg.get('use_focal_loss', False)
         focal_gamma = training_cfg.get('focal_gamma', 2.0)
+        use_weighted_loss = training_cfg.get('use_weighted_loss', True)
 
-        # Log class distribution for reference
-        labels = train_loader.dataset.get_labels()
-        class_counts = np.bincount(labels)
-        logger.info(f"Class distribution: {dict(enumerate(class_counts))}")
-        logger.info("Note: WeightedRandomSampler handles class balance, no loss weights needed")
+        # Calculate class weights if weighted loss is enabled
+        class_weights = None
+        if use_weighted_loss:
+            labels = train_loader.dataset.get_labels()
+            class_counts = np.bincount(labels)
+            n_samples = len(labels)
+            n_classes = len(class_counts)
 
+            # Balanced class weights (sklearn formula)
+            class_weights = n_samples / (n_classes * class_counts)
+            class_weights = torch.FloatTensor(class_weights).to(self.device)
+
+            logger.info(f"Class distribution: {dict(enumerate(class_counts))}")
+            logger.info(f"Class weights (balanced): {class_weights.cpu().numpy()}")
+
+        # Choose loss function
         if use_focal:
-            # FocalLoss without class weights - sampler already balances batches
-            criterion = FocalLoss(alpha=None, gamma=focal_gamma)
-            logger.info(f"Loss: FocalLoss (gamma={focal_gamma}, no class weights)")
+            criterion = FocalLoss(alpha=class_weights, gamma=focal_gamma)
+            logger.info(f"Loss: FocalLoss (gamma={focal_gamma}, weighted={class_weights is not None})")
+        elif class_weights is not None:
+            criterion = nn.CrossEntropyLoss(weight=class_weights)
+            logger.info("Loss: Weighted CrossEntropyLoss")
         else:
             criterion = nn.CrossEntropyLoss()
-            logger.info("Loss: CrossEntropyLoss (no class weights)")
+            logger.info("Loss: CrossEntropyLoss")
 
         return criterion
 

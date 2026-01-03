@@ -14,7 +14,7 @@ import torch
 import numpy as np
 import pandas as pd
 import nibabel as nib
-from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
+from torch.utils.data import Dataset, DataLoader
 from pathlib import Path
 from typing import Tuple, List, Optional, Dict
 import logging
@@ -396,26 +396,11 @@ def get_dropout_dataloaders(
         target_spacing=target_spacing
     )
 
-    # Create weighted sampler for class balance
-    # This oversamples the minority class to fix class imbalance
-    train_labels = train_dataset.get_labels()
-    class_counts = np.bincount(train_labels)
-    class_weights = 1.0 / class_counts
-    sample_weights = class_weights[train_labels]
-    sampler = WeightedRandomSampler(
-        weights=sample_weights,
-        num_samples=len(train_dataset),
-        replacement=True
-    )
-
-    logger.info(f"Class distribution: {dict(enumerate(class_counts))}")
-    logger.info(f"Using WeightedRandomSampler for balanced training")
-
     # Create dataloaders
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
-        sampler=sampler,  # Use sampler instead of shuffle
+        shuffle=True,
         num_workers=num_workers,
         pin_memory=pin_memory,
         drop_last=True
