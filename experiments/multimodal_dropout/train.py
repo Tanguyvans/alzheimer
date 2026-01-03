@@ -198,30 +198,24 @@ class Trainer:
         return optimizer, scheduler
 
     def build_criterion(self, train_loader: DataLoader) -> nn.Module:
-        """Build loss function with class weighting."""
+        """Build loss function (no class weights since sampler handles balance)."""
         training_cfg = self.config['training']
         use_focal = training_cfg.get('use_focal_loss', True)
         focal_gamma = training_cfg.get('focal_gamma', 2.0)
 
-        # Calculate class weights
-        labels = [label for _, _, _, label in train_loader.dataset]
-        labels_np = np.array(labels)
-        class_counts = np.bincount(labels_np)
-        n_samples = len(labels_np)
-        n_classes = len(class_counts)
-
-        class_weights = n_samples / (n_classes * class_counts)
-        class_weights = torch.FloatTensor(class_weights).to(self.device)
-
+        # Log class distribution for reference
+        labels = train_loader.dataset.get_labels()
+        class_counts = np.bincount(labels)
         logger.info(f"Class distribution: {dict(enumerate(class_counts))}")
-        logger.info(f"Class weights: {class_weights.cpu().numpy()}")
+        logger.info("Note: WeightedRandomSampler handles class balance, no loss weights needed")
 
         if use_focal:
-            criterion = FocalLoss(alpha=class_weights, gamma=focal_gamma)
-            logger.info(f"Loss: FocalLoss (gamma={focal_gamma})")
+            # FocalLoss without class weights - sampler already balances batches
+            criterion = FocalLoss(alpha=None, gamma=focal_gamma)
+            logger.info(f"Loss: FocalLoss (gamma={focal_gamma}, no class weights)")
         else:
-            criterion = nn.CrossEntropyLoss(weight=class_weights)
-            logger.info("Loss: Weighted CrossEntropyLoss")
+            criterion = nn.CrossEntropyLoss()
+            logger.info("Loss: CrossEntropyLoss (no class weights)")
 
         return criterion
 
