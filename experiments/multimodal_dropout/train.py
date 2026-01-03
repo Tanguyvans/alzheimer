@@ -31,6 +31,8 @@ from dataset import get_dropout_dataloaders
 
 # Project root for resolving relative paths
 PROJECT_ROOT = Path(__file__).parent.parent.parent
+# Experiment directory (where this script lives)
+EXPERIMENT_DIR = Path(__file__).parent
 
 try:
     from sklearn.metrics import classification_report, confusion_matrix, balanced_accuracy_score
@@ -76,9 +78,9 @@ class Trainer:
         exp_name = config.get('experiment', {}).get('name', 'multimodal_dropout')
         self.run_name = f"{exp_name}_{timestamp}"
 
-        # Resolve paths relative to project root
-        self.checkpoint_dir = PROJECT_ROOT / config['data']['checkpoints_dir'] / self.run_name
-        self.results_dir = PROJECT_ROOT / config['data']['results_dir'] / self.run_name
+        # Resolve paths relative to experiment directory
+        self.checkpoint_dir = EXPERIMENT_DIR / config['data']['checkpoints_dir'] / self.run_name
+        self.results_dir = EXPERIMENT_DIR / config['data']['results_dir'] / self.run_name
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
         self.results_dir.mkdir(parents=True, exist_ok=True)
 
