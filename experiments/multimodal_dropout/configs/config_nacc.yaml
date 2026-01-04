@@ -68,8 +68,8 @@ data:
 
 # Modality dropout settings
 modality_dropout:
-  mri_dropout_rate: 0.2      # 20% chance to drop MRI during training
-  tabular_dropout_rate: 0.2  # 20% chance to drop tabular during training
+  mri_dropout_rate: 0.0      # Disabled - don't artificially drop MRI
+  tabular_dropout_rate: 0.0  # Disabled - 82% of samples already lack tabular data
 
 preprocessing:
   use_paper_preprocessing: true
