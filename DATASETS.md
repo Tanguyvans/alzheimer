@@ -33,8 +33,8 @@ Used across all datasets for multimodal fusion:
 ### Best Results
 
 - **Model**: Multimodal Fusion (ViT + FT-Transformer + Gated Fusion)
-- **Test Accuracy**: 87.26%
-- **Test Balanced Accuracy**: 85.03%
+- **Test Accuracy**: 87.98%
+- **Test Balanced Accuracy**: 85.29%
 
 ---
 
