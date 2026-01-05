@@ -2,13 +2,49 @@
 
 This document provides a comprehensive analysis of the three datasets used in this Alzheimer's disease classification project: ADNI, OASIS, and NACC.
 
-## Summary Table
+---
+
+## Training Dataset (Combined)
+
+For our **CN vs AD binary classification** task, we use a combined dataset from all three sources:
+
+| Source | Samples | CN | AD | % of Total |
+|--------|---------|-----|-----|------------|
+| ADNI | 903 | 424 | 479 | 32.6% |
+| OASIS | 1,030 | 742 | 288 | 37.2% |
+| NACC | 838 | 811 | 27 | 30.2% |
+| **Total** | **2,771** | **1,977 (71.3%)** | **794 (28.7%)** | 100% |
+
+### Data Splits
+
+| Split | Samples | CN | AD |
+|-------|---------|-----|-----|
+| Train | 1,939 | 1,383 (71.3%) | 556 (28.7%) |
+| Val | 416 | 297 (71.4%) | 119 (28.6%) |
+| Test | 416 | 297 (71.4%) | 119 (28.6%) |
+
+### Common Tabular Features (7)
+
+Used across all datasets for multimodal fusion:
+
+- **Demographics**: AGE, PTGENDER, PTEDUCAT, PTMARRY
+- **Neuropsych tests**: CATANIMSC, TRAASCOR, TRABSCOR
+
+### Best Results
+
+- **Model**: Multimodal Fusion (ViT + FT-Transformer + Gated Fusion)
+- **Test Accuracy**: 87.26%
+- **Test Balanced Accuracy**: 85.03%
+
+---
+
+## Full Dataset Statistics
 
 | Dataset | Patients | Total Visits | Visits/Patient | T1 MRI Scans | MRI/Patient |
 |---------|----------|--------------|----------------|--------------|-------------|
 | ADNI | 2,311 | 12,227 | 5.3 | 17,827 | 7.7 |
 | OASIS | 1,340 | 8,500 | 6.3 | 7,794 | 5.8 |
-| NACC | 55,004 | 205,908 | 3.7 | 8,164 | - |
+| NACC | 55,004 | 205,908 | 3.7 | 8,163 | - |
 
 ## Diagnosis Distribution (All Visits)
 
@@ -101,8 +137,8 @@ OASIS-3 is a longitudinal neuroimaging, clinical, and cognitive dataset for norm
 - **Total visits**: 8,500
 - **Visits per patient**: 6.3 average
 - **Patients with T1 MRI**: 1,339
-- **T1 MRI scans**: 3,913
-- **MRI per patient**: 2.9 average
+- **T1 MRI scans**: 7,794
+- **MRI per patient**: 5.8 average
 
 ### Diagnosis Distribution (All Visits)
 | Diagnosis | Count | Percentage |
@@ -171,8 +207,9 @@ NACC maintains the largest Alzheimer's disease database in the United States, ag
 - **Total patients**: 55,004
 - **Total visits**: 205,908
 - **Visits per patient**: 3.7 average
-- **T1 MRI scans**: 8,164
-- **MRI subset (CN vs AD)**: 4,743 samples (CN: 3,352, AD: 1,391)
+- **T1 MRI scans**: 8,163 (across 6,141 subjects)
+- **Tabular subset (CN vs AD)**: 4,743 samples (CN: 3,352, AD: 1,391)
+- **MRI-matched subset**: 838 samples (limited by subject ID matching)
 
 ### NACCUDSD Diagnosis Codes (Original)
 | Code | Meaning | All Visits | First Visit |
@@ -290,9 +327,10 @@ For machine learning experiments, we use **first visit only** per subject to pre
 | NACC | NACCUDSD = 1 | NACCUDSD = 4 + AD etiology |
 
 ### MRI Availability
-- **ADNI**: Well-curated MRI-clinical pairs
-- **OASIS**: Multiple MRI sessions per subject
-- **NACC**: MRI subset is smaller than full cohort (~2,225 subjects with converted scans)
+
+- **ADNI**: Well-curated MRI-clinical pairs (903 CN/AD samples used)
+- **OASIS**: Multiple MRI sessions per subject (1,030 CN/AD samples used)
+- **NACC**: 8,163 MRI scans available, but only 838 matched with CN/AD tabular data
 
 ---
 
