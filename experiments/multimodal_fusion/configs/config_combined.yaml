@@ -1,12 +1,12 @@
-# Multi-Modal Fusion: MRI + Tabular - Combined ADNI + OASIS Dataset
-# Uses common features available in both datasets (7 features)
+# Multi-Modal Fusion: MRI + Tabular - Combined ADNI + OASIS + NACC Dataset
+# Uses common features available in all datasets (7 features)
 # Missing values handled by median imputation
 
 experiment:
   name: "multimodal_fusion_combined"
   task: "cn_ad_trajectory"
   dataset: "combined"
-  description: "Late fusion of MRI features + tabular data from ADNI and OASIS"
+  description: "Late fusion of MRI features + tabular data from ADNI, OASIS and NACC"
 
 model:
   backbone:
@@ -41,7 +41,7 @@ data:
   checkpoints_dir: "checkpoints"
   results_dir: "results"
 
-  # Common tabular features across ADNI and OASIS (7 features)
+  # Common tabular features across ADNI, OASIS, and NACC (7 features)
   tabular_features:
     # Demographics (4)
     - "AGE"

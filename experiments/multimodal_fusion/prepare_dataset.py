@@ -31,7 +31,7 @@ DATA_DIR = PROJECT_ROOT / "data"
 DEFAULT_ADNI_CSV = DATA_DIR / "adni" / "adni_cn_ad_trajectory.csv"
 DEFAULT_OASIS_CSV = DATA_DIR / "oasis" / "oasis_all_full.csv"
 DEFAULT_OASIS_MRI_DIR = Path("/home/maxglo/tanguy/OASIS-skull")
-DEFAULT_NACC_CSV = DATA_DIR / "nacc" / "nacc_tabular_mri.csv"
+DEFAULT_NACC_CSV = DATA_DIR / "nacc" / "nacc_tabular_t1.csv"
 DEFAULT_NACC_MRI_META = DATA_DIR / "nacc" / "nacc-t1_12_16_2025.csv"
 DEFAULT_NACC_MRI_DIR = Path("/home/tanguy/medical/NACC-skull")
 
