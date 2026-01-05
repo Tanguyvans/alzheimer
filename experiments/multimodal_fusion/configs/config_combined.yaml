@@ -60,7 +60,7 @@ preprocessing:
   handle_missing: "median"
 
 training:
-  epochs: 50
+  epochs: 100
   batch_size: 4
   learning_rate: 0.00002  # Lower LR for fine-tuning pretrained ViT
   weight_decay: 0.01
@@ -81,7 +81,7 @@ hardware:
 callbacks:
   early_stopping:
     enabled: true
-    patience: 15
+    patience: 25
     monitor: "val_accuracy"
   checkpoint:
     save_best: true
