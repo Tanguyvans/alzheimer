@@ -264,6 +264,105 @@ class AttentionFusion(nn.Module):
         return self.fc(concat)
 
 
+class CrossModalAttention(nn.Module):
+    """
+    Bidirectional Cross-Modal Attention Fusion
+
+    Implements bidirectional attention where:
+    - MRI features attend to tabular features
+    - Tabular features attend to MRI features
+
+    Based on cross-modal attention mechanisms from multimodal learning literature.
+    """
+
+    def __init__(
+        self,
+        img_dim: int,
+        tab_dim: int,
+        hidden_dim: int,
+        num_heads: int = 8,
+        dropout: float = 0.1
+    ):
+        super().__init__()
+        self.hidden_dim = hidden_dim
+
+        # Project both modalities to same dimension
+        self.img_proj = nn.Linear(img_dim, hidden_dim)
+        self.tab_proj = nn.Linear(tab_dim, hidden_dim)
+
+        # Bidirectional cross-attention
+        # MRI attends to tabular
+        self.mri_cross_attn = nn.MultiheadAttention(
+            hidden_dim, num_heads=num_heads, dropout=dropout, batch_first=True
+        )
+        # Tabular attends to MRI
+        self.tab_cross_attn = nn.MultiheadAttention(
+            hidden_dim, num_heads=num_heads, dropout=dropout, batch_first=True
+        )
+
+        # Layer norms
+        self.norm_mri = nn.LayerNorm(hidden_dim)
+        self.norm_tab = nn.LayerNorm(hidden_dim)
+
+        # Feed-forward networks
+        self.ffn_mri = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim * 4),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim * 4, hidden_dim),
+            nn.Dropout(dropout)
+        )
+        self.ffn_tab = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim * 4),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim * 4, hidden_dim),
+            nn.Dropout(dropout)
+        )
+
+        self.norm_mri2 = nn.LayerNorm(hidden_dim)
+        self.norm_tab2 = nn.LayerNorm(hidden_dim)
+
+        # Final fusion layer
+        self.fusion_fc = nn.Sequential(
+            nn.Linear(hidden_dim * 2, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout)
+        )
+
+    def forward(self, img_feat, tab_feat):
+        """
+        Args:
+            img_feat: (B, img_dim) - MRI features
+            tab_feat: (B, tab_dim) - Tabular features
+        Returns:
+            fused: (B, hidden_dim) - Fused features
+        """
+        # Project to hidden dimension
+        img_h = self.img_proj(img_feat).unsqueeze(1)  # (B, 1, H)
+        tab_h = self.tab_proj(tab_feat).unsqueeze(1)  # (B, 1, H)
+
+        # Cross-attention: MRI attends to tabular
+        mri_attn_out, _ = self.mri_cross_attn(img_h, tab_h, tab_h)
+        img_h = self.norm_mri(img_h + mri_attn_out)
+        img_h = self.norm_mri2(img_h + self.ffn_mri(img_h))
+
+        # Cross-attention: Tabular attends to MRI
+        tab_attn_out, _ = self.tab_cross_attn(tab_h, img_h, img_h)
+        tab_h = self.norm_tab(tab_h + tab_attn_out)
+        tab_h = self.norm_tab2(tab_h + self.ffn_tab(tab_h))
+
+        # Squeeze and concatenate
+        img_out = img_h.squeeze(1)  # (B, H)
+        tab_out = tab_h.squeeze(1)  # (B, H)
+
+        # Fuse
+        fused = torch.cat([img_out, tab_out], dim=1)  # (B, 2H)
+        fused = self.fusion_fc(fused)  # (B, H)
+
+        return fused
+
+
 class MultiModalFusion(nn.Module):
     """
     Multi-Modal Fusion Model
@@ -271,7 +370,7 @@ class MultiModalFusion(nn.Module):
     Combines:
     - 3D ViT for MRI feature extraction
     - MLP for tabular clinical features
-    - Late fusion for classification
+    - Late fusion for classification (concat, gated, attention, or cross_modal)
     """
 
     def __init__(
@@ -385,10 +484,39 @@ class MultiModalFusion(nn.Module):
             )
             classifier_input_dim = fusion_hidden
 
+        elif fusion_method == 'cross_modal':
+            num_heads = fusion_config.get('num_heads', 8)
+            self.fusion = CrossModalAttention(
+                self.vit_feature_dim,
+                self.tabular_feature_dim,
+                fusion_hidden,
+                num_heads=num_heads,
+                dropout=fusion_dropout
+            )
+            classifier_input_dim = fusion_hidden
+
         else:
             raise ValueError(f"Unknown fusion method: {fusion_method}")
 
         self.fusion_method = fusion_method
+
+        # Auxiliary losses support
+        self.use_auxiliary_losses = fusion_config.get('auxiliary_losses', False)
+        if self.use_auxiliary_losses:
+            # Modality-specific classifiers for regularization
+            self.mri_classifier = nn.Sequential(
+                nn.Linear(self.mri_feature_dim, 128),
+                nn.ReLU(),
+                nn.Dropout(fusion_dropout),
+                nn.Linear(128, num_classes)
+            )
+            self.tab_classifier = nn.Sequential(
+                nn.Linear(self.tabular_feature_dim, 64),
+                nn.ReLU(),
+                nn.Dropout(fusion_dropout),
+                nn.Linear(64, num_classes)
+            )
+            print(f"  Auxiliary losses: Enabled (MRI + Tabular classifiers)")
 
         # Classification head
         self.classifier = nn.Sequential(
@@ -431,16 +559,18 @@ class MultiModalFusion(nn.Module):
     def extract_vit_features(self, x):
         return self.extract_mri_features(x)
 
-    def forward(self, mri, tabular):
+    def forward(self, mri, tabular, return_auxiliary=False):
         """
         Forward pass
 
         Args:
             mri: (B, 1, D, H, W) - 3D MRI volume
             tabular: (B, num_features) - Tabular clinical features
+            return_auxiliary: If True, return auxiliary logits for auxiliary losses
 
         Returns:
             logits: (B, num_classes)
+            or dict with 'logits', 'mri_logits', 'tab_logits' if return_auxiliary=True
         """
         # Extract MRI features
         with torch.set_grad_enabled(not self._is_backbone_frozen()):
@@ -458,6 +588,16 @@ class MultiModalFusion(nn.Module):
 
         # Classification
         logits = self.classifier(fused)
+
+        # Return auxiliary outputs if requested
+        if return_auxiliary and self.use_auxiliary_losses:
+            mri_logits = self.mri_classifier(img_features)
+            tab_logits = self.tab_classifier(tab_features)
+            return {
+                'logits': logits,
+                'mri_logits': mri_logits,
+                'tab_logits': tab_logits
+            }
 
         return logits
 

@@ -274,27 +274,34 @@ class MultiModalTrainer:
             class_weights = class_weights / class_weights.sum() * len(class_counts)
             class_weights = torch.FloatTensor(class_weights).to(self.device)
 
+        # Label smoothing (regularization technique)
+        label_smoothing = self.config['training'].get('label_smoothing', 0.0)
+
         if loss_type == 'focal':
             gamma = self.config['training'].get('focal_gamma', 2.0)
             alpha = self.config['training'].get('focal_alpha', 0.75)
             criterion = FocalLoss(alpha=alpha, gamma=gamma, weight=class_weights)
             logger.info(f"Loss: FocalLoss (alpha={alpha}, gamma={gamma}, weighted={use_weighted})")
         elif loss_type == 'cross_entropy' or loss_type == 'ce':
-            criterion = nn.CrossEntropyLoss(weight=class_weights)
+            criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=label_smoothing)
             if use_weighted:
-                logger.info(f"Loss: Weighted CrossEntropyLoss (weights={class_weights.cpu().numpy()})")
+                logger.info(f"Loss: Weighted CrossEntropyLoss (weights={class_weights.cpu().numpy()}, label_smoothing={label_smoothing})")
             else:
-                logger.info("Loss: CrossEntropyLoss")
+                logger.info(f"Loss: CrossEntropyLoss (label_smoothing={label_smoothing})")
         else:
             raise ValueError(f"Unknown loss type: {loss_type}")
 
         return criterion
 
     def train_epoch(self, model, train_loader, optimizer, criterion):
-        """Train for one epoch"""
+        """Train for one epoch with optional auxiliary losses"""
         model.train()
         total_loss, correct, total = 0.0, 0, 0
         grad_clip = self.config['training'].get('gradient_clip', 1.0)
+
+        # Check if auxiliary losses should be used
+        use_aux_loss = self.config['training'].get('use_auxiliary_loss', False)
+        aux_weight = self.config['training'].get('auxiliary_loss_weight', 0.3)
 
         pbar = tqdm(train_loader, desc=f"Epoch {self.current_epoch+1} [Train]")
         for mri, tabular, labels in pbar:
@@ -303,8 +310,23 @@ class MultiModalTrainer:
             labels = labels.to(self.device)
 
             optimizer.zero_grad()
-            outputs = model(mri, tabular)
-            loss = criterion(outputs, labels)
+
+            # Forward pass with or without auxiliary outputs
+            if use_aux_loss and hasattr(model, 'use_auxiliary_losses') and model.use_auxiliary_losses:
+                outputs_dict = model(mri, tabular, return_auxiliary=True)
+                outputs = outputs_dict['logits']
+                mri_logits = outputs_dict['mri_logits']
+                tab_logits = outputs_dict['tab_logits']
+
+                # Main loss + auxiliary losses
+                main_loss = criterion(outputs, labels)
+                mri_loss = criterion(mri_logits, labels)
+                tab_loss = criterion(tab_logits, labels)
+                loss = main_loss + aux_weight * (mri_loss + tab_loss)
+            else:
+                outputs = model(mri, tabular)
+                loss = criterion(outputs, labels)
+
             loss.backward()
 
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=grad_clip)
@@ -423,8 +445,84 @@ class MultiModalTrainer:
         logger.info(f"Best validation accuracy: {self.best_val_acc:.2f}%")
         logger.info("=" * 60)
 
+    @torch.no_grad()
+    def test_with_tta(self, model, dataloader, criterion, num_augmentations=8):
+        """
+        Test-Time Augmentation (TTA)
+
+        Applies random augmentations at test time and averages predictions
+        for improved robustness.
+        """
+        model.eval()
+        total_loss, correct, total = 0.0, 0, 0
+        all_preds, all_labels = [], []
+
+        # TTA augmentations for 3D MRI
+        def apply_tta_augmentation(mri, aug_idx):
+            """Apply different augmentations based on index"""
+            if aug_idx == 0:
+                return mri  # Original
+            elif aug_idx == 1:
+                return torch.flip(mri, dims=[2])  # Flip depth
+            elif aug_idx == 2:
+                return torch.flip(mri, dims=[3])  # Flip height
+            elif aug_idx == 3:
+                return torch.flip(mri, dims=[4])  # Flip width
+            elif aug_idx == 4:
+                return torch.flip(mri, dims=[2, 3])  # Flip depth+height
+            elif aug_idx == 5:
+                return torch.flip(mri, dims=[2, 4])  # Flip depth+width
+            elif aug_idx == 6:
+                return torch.flip(mri, dims=[3, 4])  # Flip height+width
+            elif aug_idx == 7:
+                return torch.flip(mri, dims=[2, 3, 4])  # Flip all
+            else:
+                return mri
+
+        pbar = tqdm(dataloader, desc=f"Test with TTA ({num_augmentations} augs)")
+        for mri, tabular, labels in pbar:
+            mri = mri.to(self.device)
+            tabular = tabular.to(self.device)
+            labels = labels.to(self.device)
+
+            # Aggregate predictions from multiple augmentations
+            all_logits = []
+            for aug_idx in range(min(num_augmentations, 8)):
+                aug_mri = apply_tta_augmentation(mri, aug_idx)
+                outputs = model(aug_mri, tabular)
+                all_logits.append(outputs)
+
+            # Average logits across augmentations
+            avg_logits = torch.stack(all_logits).mean(dim=0)
+            loss = criterion(avg_logits, labels)
+
+            total_loss += loss.item()
+            _, predicted = avg_logits.max(1)
+            total += labels.size(0)
+            correct += predicted.eq(labels).sum().item()
+
+            all_preds.extend(predicted.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
+
+            pbar.set_postfix({
+                'loss': f'{loss.item():.4f}',
+                'acc': f'{100.*correct/total:.2f}%'
+            })
+
+        all_preds = np.array(all_preds)
+        all_labels = np.array(all_labels)
+        balanced_acc = balanced_accuracy_score(all_labels, all_preds) * 100 if SKLEARN_AVAILABLE else 0
+
+        return {
+            'loss': total_loss / len(dataloader),
+            'accuracy': 100. * correct / total,
+            'balanced_accuracy': balanced_acc,
+            'predictions': all_preds,
+            'labels': all_labels
+        }
+
     def test(self, model, test_loader, criterion):
-        """Evaluate on test set"""
+        """Evaluate on test set with optional TTA"""
         logger.info("=" * 60)
         logger.info("EVALUATING ON TEST SET")
         logger.info("=" * 60)
@@ -436,7 +534,15 @@ class MultiModalTrainer:
             model.load_state_dict(checkpoint['model_state_dict'])
             logger.info(f"Loaded best model from {best_path}")
 
-        test_metrics = self.validate(model, test_loader, criterion, 'test')
+        # Check if TTA is enabled
+        use_tta = self.config['training'].get('use_tta', False)
+        tta_augmentations = self.config['training'].get('tta_augmentations', 8)
+
+        if use_tta:
+            logger.info(f"Using Test-Time Augmentation with {tta_augmentations} augmentations")
+            test_metrics = self.test_with_tta(model, test_loader, criterion, tta_augmentations)
+        else:
+            test_metrics = self.validate(model, test_loader, criterion, 'test')
 
         logger.info(f"\nTest Results:")
         logger.info(f"  Accuracy: {test_metrics['accuracy']:.2f}%")

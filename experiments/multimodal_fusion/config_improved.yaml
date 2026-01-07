@@ -1,0 +1,125 @@
+# Multi-Modal Fusion: MRI (ViT) + Tabular Features
+# IMPROVED VERSION with state-of-the-art techniques from literature:
+# - Cross-modal bidirectional attention fusion
+# - FT-Transformer for tabular data (Gorishniy et al., 2021)
+# - Label smoothing regularization
+# - Auxiliary losses for modality-specific learning
+# - Test-time augmentation (TTA)
+
+experiment:
+  name: "multimodal_fusion_improved"
+  task: "cn_ad_trajectory"
+  dataset: "multi_cohort"
+  description: "Improved fusion with cross-modal attention, FT-Transformer, label smoothing, TTA"
+
+model:
+  # ViT backbone (frozen or fine-tuned)
+  vit:
+    architecture: "vit_base"
+    image_size: 128
+    pretrained_path: "../mri_vit_ad/pretrained/vit_mae75_pretrained.pth"
+    freeze_backbone: false  # Fine-tune ViT for better MRI features
+    feature_dim: 768  # ViT-B output dimension
+
+  # Tabular branch - FT-Transformer (better than MLP for tabular data)
+  tabular:
+    type: "ft_transformer"
+    embed_dim: 64
+    num_heads: 4
+    num_layers: 3
+    dropout: 0.1
+    output_dim: 64
+
+  # Fusion - Cross-modal bidirectional attention
+  fusion:
+    method: "cross_modal"  # New: bidirectional cross-attention
+    hidden_dim: 512
+    num_heads: 8
+    dropout: 0.3
+    auxiliary_losses: true  # Enable modality-specific classifiers
+
+  num_classes: 2
+
+data:
+  clinical_csv: "../../data/adni/adni_cn_ad_trajectory.csv"
+  train_csv: "data/train.csv"
+  val_csv: "data/val.csv"
+  test_csv: "data/test.csv"
+
+  # Tabular features (matching XGBoost - NO diagnostic criteria like MMSE/CDR)
+  tabular_features:
+    # Demographics
+    - "AGE"
+    - "PTGENDER"
+    - "PTEDUCAT"
+    - "PTMARRY"
+    # Vitals
+    - "VSWEIGHT"
+    - "BMI"
+    # Medical history
+    - "MH14ALCH"     # Alcohol abuse
+    - "MH16SMOK"     # Smoking
+    - "MH4CARD"      # Cardiovascular
+    - "MHPSYCH"      # Psychiatric
+    - "MH2NEURL"     # Neurological
+    # Neuropsych tests (non-diagnostic)
+    - "TRAASCOR"     # Trail Making A
+    - "TRABSCOR"     # Trail Making B
+    - "TRABERRCOM"   # Trail Making B errors
+    - "CATANIMSC"    # Category fluency (animals)
+    - "CLOCKSCOR"    # Clock drawing
+    - "BNTTOTAL"     # Boston Naming Test
+    - "DSPANFOR"     # Digit span forward
+    - "DSPANBAC"     # Digit span backward
+
+  checkpoints_dir: "checkpoints"
+  results_dir: "results"
+
+preprocessing:
+  use_paper_preprocessing: true
+  target_spacing: 1.75
+
+  # Tabular preprocessing
+  tabular_normalize: true
+  handle_missing: "median"  # median, mean, or drop
+
+training:
+  epochs: 50
+  batch_size: 4
+  learning_rate: 0.00002  # Lower LR for fine-tuning pretrained ViT
+  weight_decay: 0.01
+  lr_min: 0.0000001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  warmup_epochs: 5
+  gradient_clip: 1.0
+  use_weighted_loss: true
+  layer_wise_lr_decay: 0.75  # Decay LR for deeper layers
+  seed: 42
+
+  # NEW: Label smoothing regularization
+  label_smoothing: 0.1  # Prevents overconfident predictions
+
+  # NEW: Auxiliary losses for modality-specific learning
+  use_auxiliary_loss: true
+  auxiliary_loss_weight: 0.3  # Weight for MRI and tabular auxiliary classifiers
+
+  # NEW: Test-time augmentation
+  use_tta: true
+  tta_augmentations: 8  # Number of augmentations to average
+
+hardware:
+  device: "cuda"
+  num_workers: 4
+  pin_memory: true
+
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 15
+    monitor: "val_accuracy"
+  checkpoint:
+    save_best: true
+
+wandb:
+  enabled: false
