@@ -42,9 +42,9 @@ model:
 
 data:
   clinical_csv: "../../data/adni/adni_cn_ad_trajectory.csv"
-  train_csv: "data/train.csv"
-  val_csv: "data/val.csv"
-  test_csv: "data/test.csv"
+  train_csv: "data/combined/train.csv"
+  val_csv: "data/combined/val.csv"
+  test_csv: "data/combined/test.csv"
 
   # Tabular features (matching XGBoost - NO diagnostic criteria like MMSE/CDR)
   tabular_features:
