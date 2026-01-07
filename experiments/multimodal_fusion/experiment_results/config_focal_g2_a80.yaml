@@ -1,0 +1,77 @@
+callbacks:
+  checkpoint:
+    save_best: true
+  early_stopping:
+    enabled: true
+    monitor: val_accuracy
+    patience: 25
+data:
+  checkpoints_dir: checkpoints
+  results_dir: results
+  tabular_features:
+  - AGE
+  - PTGENDER
+  - PTEDUCAT
+  - PTMARRY
+  - CATANIMSC
+  - TRAASCOR
+  - TRABSCOR
+  test_csv: data/combined/test.csv
+  train_csv: data/combined/train.csv
+  val_csv: data/combined/val.csv
+experiment:
+  dataset: combined
+  description: Late fusion of MRI features + tabular data from ADNI, OASIS and NACC
+  name: multimodal_fusion_combined_focal_g2_a80
+  task: cn_ad_trajectory
+hardware:
+  device: cuda
+  num_workers: 4
+  pin_memory: true
+model:
+  backbone:
+    architecture: vit_base
+    feature_dim: 768
+    freeze: false
+    image_size: 128
+    pretrained_path: ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+    type: vit
+  fusion:
+    dropout: 0.3
+    hidden_dim: 512
+    method: gated
+  num_classes: 2
+  tabular:
+    attention_dropout: 0.2
+    d_token: 32
+    dropout: 0.3
+    ffn_dropout: 0.1
+    hidden_dims:
+    - 64
+    - 32
+    n_blocks: 2
+    type: fttransformer
+name: Focal Loss (gamma=2.0, alpha=0.80)
+preprocessing:
+  handle_missing: median
+  tabular_normalize: true
+  target_spacing: 1.75
+  use_paper_preprocessing: true
+training:
+  batch_size: 4
+  epochs: 100
+  focal_alpha: 0.8
+  focal_gamma: 2.0
+  gradient_clip: 1.0
+  layer_wise_lr_decay: 0.75
+  learning_rate: 2.0e-05
+  loss_type: focal
+  lr_min: 1.0e-07
+  optimizer: adamw
+  scheduler: cosine
+  seed: 42
+  use_weighted_loss: true
+  warmup_epochs: 5
+  weight_decay: 0.01
+wandb:
+  enabled: false

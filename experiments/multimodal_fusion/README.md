@@ -1,20 +1,31 @@
 # Multi-Modal Fusion: MRI + Tabular Data
 
-This experiment combines 3D brain MRI with clinical tabular features for Alzheimer's disease classification (CN vs AD trajectory).
+This experiment combines 3D brain MRI with clinical tabular features for Alzheimer's disease classification (CN vs AD).
+
+## Best Results
+
+| Dataset | Samples | Model | Test Accuracy | Balanced Accuracy |
+|---------|---------|-------|---------------|-------------------|
+| **ADNI+OASIS+NACC** | **6,065** | ViT + FT-Transformer + Gated | **90.77%** | **84.07%** |
+| ADNI+OASIS+NACC | 2,771 | ViT + FT-Transformer + Gated | 87.98% | 85.29% |
+
+### Methodology Notes
+- **Subject-level split**: One sample per patient (first visit only) - prevents data leakage
+- **3D subject-level MRI**: Full 3D volumes, not 2D slices
+- **Multi-cohort validation**: Trained on 3 independent datasets for generalizability
+- **No augmentation before split**: Proper train/val/test separation
 
 ## Architecture
 
 ```
-MRI Input (128x128x128)              Tabular Input (19 features)
+MRI Input (128x128x128)              Tabular Input (7 features)
          |                                      |
    [MRI Backbone]                      [Tabular Encoder]
-    ResNet3D-18                         MLP or FT-Transformer
+   ViT (MAE pretrained)                  FT-Transformer
          |                                      |
-    512-dim features                      64-dim features
+    768-dim features                      32-dim features
          |                                      |
-         +------------- [Fusion] ---------------+
-                           |
-                    Attention/Gated/Concat
+         +------------- [Gated Fusion] ---------+
                            |
                       512-dim fused
                            |
@@ -23,150 +34,135 @@ MRI Input (128x128x128)              Tabular Input (19 features)
                     2 classes (CN/AD)
 ```
 
-## Components
+## Dataset
 
-### MRI Backbone Options
-| Backbone | Feature Dim | Notes |
-|----------|-------------|-------|
-| ResNet3D-18 | 512 | Default, good performance |
-| ResNet3D-50 | 2048 | Larger, may need more memory |
-| ViT (MAE pretrained) | 768 | Vision Transformer |
+### Combined Dataset (ADNI + OASIS + NACC)
 
-### Tabular Encoder Options
+| Source | Samples | CN | AD | % of Total |
+|--------|---------|-----|-----|------------|
+| ADNI | 903 | 424 | 479 | 14.9% |
+| OASIS | 1,030 | 742 | 288 | 17.0% |
+| NACC | 4,132 | 3,581 | 551 | 68.1% |
+| **Total** | **6,065** | **4,747 (78.3%)** | **1,318 (21.7%)** | 100% |
 
-#### 1. MLP (default)
-Simple multi-layer perceptron:
-```
-Input (19) -> Linear(128) -> ReLU -> Linear(64) -> ReLU -> Output (64)
-```
+### Data Splits
+| Split | Samples |
+|-------|---------|
+| Train | 4,245 (70%) |
+| Val | 910 (15%) |
+| Test | 910 (15%) |
 
-#### 2. FT-Transformer (Feature Tokenizer Transformer)
-Each feature is embedded independently, then processed through transformer layers:
-```
-19 features -> [Feature Tokenizers] -> 19 tokens (64-dim each)
-                        |
-                [CLS] + 19 tokens
-                        |
-              3x Transformer Layers (4 heads, GELU)
-                        |
-                  [CLS] output -> 64-dim
-```
+### Tabular Features (7 common across all datasets)
 
-Reference: "Revisiting Deep Learning Models for Tabular Data" (Gorishniy et al., 2021)
-
-### Fusion Methods
-| Method | Description |
-|--------|-------------|
-| `concat` | Concatenate features + MLP |
-| `gated` | Learnable gates for each modality |
-| `attention` | Cross-attention between modalities |
-
-## Tabular Features (19 total)
-
-**Demographics:**
+**Demographics (4):**
 - AGE, PTGENDER, PTEDUCAT, PTMARRY
 
-**Vitals:**
-- VSWEIGHT, BMI
+**Neuropsychological Tests (3):**
+- CATANIMSC (category fluency - animals)
+- TRAASCOR (Trail Making A)
+- TRABSCOR (Trail Making B)
 
-**Medical History:**
-- MH14ALCH (alcohol), MH16SMOK (smoking), MH4CARD (cardiovascular)
-- MHPSYCH (psychiatric), MH2NEURL (neurological)
+## Configuration
 
-**Neuropsychological Tests:**
-- TRAASCOR (Trail Making A), TRABSCOR (Trail Making B), TRABERRCOM (errors)
-- CATANIMSC (category fluency), CLOCKSCOR (clock drawing)
-- BNTTOTAL (Boston Naming), DSPANFOR/DSPANBAC (digit span)
+### Best Model: `configs/config_combined.yaml`
 
-**Excluded (diagnostic criteria):**
-- MMSCORE (MMSE) - used for diagnosis
-- CDGLOBAL (CDR) - used for diagnosis
+```yaml
+model:
+  backbone:
+    type: vit
+    architecture: vit_base
+    pretrained_path: "../mri_vit_ad/pretrained/vit_mae75_pretrained.pth"
+    feature_dim: 768
 
-## Configuration Files
+  tabular:
+    type: fttransformer
+    n_blocks: 2
+    d_token: 32
+    attention_dropout: 0.2
 
-| Config | MRI Backbone | Tabular Encoder | Fusion |
-|--------|--------------|-----------------|--------|
-| `config.yaml` | ViT | MLP | gated |
-| `config_resnet.yaml` | ResNet3D-18 | MLP | attention |
-| `config_resnet_fttransformer.yaml` | ResNet3D-18 | FT-Transformer | attention |
+  fusion:
+    method: gated
+    hidden_dim: 512
+    dropout: 0.3
+
+training:
+  epochs: 100
+  batch_size: 4
+  learning_rate: 0.00002
+  weight_decay: 0.01
+  optimizer: adamw
+  scheduler: cosine
+  warmup_epochs: 5
+  use_weighted_loss: true
+
+callbacks:
+  early_stopping:
+    patience: 25
+    monitor: val_accuracy
+```
 
 ## Usage
 
-### Single Train/Test Split
 ```bash
-# Prepare dataset (creates train/val/test CSVs)
-python prepare_dataset.py
+# Prepare combined dataset
+python prepare_dataset.py \
+  --dataset combined \
+  --output-dir data/combined \
+  --oasis-mri-dir /path/to/OASIS-skull \
+  --nacc-mri-dir /path/to/NACC-skull
 
-# Train with ResNet + MLP
-python train.py --config config_resnet.yaml
-
-# Train with ResNet + FT-Transformer
-python train.py --config config_resnet_fttransformer.yaml
+# Train
+python train.py --config configs/config_combined.yaml
 ```
 
-### Cross-Validation
-```bash
-# 5-fold CV with 3 seeds
-python train_cv.py --config config_resnet.yaml --n-folds 5 --seeds 42 123 456
+## Experiment History
 
-# FT-Transformer CV
-python train_cv.py --config config_resnet_fttransformer.yaml --n-folds 5
-```
+| Date | Dataset | Samples | Backbone | Tabular | Fusion | Test Acc | Bal Acc | Notes |
+|------|---------|---------|----------|---------|--------|----------|---------|-------|
+| 2026-01-05 | Combined | 6,065 | ViT | FT-Trans | gated | **90.77%** | 84.07% | +NACC expanded |
+| 2026-01-05 | Combined | 2,771 | ViT | FT-Trans | gated | 87.98% | 85.29% | 100 epochs |
+| 2024-12-16 | ADNI | 903 | ResNet3D | MLP | attention | 83.57% | 83.38% | 5-fold CV |
 
-## Results
+## Comparison with Literature
 
-### CN vs AD Trajectory (ADNI)
+Studies with **proper subject-level splits** (no data leakage):
 
-#### Experiment Log
+| Study | Dataset | Samples | Accuracy | Notes |
+|-------|---------|---------|----------|-------|
+| **Ours** | ADNI+OASIS+NACC | 6,065 | **90.77%** | Multi-cohort, multimodal |
+| 3D-CNN-VSwinFormer (2025) | ADNI | ~1,000 | 92.92% | Single cohort |
+| Wen et al. framework | ADNI | ~1,000 | 83-88% | Open-source benchmark |
 
-| Date | Config | MRI Backbone | Tabular Encoder | Fusion | Test Acc | Balanced Acc | Notes |
-|------|--------|--------------|-----------------|--------|----------|--------------|-------|
-| 2024-12-15 | config_resnet.yaml | ResNet3D-18 | MLP [128,64] | attention | 84.56% | 84.20% | Single split |
-| 2024-12-16 | config_resnet.yaml | ResNet3D-18 | MLP [128,64] | attention | 83.57% ± 2.65% | 83.38% ± 2.82% | 5-fold CV, 3 seeds |
-| 2024-12-16 | config_resnet_fttransformer.yaml | ResNet3D-18 | FT-Transformer (d=64, h=4, L=3) | attention | 82.35% | 82.20% | Single split, early stop @21 |
+Note: Studies reporting 95-99% accuracy often have data leakage issues (2D slice splits, augmentation before split).
 
-#### Config Details
+## Potential Improvements
 
-**config_resnet.yaml:**
-- Backbone: ResNet3D-18 (512-dim), unfrozen
-- Tabular: MLP [128 → 64], dropout=0.3
-- Fusion: attention, hidden=512
-- Training: lr=0.0001, epochs=50, batch=4
-
-**config_resnet_fttransformer.yaml:**
-- Backbone: ResNet3D-18 (512-dim), unfrozen
-- Tabular: FT-Transformer (embed=64, heads=4, layers=3)
-- Fusion: attention, hidden=512
-- Training: lr=0.0001, epochs=50, batch=4
-
-#### Baselines
-
-| Model | Data | Accuracy | Notes |
-|-------|------|----------|-------|
-| XGBoost | Tabular only (19 features) | ~89.8% | CN vs AD (not trajectory) |
-| ViT + Gated | MRI + Tabular (MLP) | 81.62% | Single split |
+1. **Class balancing**: Increase AD weight or use oversampling (current: 78% CN, 22% AD)
+2. **Cross-validation**: Run 5-fold CV for more robust estimates
+3. **Ensemble**: Combine multiple models or seeds
+4. **Additional features**: Add more neuropsych tests if available in all datasets
+5. **Attention visualization**: Add Grad-CAM for interpretability
 
 ## File Structure
 
 ```
 multimodal_fusion/
-├── config.yaml                      # ViT + MLP config
-├── config_resnet.yaml               # ResNet + MLP config
-├── config_resnet_fttransformer.yaml # ResNet + FT-Transformer config
-├── model.py                         # Model definitions
-├── dataset.py                       # MultiModal dataset
-├── train.py                         # Single split training
-├── train_cv.py                      # Cross-validation training
-├── prepare_dataset.py               # Data preparation
-├── data/                            # Train/val/test CSVs
-├── checkpoints*/                    # Saved models
-└── results*/                        # Experiment results
+├── configs/
+│   └── config_combined.yaml     # Best config (ViT + FT-Trans + Gated)
+├── data/
+│   └── combined/                # Train/val/test CSVs
+├── model.py                     # Model definitions
+├── dataset.py                   # MultiModal dataset
+├── train.py                     # Training script
+├── prepare_dataset.py           # Data preparation
+├── checkpoints/                 # Saved models
+└── results/                     # Experiment results
 ```
 
 ## Requirements
 
 - PyTorch >= 1.10
-- MONAI (for ResNet3D)
+- MONAI (for 3D transforms)
 - scikit-learn
 - pandas, numpy
 - nibabel (for MRI loading)

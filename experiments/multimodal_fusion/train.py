@@ -24,6 +24,37 @@ from datetime import datetime
 from model import MultiModalFusion, build_model
 from dataset import get_multimodal_dataloaders
 
+import torch.nn.functional as F
+
+
+class FocalLoss(nn.Module):
+    """
+    Focal Loss for addressing class imbalance.
+
+    FL(p) = -alpha * (1-p)^gamma * log(p)
+
+    Args:
+        alpha: Weight for the positive class (default: 0.75 for minority)
+        gamma: Focusing parameter (default: 2.0)
+        weight: Optional class weights tensor
+    """
+    def __init__(self, alpha: float = 0.75, gamma: float = 2.0, weight: torch.Tensor = None):
+        super().__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+        self.weight = weight
+
+    def forward(self, inputs: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+        ce_loss = F.cross_entropy(inputs, targets, weight=self.weight, reduction='none')
+        pt = torch.exp(-ce_loss)
+
+        # Apply alpha weighting based on class
+        alpha_t = torch.where(targets == 1, self.alpha, 1 - self.alpha)
+
+        focal_loss = alpha_t * (1 - pt) ** self.gamma * ce_loss
+        return focal_loss.mean()
+
+
 try:
     from sklearn.metrics import classification_report, confusion_matrix, balanced_accuracy_score
     import matplotlib.pyplot as plt
@@ -230,18 +261,33 @@ class MultiModalTrainer:
         return optimizer, scheduler
 
     def build_criterion(self, train_loader: DataLoader) -> nn.Module:
-        """Build loss function with class weights"""
-        if self.config['training']['use_weighted_loss']:
+        """Build loss function based on config"""
+        loss_type = self.config['training'].get('loss_type', 'cross_entropy')
+        use_weighted = self.config['training'].get('use_weighted_loss', True)
+
+        # Calculate class weights if needed
+        class_weights = None
+        if use_weighted:
             labels = [label for _, _, label in train_loader.dataset]
             class_counts = np.bincount(labels)
             class_weights = 1.0 / class_counts
             class_weights = class_weights / class_weights.sum() * len(class_counts)
             class_weights = torch.FloatTensor(class_weights).to(self.device)
+
+        if loss_type == 'focal':
+            gamma = self.config['training'].get('focal_gamma', 2.0)
+            alpha = self.config['training'].get('focal_alpha', 0.75)
+            criterion = FocalLoss(alpha=alpha, gamma=gamma, weight=class_weights)
+            logger.info(f"Loss: FocalLoss (alpha={alpha}, gamma={gamma}, weighted={use_weighted})")
+        elif loss_type == 'cross_entropy' or loss_type == 'ce':
             criterion = nn.CrossEntropyLoss(weight=class_weights)
-            logger.info(f"Loss: Weighted CrossEntropyLoss (weights={class_weights.cpu().numpy()})")
+            if use_weighted:
+                logger.info(f"Loss: Weighted CrossEntropyLoss (weights={class_weights.cpu().numpy()})")
+            else:
+                logger.info("Loss: CrossEntropyLoss")
         else:
-            criterion = nn.CrossEntropyLoss()
-            logger.info("Loss: CrossEntropyLoss")
+            raise ValueError(f"Unknown loss type: {loss_type}")
+
         return criterion
 
     def train_epoch(self, model, train_loader, optimizer, criterion):

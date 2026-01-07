@@ -72,6 +72,10 @@ training:
   use_weighted_loss: true
   layer_wise_lr_decay: 0.75  # Decay LR for deeper ViT layers
   seed: 42
+  # Loss function settings
+  loss_type: "cross_entropy"  # cross_entropy or focal
+  focal_gamma: 2.0  # Focal loss gamma (focusing parameter)
+  focal_alpha: 0.75  # Focal loss alpha (class balance)
 
 hardware:
   device: "cuda"

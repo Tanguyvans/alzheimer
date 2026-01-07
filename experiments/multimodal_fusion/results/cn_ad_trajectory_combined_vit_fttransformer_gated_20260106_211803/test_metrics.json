@@ -1,0 +1,14 @@
+{
+  "run_name": "cn_ad_trajectory_combined_vit_fttransformer_gated_20260106_211803",
+  "accuracy": 86.7032967032967,
+  "balanced_accuracy": 84.02848711837476,
+  "timestamp": "2026-01-07T02:46:41.450491",
+  "experiment_name": "multimodal_fusion_combined_focal_g3_a75",
+  "task": "cn_ad_trajectory",
+  "dataset": "combined",
+  "backbone": "vit",
+  "tabular_encoder": "fttransformer",
+  "fusion_method": "gated",
+  "epochs_trained": 93,
+  "best_val_acc": 88.79120879120879
+}
