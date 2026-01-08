@@ -1,10 +1,11 @@
 # Multi-Modal Fusion: MRI (ViT) + Tabular Features
-# Combines 3D ViT image features with clinical/demographic data
+# Using Combined V2 dataset with 16 verified tabular features across ADNI+OASIS+NACC
 
 experiment:
-  name: "multimodal_fusion_cn_ad"
+  name: "multimodal_fusion_combined_v2"
   task: "cn_ad_trajectory"
-  description: "Late fusion of ViT MRI features + tabular clinical data"
+  dataset: "multi_cohort_v2"
+  description: "Improved fusion with all 16 common tabular features from ADNI+OASIS+NACC"
 
 model:
   # ViT backbone (frozen or fine-tuned)
@@ -12,53 +13,57 @@ model:
     architecture: "vit_base"
     image_size: 128
     pretrained_path: "../mri_vit_ad/pretrained/vit_mae75_pretrained.pth"
-    freeze_backbone: false  # Fine-tune ViT for better MRI features
-    feature_dim: 768  # ViT-B output dimension
+    freeze_backbone: false
+    feature_dim: 768
 
-  # Tabular branch
+  # Tabular branch - FT-Transformer
   tabular:
-    hidden_dims: [128, 64]
-    dropout: 0.3
+    type: "ft_transformer"
+    embed_dim: 64
+    num_heads: 4
+    num_layers: 3
+    dropout: 0.1
+    output_dim: 64
 
-  # Fusion
+  # Fusion - Cross-modal bidirectional attention
   fusion:
-    method: "gated"  # concat, attention, or gated - gated learns optimal weighting
+    method: "cross_modal"
     hidden_dim: 512
+    num_heads: 8
     dropout: 0.3
+    auxiliary_losses: true
 
   num_classes: 2
 
 data:
   clinical_csv: "../../data/adni/adni_cn_ad_trajectory.csv"
-  train_csv: "data/train.csv"
-  val_csv: "data/val.csv"
-  test_csv: "data/test.csv"
+  train_csv: "data/combined_v2/train.csv"
+  val_csv: "data/combined_v2/val.csv"
+  test_csv: "data/combined_v2/test.csv"
 
-  # Tabular features (matching XGBoost - NO diagnostic criteria like MMSE/CDR)
+  # All 16 tabular features with coverage percentages from combined_v2
   tabular_features:
-    # Demographics
+    # Demographics (99-100% coverage)
     - "AGE"
     - "PTGENDER"
     - "PTEDUCAT"
     - "PTMARRY"
-    # Vitals
+    # Cognitive tests - high coverage (87-89%)
+    - "CATANIMSC"    # Category fluency (animals)
+    - "TRAASCOR"     # Trail Making A
+    - "TRABSCOR"     # Trail Making B
+    # Cognitive tests - lower coverage (23-24%)
+    - "DSPANFOR"     # Digit span forward
+    - "DSPANBAC"     # Digit span backward
+    - "BNTTOTAL"     # Boston Naming Test
+    # Physical (45% coverage)
     - "VSWEIGHT"
     - "BMI"
-    # Medical history
+    # Medical history (40% coverage)
     - "MH14ALCH"     # Alcohol abuse
     - "MH16SMOK"     # Smoking
     - "MH4CARD"      # Cardiovascular
-    - "MHPSYCH"      # Psychiatric
     - "MH2NEURL"     # Neurological
-    # Neuropsych tests (non-diagnostic)
-    - "TRAASCOR"     # Trail Making A
-    - "TRABSCOR"     # Trail Making B
-    - "TRABERRCOM"   # Trail Making B errors
-    - "CATANIMSC"    # Category fluency (animals)
-    - "CLOCKSCOR"    # Clock drawing
-    - "BNTTOTAL"     # Boston Naming Test
-    - "DSPANFOR"     # Digit span forward
-    - "DSPANBAC"     # Digit span backward
 
   checkpoints_dir: "checkpoints"
   results_dir: "results"
@@ -69,12 +74,12 @@ preprocessing:
 
   # Tabular preprocessing
   tabular_normalize: true
-  handle_missing: "median"  # median, mean, or drop
+  handle_missing: "median"
 
 training:
   epochs: 50
   batch_size: 4
-  learning_rate: 0.00002  # Lower LR for fine-tuning pretrained ViT
+  learning_rate: 0.00002
   weight_decay: 0.01
   lr_min: 0.0000001
   optimizer: "adamw"
@@ -82,8 +87,19 @@ training:
   warmup_epochs: 5
   gradient_clip: 1.0
   use_weighted_loss: true
-  layer_wise_lr_decay: 0.75  # Decay LR for deeper layers
+  layer_wise_lr_decay: 0.75
   seed: 42
+
+  # Label smoothing regularization
+  label_smoothing: 0.1
+
+  # Auxiliary losses for modality-specific learning
+  use_auxiliary_loss: true
+  auxiliary_loss_weight: 0.3
+
+  # Test-time augmentation
+  use_tta: true
+  tta_augmentations: 8
 
 hardware:
   device: "cuda"

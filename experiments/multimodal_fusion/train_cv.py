@@ -346,6 +346,19 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
     logger.info(f"Total samples: {len(all_df)}")
     logger.info(f"Label distribution:\n{all_df['label'].value_counts()}")
 
+    # Load trajectory reference for subgroup analysis (CN / AD / MCI_to_AD)
+    trajectory_file = config['data'].get('trajectory_csv', '../../data/adni/adni_cn_ad_trajectory.csv')
+    try:
+        traj_ref = pd.read_csv(trajectory_file)[['subject_id', 'trajectory']].drop_duplicates()
+        all_df = all_df.merge(traj_ref, on='subject_id', how='left')
+        # Fill missing trajectory based on DX column
+        if 'trajectory' in all_df.columns:
+            all_df['trajectory'] = all_df['trajectory'].fillna(all_df.get('DX', 'Unknown'))
+        logger.info(f"Trajectory distribution:\n{all_df['trajectory'].value_counts()}")
+    except Exception as e:
+        logger.warning(f"Could not load trajectory file: {e}. Subgroup analysis disabled.")
+        all_df['trajectory'] = all_df.get('DX', 'Unknown')
+
     # Get labels for stratification
     all_labels = all_df['label'].values
     all_indices = np.arange(len(all_df))
@@ -402,12 +415,30 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
             # Test
             test_metrics = trainer.validate(model, test_loader, criterion)
 
+            # Subgroup analysis: compute accuracy per trajectory (CN / AD / MCI_to_AD)
+            test_df_fold = all_df.iloc[test_idx].reset_index(drop=True)
+            test_df_fold['prediction'] = test_metrics['predictions']
+            test_df_fold['correct'] = (test_df_fold['prediction'] == test_df_fold['label'])
+
+            subgroup_accs = {}
+            for traj in test_df_fold['trajectory'].unique():
+                subset = test_df_fold[test_df_fold['trajectory'] == traj]
+                if len(subset) > 0:
+                    acc = subset['correct'].mean() * 100
+                    subgroup_accs[traj] = {'accuracy': acc, 'n_samples': len(subset)}
+
+            # Log subgroup results
+            logger.info("  Subgroup Analysis:")
+            for traj, metrics in sorted(subgroup_accs.items()):
+                logger.info(f"    {traj}: {metrics['accuracy']:.1f}% ({metrics['n_samples']} samples)")
+
             fold_result = {
                 'seed': seed,
                 'fold': fold,
                 'val_accuracy': best_val_acc,
                 'test_accuracy': test_metrics['accuracy'],
-                'test_balanced_accuracy': test_metrics['balanced_accuracy']
+                'test_balanced_accuracy': test_metrics['balanced_accuracy'],
+                'subgroup_accuracy': subgroup_accs
             }
             fold_results.append(fold_result)
             all_results.append(fold_result)
@@ -444,8 +475,35 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
     logger.info(f"BALANCED: {balanced_mean:.2f}% +/- {balanced_std:.2f}%")
     logger.info(f"{'='*40}")
 
+    # Subgroup summary across all folds
+    logger.info("\nSUBGROUP ANALYSIS SUMMARY:")
+    logger.info("="*40)
+    subgroup_totals = {}
+    for result in all_results:
+        for traj, metrics in result.get('subgroup_accuracy', {}).items():
+            if traj not in subgroup_totals:
+                subgroup_totals[traj] = {'accuracies': [], 'n_samples': []}
+            subgroup_totals[traj]['accuracies'].append(metrics['accuracy'])
+            subgroup_totals[traj]['n_samples'].append(metrics['n_samples'])
+
+    for traj in sorted(subgroup_totals.keys()):
+        accs = subgroup_totals[traj]['accuracies']
+        n_samples = subgroup_totals[traj]['n_samples']
+        logger.info(f"  {traj}: {np.mean(accs):.1f}% +/- {np.std(accs):.1f}% (avg {np.mean(n_samples):.0f} samples/fold)")
+    logger.info("="*40)
+
     # Save results
     results_df.to_csv(output_dir / 'cv_results.csv', index=False)
+
+    # Compute subgroup summary stats
+    subgroup_summary = {}
+    for traj in sorted(subgroup_totals.keys()):
+        accs = subgroup_totals[traj]['accuracies']
+        subgroup_summary[traj] = {
+            'accuracy_mean': float(np.mean(accs)),
+            'accuracy_std': float(np.std(accs)),
+            'avg_samples_per_fold': float(np.mean(subgroup_totals[traj]['n_samples']))
+        }
 
     summary = {
         'n_folds': n_folds,
@@ -454,6 +512,7 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
         'overall_accuracy_std': float(overall_std),
         'balanced_accuracy_mean': float(balanced_mean),
         'balanced_accuracy_std': float(balanced_std),
+        'subgroup_summary': subgroup_summary,
         'per_fold_results': all_results
     }
 
