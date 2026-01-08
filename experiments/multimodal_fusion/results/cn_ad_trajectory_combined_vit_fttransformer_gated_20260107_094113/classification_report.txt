@@ -1,8 +1,0 @@
-               precision    recall  f1-score   support
-
-           CN       0.93      0.95      0.94       712
-AD_trajectory       0.79      0.75      0.77       198
-
-     accuracy                           0.90       910
-    macro avg       0.86      0.85      0.86       910
- weighted avg       0.90      0.90      0.90       910

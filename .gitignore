@@ -6,6 +6,7 @@ mni_tmeplate
 output
 env
 data/
+nohup.out
 
 # Environment variables and secrets
 .env

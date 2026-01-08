@@ -1,9 +1,0 @@
-{
-  "accuracy": 83.82352941176471,
-  "balanced_accuracy": 83.24652777777779,
-  "timestamp": "2025-12-18T23:35:43.603307",
-  "experiment_name": "multimodal_fusion_adni",
-  "backbone": "resnet",
-  "tabular_encoder": "fttransformer",
-  "fusion_method": "gated"
-}
