@@ -1,0 +1,48 @@
+{
+  "overall_accuracy": 83.45494505494506,
+  "overall_accuracy_std": 0.80733265521817,
+  "overall_balanced_accuracy": 83.22874815571444,
+  "overall_balanced_accuracy_std": 0.27483566191717806,
+  "per_seed_results": [
+    {
+      "seed": 42,
+      "test_accuracy_mean": 84.41758241758241,
+      "test_accuracy_std": 1.7043952501398953,
+      "balanced_accuracy_mean": 83.36993530813756,
+      "balanced_accuracy_std": 0.8584975029255784,
+      "fold_results": null
+    },
+    {
+      "seed": 123,
+      "test_accuracy_mean": 82.59340659340658,
+      "test_accuracy_std": 2.0647646912629485,
+      "balanced_accuracy_mean": 83.29800817160368,
+      "balanced_accuracy_std": 1.0137290084984174,
+      "fold_results": null
+    },
+    {
+      "seed": 456,
+      "test_accuracy_mean": 84.32967032967034,
+      "test_accuracy_std": 1.0802818221929218,
+      "balanced_accuracy_mean": 83.35021563954149,
+      "balanced_accuracy_std": 1.0021492457502352,
+      "fold_results": null
+    },
+    {
+      "seed": 789,
+      "test_accuracy_mean": 82.54945054945055,
+      "test_accuracy_std": 3.0353550083255216,
+      "balanced_accuracy_mean": 82.68655657700602,
+      "balanced_accuracy_std": 0.35313975736968256,
+      "fold_results": null
+    },
+    {
+      "seed": 2024,
+      "test_accuracy_mean": 83.38461538461539,
+      "test_accuracy_std": 2.0958783826605987,
+      "balanced_accuracy_mean": 83.43902508228351,
+      "balanced_accuracy_std": 0.9782704397673185,
+      "fold_results": null
+    }
+  ]
+}
