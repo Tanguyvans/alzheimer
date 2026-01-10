@@ -3,117 +3,661 @@
   "seeds": [
     42,
     123,
-    456
+    456,
+    789,
+    2024
   ],
-  "overall_accuracy_mean": 83.57131164313483,
-  "overall_accuracy_std": 2.648503023911302,
-  "balanced_accuracy_mean": 83.38309314954053,
-  "balanced_accuracy_std": 2.8166327792825765,
+  "overall_accuracy_mean": 91.58450123660346,
+  "overall_accuracy_std": 0.9253648144648203,
+  "balanced_accuracy_mean": 85.75966999690827,
+  "balanced_accuracy_std": 2.5733109506438328,
+  "subgroup_summary": {
+    "AD": {
+      "accuracy_mean": 94.33986847312708,
+      "accuracy_std": 3.544507515136822,
+      "avg_samples_per_fold": 44.0
+    },
+    "AD_trajectory": {
+      "accuracy_mean": 68.9480604384491,
+      "accuracy_std": 8.16108070141373,
+      "avg_samples_per_fold": 167.8
+    },
+    "CN": {
+      "accuracy_mean": 96.06058898563585,
+      "accuracy_std": 1.457647830742423,
+      "avg_samples_per_fold": 949.4
+    },
+    "MCI_to_AD": {
+      "accuracy_mean": 80.82281628989506,
+      "accuracy_std": 5.993180101512145,
+      "avg_samples_per_fold": 51.8
+    }
+  },
   "per_fold_results": [
     {
       "seed": 42,
       "fold": 0,
-      "val_accuracy": 84.72222222222223,
-      "test_accuracy": 87.84530386740332,
-      "test_balanced_accuracy": 87.59803921568627
+      "val_accuracy": 88.45360824742268,
+      "test_accuracy": 89.8598516075845,
+      "test_balanced_accuracy": 79.64058435061037,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 97.68421052631578,
+          "n_samples": 950
+        },
+        "AD_trajectory": {
+          "accuracy": 45.625,
+          "n_samples": 160
+        },
+        "MCI_to_AD": {
+          "accuracy": 77.04918032786885,
+          "n_samples": 61
+        },
+        "AD": {
+          "accuracy": 100.0,
+          "n_samples": 42
+        }
+      }
     },
     {
       "seed": 42,
       "fold": 1,
-      "val_accuracy": 86.11111111111111,
-      "test_accuracy": 84.5303867403315,
-      "test_balanced_accuracy": 84.27083333333334
+      "val_accuracy": 92.16494845360825,
+      "test_accuracy": 90.51937345424567,
+      "test_balanced_accuracy": 86.38583149889934,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 93.6842105263158,
+          "n_samples": 950
+        },
+        "AD_trajectory": {
+          "accuracy": 73.5632183908046,
+          "n_samples": 174
+        },
+        "MCI_to_AD": {
+          "accuracy": 84.31372549019608,
+          "n_samples": 51
+        },
+        "AD": {
+          "accuracy": 97.36842105263158,
+          "n_samples": 38
+        }
+      }
     },
     {
       "seed": 42,
       "fold": 2,
-      "val_accuracy": 88.88888888888889,
-      "test_accuracy": 78.45303867403315,
-      "test_balanced_accuracy": 77.80024509803921
+      "val_accuracy": 92.57731958762886,
+      "test_accuracy": 91.26133553173949,
+      "test_balanced_accuracy": 84.708983938436,
+      "subgroup_accuracy": {
+        "AD": {
+          "accuracy": 87.5,
+          "n_samples": 48
+        },
+        "CN": {
+          "accuracy": 96.31190727081137,
+          "n_samples": 949
+        },
+        "AD_trajectory": {
+          "accuracy": 67.45562130177515,
+          "n_samples": 169
+        },
+        "MCI_to_AD": {
+          "accuracy": 78.72340425531915,
+          "n_samples": 47
+        }
+      }
     },
     {
       "seed": 42,
       "fold": 3,
-      "val_accuracy": 88.88888888888889,
-      "test_accuracy": 81.11111111111111,
-      "test_balanced_accuracy": 81.25
+      "val_accuracy": 92.78350515463917,
+      "test_accuracy": 92.1681780708986,
+      "test_balanced_accuracy": 88.70621387744674,
+      "subgroup_accuracy": {
+        "AD_trajectory": {
+          "accuracy": 77.8409090909091,
+          "n_samples": 176
+        },
+        "CN": {
+          "accuracy": 94.83667017913592,
+          "n_samples": 949
+        },
+        "AD": {
+          "accuracy": 97.2972972972973,
+          "n_samples": 37
+        },
+        "MCI_to_AD": {
+          "accuracy": 88.23529411764706,
+          "n_samples": 51
+        }
+      }
     },
     {
       "seed": 42,
       "fold": 4,
-      "val_accuracy": 86.11111111111111,
-      "test_accuracy": 86.11111111111111,
-      "test_balanced_accuracy": 86.09907120743034
+      "val_accuracy": 92.78350515463917,
+      "test_accuracy": 92.82769991755977,
+      "test_balanced_accuracy": 86.94039978286554,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 97.36564805057955,
+          "n_samples": 949
+        },
+        "MCI_to_AD": {
+          "accuracy": 79.59183673469387,
+          "n_samples": 49
+        },
+        "AD_trajectory": {
+          "accuracy": 68.75,
+          "n_samples": 160
+        },
+        "AD": {
+          "accuracy": 96.36363636363636,
+          "n_samples": 55
+        }
+      }
     },
     {
       "seed": 123,
       "fold": 0,
-      "val_accuracy": 86.11111111111111,
-      "test_accuracy": 82.87292817679558,
-      "test_balanced_accuracy": 82.30392156862744
+      "val_accuracy": 92.57731958762886,
+      "test_accuracy": 91.34377576257214,
+      "test_balanced_accuracy": 85.12487492495498,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 96.10526315789474,
+          "n_samples": 950
+        },
+        "AD_trajectory": {
+          "accuracy": 70.23809523809523,
+          "n_samples": 168
+        },
+        "AD": {
+          "accuracy": 95.23809523809523,
+          "n_samples": 42
+        },
+        "MCI_to_AD": {
+          "accuracy": 69.81132075471697,
+          "n_samples": 53
+        }
+      }
     },
     {
       "seed": 123,
       "fold": 1,
-      "val_accuracy": 88.88888888888889,
-      "test_accuracy": 86.1878453038674,
-      "test_balanced_accuracy": 86.37254901960785
+      "val_accuracy": 93.19587628865979,
+      "test_accuracy": 92.58037922506183,
+      "test_balanced_accuracy": 88.93896337802681,
+      "subgroup_accuracy": {
+        "AD": {
+          "accuracy": 94.0,
+          "n_samples": 50
+        },
+        "CN": {
+          "accuracy": 95.36842105263158,
+          "n_samples": 950
+        },
+        "MCI_to_AD": {
+          "accuracy": 88.88888888888889,
+          "n_samples": 45
+        },
+        "AD_trajectory": {
+          "accuracy": 77.38095238095238,
+          "n_samples": 168
+        }
+      }
     },
     {
       "seed": 123,
       "fold": 2,
-      "val_accuracy": 87.5,
-      "test_accuracy": 82.87292817679558,
-      "test_balanced_accuracy": 82.84313725490196
+      "val_accuracy": 94.02061855670104,
+      "test_accuracy": 91.67353668590272,
+      "test_balanced_accuracy": 85.51924673500015,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 96.4172813487882,
+          "n_samples": 949
+        },
+        "MCI_to_AD": {
+          "accuracy": 72.22222222222221,
+          "n_samples": 54
+        },
+        "AD_trajectory": {
+          "accuracy": 70.48192771084338,
+          "n_samples": 166
+        },
+        "AD": {
+          "accuracy": 93.18181818181817,
+          "n_samples": 44
+        }
+      }
     },
     {
       "seed": 123,
       "fold": 3,
-      "val_accuracy": 90.27777777777777,
-      "test_accuracy": 85.55555555555556,
-      "test_balanced_accuracy": 85.49107142857143
+      "val_accuracy": 91.75257731958763,
+      "test_accuracy": 92.08573784006595,
+      "test_balanced_accuracy": 85.50926812913114,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 97.15489989462593,
+          "n_samples": 949
+        },
+        "MCI_to_AD": {
+          "accuracy": 82.35294117647058,
+          "n_samples": 51
+        },
+        "AD_trajectory": {
+          "accuracy": 67.05202312138728,
+          "n_samples": 173
+        },
+        "AD": {
+          "accuracy": 92.5,
+          "n_samples": 40
+        }
+      }
     },
     {
       "seed": 123,
       "fold": 4,
-      "val_accuracy": 91.66666666666667,
-      "test_accuracy": 80.0,
-      "test_balanced_accuracy": 79.50464396284829
+      "val_accuracy": 94.43298969072166,
+      "test_accuracy": 91.59109645507007,
+      "test_balanced_accuracy": 85.87668039722834,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 95.99578503688093,
+          "n_samples": 949
+        },
+        "AD_trajectory": {
+          "accuracy": 66.46341463414635,
+          "n_samples": 164
+        },
+        "MCI_to_AD": {
+          "accuracy": 87.5,
+          "n_samples": 56
+        },
+        "AD": {
+          "accuracy": 95.45454545454545,
+          "n_samples": 44
+        }
+      }
     },
     {
       "seed": 456,
       "fold": 0,
-      "val_accuracy": 86.11111111111111,
-      "test_accuracy": 84.5303867403315,
-      "test_balanced_accuracy": 84.81004901960785
+      "val_accuracy": 87.42268041237114,
+      "test_accuracy": 88.87056883759274,
+      "test_balanced_accuracy": 79.00900540324194,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 96.42105263157895,
+          "n_samples": 950
+        },
+        "AD_trajectory": {
+          "accuracy": 49.71098265895954,
+          "n_samples": 173
+        },
+        "MCI_to_AD": {
+          "accuracy": 77.08333333333334,
+          "n_samples": 48
+        },
+        "AD": {
+          "accuracy": 92.85714285714286,
+          "n_samples": 42
+        }
+      }
     },
     {
       "seed": 456,
       "fold": 1,
-      "val_accuracy": 91.66666666666667,
-      "test_accuracy": 86.1878453038674,
-      "test_balanced_accuracy": 85.76593137254902
+      "val_accuracy": 92.98969072164948,
+      "test_accuracy": 92.08573784006595,
+      "test_balanced_accuracy": 87.52331398839304,
+      "subgroup_accuracy": {
+        "AD": {
+          "accuracy": 100.0,
+          "n_samples": 33
+        },
+        "CN": {
+          "accuracy": 95.57894736842105,
+          "n_samples": 950
+        },
+        "AD_trajectory": {
+          "accuracy": 75.70621468926554,
+          "n_samples": 177
+        },
+        "MCI_to_AD": {
+          "accuracy": 79.24528301886792,
+          "n_samples": 53
+        }
+      }
     },
     {
       "seed": 456,
       "fold": 2,
-      "val_accuracy": 86.11111111111111,
-      "test_accuracy": 83.97790055248619,
-      "test_balanced_accuracy": 83.75
+      "val_accuracy": 92.98969072164948,
+      "test_accuracy": 92.25061830173125,
+      "test_balanced_accuracy": 86.43488360954115,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 96.73340358271865,
+          "n_samples": 949
+        },
+        "AD_trajectory": {
+          "accuracy": 70.52023121387283,
+          "n_samples": 173
+        },
+        "MCI_to_AD": {
+          "accuracy": 82.14285714285714,
+          "n_samples": 56
+        },
+        "AD": {
+          "accuracy": 94.28571428571428,
+          "n_samples": 35
+        }
+      }
     },
     {
       "seed": 456,
       "fold": 3,
-      "val_accuracy": 79.16666666666667,
-      "test_accuracy": 82.22222222222223,
-      "test_balanced_accuracy": 82.88690476190477
+      "val_accuracy": 93.6082474226804,
+      "test_accuracy": 92.91014014839241,
+      "test_balanced_accuracy": 87.81332822428713,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 96.83877766069547,
+          "n_samples": 949
+        },
+        "AD_trajectory": {
+          "accuracy": 72.10884353741497,
+          "n_samples": 147
+        },
+        "MCI_to_AD": {
+          "accuracy": 78.18181818181819,
+          "n_samples": 55
+        },
+        "AD": {
+          "accuracy": 95.16129032258065,
+          "n_samples": 62
+        }
+      }
     },
     {
       "seed": 456,
       "fold": 4,
-      "val_accuracy": 86.11111111111111,
-      "test_accuracy": 81.11111111111111,
-      "test_balanced_accuracy": 80.0
+      "val_accuracy": 93.19587628865979,
+      "test_accuracy": 91.92085737840065,
+      "test_balanced_accuracy": 88.54815276048154,
+      "subgroup_accuracy": {
+        "AD_trajectory": {
+          "accuracy": 77.51479289940828,
+          "n_samples": 169
+        },
+        "CN": {
+          "accuracy": 94.52054794520548,
+          "n_samples": 949
+        },
+        "MCI_to_AD": {
+          "accuracy": 87.2340425531915,
+          "n_samples": 47
+        },
+        "AD": {
+          "accuracy": 95.83333333333334,
+          "n_samples": 48
+        }
+      }
+    },
+    {
+      "seed": 789,
+      "fold": 0,
+      "val_accuracy": 92.98969072164948,
+      "test_accuracy": 91.59109645507007,
+      "test_balanced_accuracy": 86.38262957774666,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 95.57894736842105,
+          "n_samples": 950
+        },
+        "MCI_to_AD": {
+          "accuracy": 77.58620689655173,
+          "n_samples": 58
+        },
+        "AD": {
+          "accuracy": 95.83333333333334,
+          "n_samples": 48
+        },
+        "AD_trajectory": {
+          "accuracy": 71.3375796178344,
+          "n_samples": 157
+        }
+      }
+    },
+    {
+      "seed": 789,
+      "fold": 1,
+      "val_accuracy": 92.78350515463917,
+      "test_accuracy": 91.83841714756801,
+      "test_balanced_accuracy": 84.61576946167702,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 97.36842105263158,
+          "n_samples": 950
+        },
+        "AD_trajectory": {
+          "accuracy": 65.42553191489363,
+          "n_samples": 188
+        },
+        "MCI_to_AD": {
+          "accuracy": 83.33333333333334,
+          "n_samples": 36
+        },
+        "AD": {
+          "accuracy": 92.3076923076923,
+          "n_samples": 39
+        }
+      }
+    },
+    {
+      "seed": 789,
+      "fold": 2,
+      "val_accuracy": 93.4020618556701,
+      "test_accuracy": 91.17889530090685,
+      "test_balanced_accuracy": 85.33983140147524,
+      "subgroup_accuracy": {
+        "AD_trajectory": {
+          "accuracy": 67.64705882352942,
+          "n_samples": 170
+        },
+        "CN": {
+          "accuracy": 95.67966280295047,
+          "n_samples": 949
+        },
+        "AD": {
+          "accuracy": 97.43589743589743,
+          "n_samples": 39
+        },
+        "MCI_to_AD": {
+          "accuracy": 81.81818181818183,
+          "n_samples": 55
+        }
+      }
+    },
+    {
+      "seed": 789,
+      "fold": 3,
+      "val_accuracy": 93.4020618556701,
+      "test_accuracy": 92.49793899422919,
+      "test_balanced_accuracy": 85.63599642366766,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 97.78714436248683,
+          "n_samples": 949
+        },
+        "AD_trajectory": {
+          "accuracy": 66.875,
+          "n_samples": 160
+        },
+        "AD": {
+          "accuracy": 92.6829268292683,
+          "n_samples": 41
+        },
+        "MCI_to_AD": {
+          "accuracy": 77.77777777777779,
+          "n_samples": 63
+        }
+      }
+    },
+    {
+      "seed": 789,
+      "fold": 4,
+      "val_accuracy": 90.9278350515464,
+      "test_accuracy": 92.25061830173125,
+      "test_balanced_accuracy": 85.88805600791902,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 97.15489989462593,
+          "n_samples": 949
+        },
+        "AD_trajectory": {
+          "accuracy": 70.73170731707317,
+          "n_samples": 164
+        },
+        "AD": {
+          "accuracy": 90.56603773584906,
+          "n_samples": 53
+        },
+        "MCI_to_AD": {
+          "accuracy": 70.2127659574468,
+          "n_samples": 47
+        }
+      }
+    },
+    {
+      "seed": 2024,
+      "fold": 0,
+      "val_accuracy": 94.22680412371135,
+      "test_accuracy": 91.42621599340478,
+      "test_balanced_accuracy": 85.58995397238343,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 95.89473684210526,
+          "n_samples": 950
+        },
+        "AD_trajectory": {
+          "accuracy": 68.32298136645963,
+          "n_samples": 161
+        },
+        "MCI_to_AD": {
+          "accuracy": 78.33333333333333,
+          "n_samples": 60
+        },
+        "AD": {
+          "accuracy": 97.61904761904762,
+          "n_samples": 42
+        }
+      }
+    },
+    {
+      "seed": 2024,
+      "fold": 1,
+      "val_accuracy": 92.37113402061856,
+      "test_accuracy": 91.50865622423743,
+      "test_balanced_accuracy": 81.930558335001,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 98.8421052631579,
+          "n_samples": 950
+        },
+        "AD_trajectory": {
+          "accuracy": 57.865168539325836,
+          "n_samples": 178
+        },
+        "MCI_to_AD": {
+          "accuracy": 75.0,
+          "n_samples": 40
+        },
+        "AD": {
+          "accuracy": 84.44444444444444,
+          "n_samples": 45
+        }
+      }
+    },
+    {
+      "seed": 2024,
+      "fold": 2,
+      "val_accuracy": 92.98969072164948,
+      "test_accuracy": 90.93157460840891,
+      "test_balanced_accuracy": 84.2248219816713,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 96.10115911485775,
+          "n_samples": 949
+        },
+        "AD": {
+          "accuracy": 92.5,
+          "n_samples": 40
+        },
+        "AD_trajectory": {
+          "accuracy": 64.36781609195403,
+          "n_samples": 174
+        },
+        "MCI_to_AD": {
+          "accuracy": 84.0,
+          "n_samples": 50
+        }
+      }
+    },
+    {
+      "seed": 2024,
+      "fold": 3,
+      "val_accuracy": 93.6082474226804,
+      "test_accuracy": 90.51937345424567,
+      "test_balanced_accuracy": 89.01954210173389,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 91.6754478398314,
+          "n_samples": 949
+        },
+        "MCI_to_AD": {
+          "accuracy": 96.29629629629629,
+          "n_samples": 54
+        },
+        "AD": {
+          "accuracy": 97.5,
+          "n_samples": 40
+        },
+        "AD_trajectory": {
+          "accuracy": 80.58823529411765,
+          "n_samples": 170
+        }
+      }
+    },
+    {
+      "seed": 2024,
+      "fold": 4,
+      "val_accuracy": 94.84536082474227,
+      "test_accuracy": 91.92085737840065,
+      "test_balanced_accuracy": 88.68485966088706,
+      "subgroup_accuracy": {
+        "AD_trajectory": {
+          "accuracy": 80.12820512820514,
+          "n_samples": 156
+        },
+        "CN": {
+          "accuracy": 94.41517386722866,
+          "n_samples": 949
+        },
+        "AD": {
+          "accuracy": 90.56603773584906,
+          "n_samples": 53
+        },
+        "MCI_to_AD": {
+          "accuracy": 83.63636363636363,
+          "n_samples": 55
+        }
+      }
     }
   ]
 }
