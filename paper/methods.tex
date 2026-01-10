@@ -1,0 +1,99 @@
+\section{Methods}
+
+\subsection{Datasets}
+
+We aggregated data from three publicly available cohorts:
+
+\textbf{ADNI (Alzheimer's Disease Neuroimaging Initiative):} A longitudinal study tracking AD progression with well-curated MRI-clinical data pairs. We included 903 subjects (424 CN, 479 AD-trajectory).
+
+\textbf{OASIS-3 (Open Access Series of Imaging Studies):} A longitudinal neuroimaging dataset from Washington University. We included 1,030 subjects (742 CN, 288 AD-trajectory).
+
+\textbf{NACC (National Alzheimer's Coordinating Center):} The largest US Alzheimer's database, aggregating data from 40 research centers. We included 4,132 subjects (3,581 CN, 551 AD-trajectory).
+
+The AD-trajectory group includes both clinically diagnosed AD patients and MCI subjects who subsequently progressed to AD, representing individuals on the Alzheimer's disease continuum. The combined dataset comprises 6,065 subjects (4,747 CN, 1,318 AD-trajectory; 78.3\% vs 21.7\%). Table~\ref{tab:dataset} summarizes the dataset characteristics.
+
+\begin{table}[htbp]
+\caption{Dataset Composition}
+\begin{center}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Cohort} & \textbf{Total} & \textbf{CN} & \textbf{AD-traj} & \textbf{\% Total} \\
+\midrule
+ADNI & 903 & 424 & 479 & 14.9\% \\
+OASIS & 1,030 & 742 & 288 & 17.0\% \\
+NACC & 4,132 & 3,581 & 551 & 68.1\% \\
+\midrule
+\textbf{Total} & \textbf{6,065} & \textbf{4,747} & \textbf{1,318} & 100\% \\
+\bottomrule
+\end{tabular}
+\label{tab:dataset}
+\end{center}
+\end{table}
+
+\subsection{Data Splitting Strategy}
+
+To prevent data leakage, we employed strict subject-level splitting:
+\begin{itemize}
+    \item Each subject appears in exactly one split (train/val/test)
+    \item Only the first visit per subject is used (no longitudinal leakage)
+    \item Splits are stratified by diagnosis and cohort
+    \item 5-fold cross-validation with multiple random seeds
+\end{itemize}
+
+This approach follows recommendations from Wen et al.\ \cite{wen2020} and addresses methodological concerns raised by recent systematic reviews \cite{yagis2021}.
+
+\subsection{MRI Preprocessing}
+
+T1-weighted MRI scans underwent standardized preprocessing:
+\begin{enumerate}
+    \item Conversion from DICOM to NIfTI format
+    \item N4 bias field correction to remove intensity inhomogeneities
+    \item Affine registration to MNI-152 template (1.75mm isotropic)
+    \item Skull stripping using SynthStrip \cite{synthstrip}
+    \item Resampling to 128$\times$128$\times$128 voxels
+\end{enumerate}
+
+\subsection{Clinical Features}
+
+We extracted 16 clinical features common across all three cohorts:
+
+\textbf{Demographics (4):} Age, sex, education years, marital status
+
+\textbf{Neuropsychological tests (6):} Category fluency (animals), Trail Making Tests A/B, digit span forward/backward, Boston Naming Test
+
+\textbf{Physical measurements (2):} Weight, BMI
+
+\textbf{Medical history (4):} Alcohol use, smoking history, cardiovascular disease, neurological conditions
+
+Missing values were imputed using median imputation and all features were z-score normalized. Importantly, diagnostic criteria scores (MMSE, CDR) were excluded to prevent data leakage.
+
+\subsection{Model Architecture}
+
+Our multimodal fusion architecture (Fig.~\ref{fig:architecture}) consists of three components:
+
+\textbf{MRI Encoder:} We use a Vision Transformer (ViT-Base) adapted for 3D volumes, pretrained using masked autoencoder (MAE) reconstruction with 75\% masking ratio. Input volumes are divided into 16$\times$16$\times$16 patches, each embedded into 768-dimensional tokens. The encoder consists of 12 transformer blocks.
+
+\textbf{Tabular Encoder:} We employ the FT-Transformer \cite{gorishniy2021}, which embeds each feature independently before processing through transformer layers. We use 3 transformer blocks with 64-dimensional embeddings and 4 attention heads, producing a 64-dimensional output.
+
+\textbf{Cross-Modal Fusion:} Both modality representations are fused using bidirectional cross-attention with 8 heads and hidden dimension 512:
+\begin{align}
+f'_{mri} &= \text{CrossAttn}(Q{=}f_{mri}, K{=}f_{tab}, V{=}f_{tab}) \\
+f'_{tab} &= \text{CrossAttn}(Q{=}f_{tab}, K{=}f_{mri}, V{=}f_{mri}) \\
+f_{fused} &= \text{MLP}([f'_{mri}; f'_{tab}])
+\end{align}
+This enables each modality to attend to complementary information from the other. Auxiliary classifiers on each branch (weighted 0.3) encourage modality-specific learning.
+
+\subsection{Training Details}
+
+Models were trained for 50 epochs with early stopping (patience=15) monitoring validation accuracy:
+\begin{itemize}
+    \item AdamW optimizer with weight decay 0.01
+    \item Learning rate: 2$\times$10$^{-5}$ with cosine annealing
+    \item 5 warmup epochs
+    \item Layer-wise learning rate decay (0.75) for ViT fine-tuning
+    \item Weighted cross-entropy loss with label smoothing (0.1)
+    \item Batch size: 4 (due to 3D volume memory requirements)
+    \item Test-time augmentation (8 augmentations)
+\end{itemize}
+
+Experiments used 5-fold cross-validation repeated with 5 random seeds (42, 123, 456, 789, 2024) to assess stability.

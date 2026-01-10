@@ -1,0 +1,82 @@
+\documentclass[tikz,border=2mm]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc}
+
+\begin{document}
+
+\definecolor{mricolor}{RGB}{66, 133, 244}
+\definecolor{tabcolor}{RGB}{52, 168, 83}
+\definecolor{fusioncolor}{RGB}{251, 188, 5}
+\definecolor{outputcolor}{RGB}{234, 67, 53}
+
+\begin{tikzpicture}[
+    node distance=0.8cm and 1.2cm,
+    box/.style={rectangle, draw, rounded corners=3pt, minimum width=2cm, minimum height=0.7cm, align=center, font=\small},
+    input/.style={box, fill=gray!20},
+    mri/.style={box, fill=mricolor!30, draw=mricolor!80},
+    tab/.style={box, fill=tabcolor!30, draw=tabcolor!80},
+    fusion/.style={box, fill=fusioncolor!30, draw=fusioncolor!80},
+    output/.style={box, fill=outputcolor!30, draw=outputcolor!80},
+    arrow/.style={-{Stealth[length=2mm]}, thick},
+    label/.style={font=\scriptsize, text=gray}
+]
+
+% MRI Branch (Left)
+\node[input] (mri_input) {3D MRI\\$128^3$ voxels};
+\node[mri, below=of mri_input] (patch) {Patch Embed\\$16^3$ patches};
+\node[mri, below=of patch] (vit) {ViT Encoder\\12 blocks};
+\node[mri, below=of vit] (mri_feat) {MRI Features\\768-dim};
+
+% Tabular Branch (Right)
+\node[input, right=3cm of mri_input] (tab_input) {Clinical Data\\16 features};
+\node[tab, below=of tab_input] (feat_embed) {Feature Embed\\64-dim each};
+\node[tab, below=of feat_embed] (ft_trans) {FT-Transformer\\3 blocks};
+\node[tab, below=of ft_trans] (tab_feat) {Tab Features\\64-dim};
+
+% Cross-Modal Fusion (Center)
+\node[fusion, below=1.2cm of $(mri_feat)!0.5!(tab_feat)$] (cross_attn) {Cross-Attention\\Bidirectional};
+\node[fusion, below=of cross_attn] (fusion_mlp) {Fusion MLP\\512-dim};
+
+% Output
+\node[output, below=of fusion_mlp] (classifier) {Classifier};
+\node[below=0.5cm of classifier, font=\small\bfseries] (output) {CN / AD-trajectory};
+
+% Auxiliary classifiers (dashed)
+\node[output, left=0.8cm of fusion_mlp, minimum width=1.2cm, dashed, draw=outputcolor!50] (aux_mri) {\scriptsize Aux MRI};
+\node[output, right=0.8cm of fusion_mlp, minimum width=1.2cm, dashed, draw=outputcolor!50] (aux_tab) {\scriptsize Aux Tab};
+
+% Arrows - MRI branch
+\draw[arrow] (mri_input) -- (patch);
+\draw[arrow] (patch) -- (vit);
+\draw[arrow] (vit) -- (mri_feat);
+
+% Arrows - Tabular branch
+\draw[arrow] (tab_input) -- (feat_embed);
+\draw[arrow] (feat_embed) -- (ft_trans);
+\draw[arrow] (ft_trans) -- (tab_feat);
+
+% Arrows - to fusion
+\draw[arrow] (mri_feat.south) -- ++(0,-0.4) -| (cross_attn.north west);
+\draw[arrow] (tab_feat.south) -- ++(0,-0.4) -| (cross_attn.north east);
+
+% Arrows - fusion to output
+\draw[arrow] (cross_attn) -- (fusion_mlp);
+\draw[arrow] (fusion_mlp) -- (classifier);
+\draw[arrow] (classifier) -- (output);
+
+% Arrows - auxiliary (dashed)
+\draw[arrow, dashed, gray] (mri_feat.south) -- ++(0,-0.2) -| (aux_mri.north);
+\draw[arrow, dashed, gray] (tab_feat.south) -- ++(0,-0.2) -| (aux_tab.north);
+
+% Labels
+\node[label, left=0.1cm of vit] {MAE pretrained};
+\node[label, right=0.1cm of ft_trans] {4 heads};
+\node[label, below=0.05cm of cross_attn, yshift=-0.1cm] {\scriptsize 8 heads};
+
+% Branch labels
+\node[above=0.1cm of mri_input, font=\small\bfseries, text=mricolor] {MRI Encoder};
+\node[above=0.1cm of tab_input, font=\small\bfseries, text=tabcolor] {Tabular Encoder};
+
+\end{tikzpicture}
+
+\end{document}
