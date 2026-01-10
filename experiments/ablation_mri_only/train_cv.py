@@ -62,7 +62,9 @@ class MRIDataset(Dataset):
             raise ValueError("No label column found")
 
         # Get MRI paths
-        if 'mri_path' in self.df.columns:
+        if 'scan_path' in self.df.columns:
+            self.mri_paths = self.df['scan_path'].values
+        elif 'mri_path' in self.df.columns:
             self.mri_paths = self.df['mri_path'].values
         elif 'npy_path' in self.df.columns:
             self.mri_paths = self.df['npy_path'].values
