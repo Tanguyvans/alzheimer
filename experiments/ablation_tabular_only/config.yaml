@@ -1,0 +1,74 @@
+# Ablation Study: Tabular Only (FT-Transformer)
+# Uses the same combined_v2 dataset as multimodal_fusion for fair comparison
+
+experiment:
+  name: "ablation_tabular_only"
+  task: "cn_ad_trajectory"
+  dataset: "multi_cohort_v2"
+  description: "FT-Transformer only baseline for ablation study"
+
+model:
+  # FT-Transformer for tabular data
+  tabular:
+    type: "ft_transformer"
+    embed_dim: 64
+    num_heads: 4
+    num_layers: 3
+    dropout: 0.1
+    output_dim: 64
+
+  num_classes: 2
+
+data:
+  # Use same data as multimodal experiment
+  data_dir: "../multimodal_fusion/data/combined_v2"
+
+  # Same 16 tabular features as multimodal
+  tabular_features:
+    - "AGE"
+    - "PTGENDER"
+    - "PTEDUCAT"
+    - "PTMARRY"
+    - "CATANIMSC"
+    - "TRAASCOR"
+    - "TRABSCOR"
+    - "DSPANFOR"
+    - "DSPANBAC"
+    - "BNTTOTAL"
+    - "VSWEIGHT"
+    - "BMI"
+    - "MH14ALCH"
+    - "MH16SMOK"
+    - "MH4CARD"
+    - "MH2NEURL"
+
+  results_dir: "results"
+
+preprocessing:
+  tabular_normalize: true
+  handle_missing: "median"
+
+training:
+  epochs: 100
+  batch_size: 32
+  learning_rate: 0.001
+  weight_decay: 0.01
+  lr_min: 0.00001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  warmup_epochs: 5
+  use_weighted_loss: true
+  label_smoothing: 0.1
+  seed: 42
+
+hardware:
+  device: "cuda"
+  num_workers: 4
+
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 20
+    monitor: "val_accuracy"
+  checkpoint:
+    save_best: true
