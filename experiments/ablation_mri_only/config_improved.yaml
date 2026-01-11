@@ -1,0 +1,48 @@
+# MRI Only - IMPROVED settings based on MICCAI 2024 paper
+
+experiment:
+  name: "ablation_mri_only_improved"
+
+model:
+  architecture: "vit_base"
+  num_classes: 2
+  in_channels: 1
+  image_size: 128
+  dropout: 0.2
+  classifier_dropout: 0.6
+  drop_path_rate: 0.2
+  use_pretrained: true
+  pretrained_path: "../mri_vit_ad/pretrained/vit_mae75_pretrained.pth"
+
+data:
+  data_dir: "../multimodal_fusion/data/combined_v2"
+
+training:
+  epochs: 100
+  batch_size: 4
+  learning_rate: 0.00001  # 1e-5 like MICCAI
+  weight_decay: 0.3  # KEY: MICCAI uses 0.3 (was 0.01)
+  lr_min: 0.000001
+  warmup_epochs: 10
+  layer_wise_lr_decay: 0.75
+  gradient_clip: 1.0
+  gradient_accumulation: 2
+
+  use_weighted_loss: true
+  use_focal_loss: true
+  focal_gamma: 2.0
+  label_smoothing: 0.1
+
+  use_mixup: true
+  use_tta: true
+  seed: 42
+
+hardware:
+  device: "cuda"
+  num_workers: 4
+
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 25
+    monitor: "val_balanced_accuracy"
