@@ -1,50 +1,50 @@
 # Ablation Study: MRI Only (ViT)
-# Uses the same combined_v2 dataset as multimodal_fusion for fair comparison
+# Same config as mri_vit_ad but using combined multi-cohort dataset
 
 experiment:
   name: "ablation_mri_only"
-  task: "cn_ad_trajectory"
+  task: "cn_ad_trajectory"  # Binary: CN vs (MCIc + AD)
   dataset: "multi_cohort_v2"
   description: "ViT MRI-only baseline for ablation study"
 
 model:
-  architecture: "vit_base"
-  num_classes: 2
+  architecture: "vit_base"  # Paper uses vit_base with MAE pretrained weights
+  num_classes: 2  # Binary: CN vs AD_trajectory
   in_channels: 1
-  image_size: 128
-  dropout: 0.1
-  classifier_dropout: 0.5
-  drop_path_rate: 0.1
-  use_pretrained: true
+  image_size: 128  # 128x128x128 (paper uses this size, must be divisible by patch_size=16)
+  dropout: 0.1  # Dropout in transformer blocks
+  classifier_dropout: 0.5  # Paper uses 0.5 for classifier head
+  drop_path_rate: 0.1  # Stochastic depth
+  use_pretrained: true  # Use MAE pretrained weights
   pretrained_path: "../mri_vit_ad/pretrained/vit_mae75_pretrained.pth"
 
 data:
   # Use same data as multimodal experiment
   data_dir: "../multimodal_fusion/data/combined_v2"
+  checkpoints_dir: "checkpoints"
+  logs_dir: "logs"
   results_dir: "results"
 
 preprocessing:
-  use_paper_preprocessing: true
-  target_spacing: 1.75
+  use_paper_preprocessing: true  # Enable 1.75mm resampling + RAS orientation
+  target_spacing: 1.75  # Paper uses 1.75mm isotropic voxel spacing
 
 training:
-  epochs: 50
-  batch_size: 4
-  learning_rate: 0.00002
-  weight_decay: 0.01
-  lr_min: 0.0000001
+  epochs: 100
+  batch_size: 2  # Paper uses 1, but 2 for efficiency (128^3 uses more memory)
+  learning_rate: 0.00001  # Paper: 1e-5
+  weight_decay: 0.3  # Paper: 0.3
+  lr_min: 0.000001
   optimizer: "adamw"
   scheduler: "cosine"
-  warmup_epochs: 5
-  layer_wise_lr_decay: 0.75
-  gradient_clip: 1.0
+  warmup_epochs: 5  # Paper: 5 epochs
+  freeze_backbone_epochs: 0  # Set to 0 when using layer-wise LR decay
+  layer_wise_lr_decay: 0.75  # Paper: 0.75 decay factor per layer
+  gradient_accumulation_steps: 1  # No accumulation (paper settings)
+  gradient_clip: 1.0  # Default
   use_weighted_loss: true
-  label_smoothing: 0.1
+  label_smoothing: 0.0  # Disabled - can hurt with small datasets
   seed: 42
-
-  # Test-time augmentation
-  use_tta: true
-  tta_augmentations: 8
 
 augmentation:
   enabled: true
@@ -54,14 +54,24 @@ augmentation:
   random_intensity: 0.1
 
 hardware:
-  device: "cuda"
+  device: "cuda"  # mps for Mac M1/M2, cuda for GPU
   num_workers: 4
   pin_memory: true
+  mixed_precision: false
 
 callbacks:
   early_stopping:
     enabled: true
-    patience: 15
+    patience: 20  # More patience for ViT
     monitor: "val_accuracy"
   checkpoint:
     save_best: true
+    save_last: true
+
+wandb:
+  enabled: false
+  project: "alzheimer-classification"
+  entity: null
+  run_name: "ablation_mri_only"
+  tags: ["vit", "transformer", "mae", "pretrained", "ablation"]
+  notes: "MRI-only ablation using combined multi-cohort dataset"

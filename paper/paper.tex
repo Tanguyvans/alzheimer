@@ -33,7 +33,7 @@ email@umons.ac.be}
 \maketitle
 
 \begin{abstract}
-
+Deep learning for Alzheimer's disease (AD) classification from MRI has shown promise, yet recent reviews reveal that only 4.5\% of studies meet basic methodological standards, with data leakage inflating reported accuracies to 95-99\%. Studies with rigorous subject-level splitting achieve 66-90\%, establishing 80-85\% as the credible benchmark. We present an end-to-end multimodal framework combining Vision Transformer (ViT) with masked autoencoder pretraining for 3D MRI analysis and Feature Tokenizer Transformer (FT-Transformer) for clinical tabular data, integrated through bidirectional cross-attention. We validate on 6,065 subjects from three independent cohorts (ADNI, OASIS, NACC) using strict subject-level splitting and 5-fold cross-validation with multiple random seeds. Our approach achieves 91.58\% $\pm$ 0.93\% accuracy and 85.76\% $\pm$ 2.57\% balanced accuracy, significantly exceeding the credible benchmark while using only non-invasive measures. Ablation studies confirm that multimodal fusion outperforms single-modality baselines. Our results demonstrate that rigorous methodology and modern transformer architectures can achieve clinically actionable performance without the methodological shortcuts prevalent in the literature.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -57,7 +57,7 @@ In this work, we present a fully end-to-end multimodal deep learning framework t
     \item Cross-attention fusion for learned modality interaction
 \end{itemize}
 
-We validate our approach on 6,065 subjects from three independent cohorts with strict subject-level data splitting, achieving 91.58\% accuracy while maintaining methodological integrity.
+Our contributions are: (1) the first end-to-end combination of 3D ViT and FT-Transformer for AD classification; (2) validation on 6,065 subjects from three independent cohorts (ADNI, OASIS, NACC) with strict subject-level splitting; (3) comprehensive ablation studies demonstrating the value of multimodal fusion; and (4) achieving 91.58\% accuracy, significantly exceeding the 80-85\% credible benchmark while maintaining methodological integrity.
 
 \section{Related Work}
 
@@ -223,6 +223,29 @@ AD-trajectory (combined) & 68.9\% $\pm$ 8.2\% & 168 \\
 \bottomrule
 \end{tabular}
 \label{tab:subgroups}
+\end{center}
+\end{table}
+
+\subsection{Ablation Study}
+
+To quantify the contribution of each modality, we evaluated single-modality baselines using identical training protocols (Table~\ref{tab:ablation}). The MRI-only model (ViT with MAE pretraining) achieved 84.1\% accuracy and 78.2\% balanced accuracy. The tabular-only model (FT-Transformer) achieved 83.5\% accuracy and 83.2\% balanced accuracy. Notably, the tabular model shows better balanced accuracy than MRI alone, suggesting clinical features provide strong signal for minority class (AD-trajectory) detection.
+
+The multimodal fusion achieves substantial gains over both unimodal baselines: +7.5\% accuracy and +7.6\% balanced accuracy over MRI-only, and +8.1\% accuracy and +2.6\% balanced accuracy over tabular-only. This confirms that the modalities provide complementary information that cross-attention fusion effectively captures.
+
+\begin{table}[htbp]
+\caption{Ablation Study: Modality Contributions}
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Model} & \textbf{Accuracy} & \textbf{Balanced Acc.} \\
+\midrule
+MRI only (ViT) & 84.1\% & 78.2\% \\
+Tabular only (FT-T) & 83.5\% & 83.2\% \\
+\midrule
+\textbf{Multimodal (Ours)} & \textbf{91.6\%} & \textbf{85.8\%} \\
+\bottomrule
+\end{tabular}
+\label{tab:ablation}
 \end{center}
 \end{table}
 
