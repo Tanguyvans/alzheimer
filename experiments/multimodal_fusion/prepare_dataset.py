@@ -69,20 +69,17 @@ def load_adni_data(adni_csv: str, task: str = 'cn_ad_trajectory') -> pd.DataFram
 
     if task == 'cn_ad':
         # CN vs stable AD only - exclude MCI converters
-        # Need to check original diagnosis, not trajectory
-        if 'DX_original' in df.columns:
-            # Use original diagnosis column if available
-            df = df[df['DX_original'].isin(['CN', 'AD'])].copy()
-            df['label'] = df['DX_original'].map({'CN': 0, 'AD': 1})
-            df['DX'] = df['DX_original']
+        # Use 'trajectory' column if available (has CN, AD, MCI_to_AD breakdown)
+        if 'trajectory' in df.columns:
+            # Filter to only CN and stable AD (exclude MCI_to_AD)
+            df = df[df['trajectory'].isin(['CN', 'AD'])].copy()
+            df['label'] = df['trajectory'].map({'CN': 0, 'AD': 1})
+            df['DX'] = df['trajectory']
+            logger.info(f"Using 'trajectory' column: CN={len(df[df['trajectory']=='CN'])}, AD={len(df[df['trajectory']=='AD'])}")
         elif 'DX' in df.columns:
-            # Filter to only CN and AD (exclude trajectory labels)
-            # First check if we have the raw diagnosis
+            # Fallback: filter based on DX column
             if 'AD_trajectory' in df['DX'].values:
-                # This CSV has trajectory labels, need to filter differently
-                # We need the original ADNI CSV to get stable AD
-                logger.warning("CSV contains trajectory labels. For cn_ad task, need original diagnoses.")
-                # Fall back to using trajectory but rename
+                logger.warning("CSV contains trajectory labels but no 'trajectory' column. Cannot separate stable AD from MCI converters.")
                 df = df[df['DX'].isin(['CN', 'AD_trajectory'])].copy()
                 df['label'] = df['DX'].map({'CN': 0, 'AD_trajectory': 1})
             else:
@@ -91,10 +88,11 @@ def load_adni_data(adni_csv: str, task: str = 'cn_ad_trajectory') -> pd.DataFram
         label_name = 'AD'
     else:
         # cn_ad_trajectory: CN vs (AD + MCI converters)
-        if 'DX' in df.columns:
+        if 'DX' in df.columns and 'AD_trajectory' in df['DX'].values:
             df['label'] = df['DX'].map({'CN': 0, 'AD_trajectory': 1})
         elif 'trajectory' in df.columns:
-            df['label'] = df['trajectory'].map({'CN': 0, 'AD_trajectory': 1})
+            # Map trajectory to binary: CN vs (AD + MCI_to_AD)
+            df['label'] = df['trajectory'].map({'CN': 0, 'AD': 1, 'MCI_to_AD': 1})
         label_name = 'AD_trajectory'
 
     # Filter valid labels
