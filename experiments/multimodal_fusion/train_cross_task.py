@@ -199,7 +199,7 @@ def main():
         scheduler = main_scheduler
 
     # Loss with class weights
-    train_labels = [train_ds[i][2].item() for i in range(len(train_ds))]
+    train_labels = [train_ds[i][2] if isinstance(train_ds[i][2], int) else train_ds[i][2].item() for i in range(len(train_ds))]
     class_counts = np.bincount(train_labels)
     weights = torch.FloatTensor(1.0 / class_counts).to(device)
     weights = weights / weights.sum() * len(class_counts)
