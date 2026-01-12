@@ -9,9 +9,8 @@ Supports two tasks:
   - cn_ad: CN vs stable AD only - easier, for comparison with literature
 
 Usage:
-    python prepare_dataset.py --dataset adni --output-dir data/adni
-    python prepare_dataset.py --dataset combined --task cn_ad --output-dir data/combined_cn_ad
-    python prepare_dataset.py --dataset combined --task cn_ad_trajectory --output-dir data/combined
+    python prepare_dataset.py --dataset combined --task cn_ad_trajectory  # → data/combined_trajectory
+    python prepare_dataset.py --dataset combined --task cn_ad             # → data/combined_cn_ad
 """
 
 import pandas as pd
@@ -461,7 +460,8 @@ def main():
     elif args.task == 'cn_ad':
         output_dir = f'data/{args.dataset}_cn_ad'
     else:
-        output_dir = f'data/{args.dataset}'
+        # cn_ad_trajectory task
+        output_dir = f'data/{args.dataset}_trajectory'
 
     prepare_multimodal_dataset(
         dataset=args.dataset,

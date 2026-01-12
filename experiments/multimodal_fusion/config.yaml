@@ -2,7 +2,7 @@
 # Using Combined V2 dataset with 16 verified tabular features across ADNI+OASIS+NACC
 
 experiment:
-  name: "multimodal_fusion_combined_v2"
+  name: "multimodal_fusion_combined_trajectory"
   task: "cn_ad_trajectory"
   dataset: "multi_cohort_v2"
   description: "Improved fusion with all 16 common tabular features from ADNI+OASIS+NACC"
@@ -37,11 +37,11 @@ model:
 
 data:
   clinical_csv: "../../data/adni/adni_cn_ad_trajectory.csv"
-  train_csv: "data/combined_v2/train.csv"
-  val_csv: "data/combined_v2/val.csv"
-  test_csv: "data/combined_v2/test.csv"
+  train_csv: "data/combined_trajectory/train.csv"
+  val_csv: "data/combined_trajectory/val.csv"
+  test_csv: "data/combined_trajectory/test.csv"
 
-  # All 16 tabular features with coverage percentages from combined_v2
+  # All 16 tabular features with coverage percentages from combined_trajectory
   tabular_features:
     # Demographics (99-100% coverage)
     - "AGE"

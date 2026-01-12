@@ -20,7 +20,7 @@ model:
 
 data:
   # Use same data as multimodal experiment
-  data_dir: "../multimodal_fusion/data/combined_v2"
+  data_dir: "../multimodal_fusion/data/combined_trajectory"
   checkpoints_dir: "checkpoints"
   logs_dir: "logs"
   results_dir: "results"

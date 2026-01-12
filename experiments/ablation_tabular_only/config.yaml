@@ -1,5 +1,5 @@
 # Ablation Study: Tabular Only (FT-Transformer)
-# Uses the same combined_v2 dataset as multimodal_fusion for fair comparison
+# Uses the same combined_trajectory dataset as multimodal_fusion for fair comparison
 
 experiment:
   name: "ablation_tabular_only"
@@ -21,7 +21,7 @@ model:
 
 data:
   # Use same data as multimodal experiment
-  data_dir: "../multimodal_fusion/data/combined_v2"
+  data_dir: "../multimodal_fusion/data/combined_trajectory"
 
   # Same 16 tabular features as multimodal
   tabular_features:
