@@ -1,0 +1,104 @@
+# Multi-Modal Fusion: MRI + Tabular - Combined Dataset
+# CN vs AD stable (excluding MCI converters) for comparison with literature
+# Uses all 16 verified tabular features
+
+experiment:
+  name: "multimodal_fusion_cn_ad_combined"
+  task: "cn_ad"  # CN vs AD stable (not trajectory)
+  dataset: "combined"
+  description: "Late fusion of MRI features + tabular data - CN vs AD stable for literature comparison"
+
+model:
+  backbone:
+    type: "vit"
+    architecture: "vit_base"
+    image_size: 128
+    pretrained_path: "../mri_vit_ad/pretrained/vit_mae75_pretrained.pth"
+    freeze: false
+    feature_dim: 768
+
+  tabular:
+    type: "fttransformer"
+    hidden_dims: [64, 32]
+    dropout: 0.3
+    n_blocks: 2
+    d_token: 32
+    attention_dropout: 0.2
+    ffn_dropout: 0.1
+
+  fusion:
+    method: "gated"
+    hidden_dim: 512
+    dropout: 0.3
+
+  num_classes: 2
+
+data:
+  train_csv: "data/combined_cn_ad/train.csv"
+  val_csv: "data/combined_cn_ad/val.csv"
+  test_csv: "data/combined_cn_ad/test.csv"
+  checkpoints_dir: "checkpoints"
+  results_dir: "results"
+
+  # All 16 tabular features
+  tabular_features:
+    # Demographics (99-100% coverage)
+    - "AGE"
+    - "PTGENDER"
+    - "PTEDUCAT"
+    - "PTMARRY"
+    # Cognitive tests - high coverage (87-89%)
+    - "CATANIMSC"    # Category fluency (animals)
+    - "TRAASCOR"     # Trail Making A
+    - "TRABSCOR"     # Trail Making B
+    # Cognitive tests - lower coverage (23-24%)
+    - "DSPANFOR"     # Digit span forward
+    - "DSPANBAC"     # Digit span backward
+    - "BNTTOTAL"     # Boston Naming Test
+    # Physical (45% coverage)
+    - "VSWEIGHT"
+    - "BMI"
+    # Medical history (40% coverage)
+    - "MH14ALCH"     # Alcohol abuse
+    - "MH16SMOK"     # Smoking
+    - "MH4CARD"      # Cardiovascular
+    - "MH2NEURL"     # Neurological
+
+preprocessing:
+  use_paper_preprocessing: true
+  target_spacing: 1.75
+  tabular_normalize: true
+  handle_missing: "median"
+
+training:
+  epochs: 100
+  batch_size: 4
+  learning_rate: 0.00002
+  weight_decay: 0.01
+  lr_min: 0.0000001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  warmup_epochs: 5
+  gradient_clip: 1.0
+  use_weighted_loss: true
+  layer_wise_lr_decay: 0.75
+  seed: 42
+  loss_type: "cross_entropy"
+  focal_gamma: 2.0
+  focal_alpha: 0.75
+
+hardware:
+  device: "cuda"
+  num_workers: 4
+  pin_memory: true
+
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 25
+    monitor: "val_accuracy"
+  checkpoint:
+    save_best: true
+
+wandb:
+  enabled: false

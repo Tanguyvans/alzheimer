@@ -1,0 +1,71 @@
+# Ablation Study: MRI Only (ViT)
+# CN vs AD stable (excluding MCI converters) for comparison with literature
+
+experiment:
+  name: "ablation_mri_only_cn_ad"
+  task: "cn_ad"  # CN vs AD stable (not trajectory)
+  dataset: "multi_cohort_v2"
+  description: "ViT MRI-only baseline - CN vs AD stable for literature comparison"
+
+model:
+  architecture: "vit_base"
+  num_classes: 2
+  in_channels: 1
+  image_size: 128
+  dropout: 0.1
+  classifier_dropout: 0.5
+  drop_path_rate: 0.1
+  use_pretrained: true
+  pretrained_path: "../mri_vit_ad/pretrained/vit_mae75_pretrained.pth"
+
+data:
+  data_dir: "../multimodal_fusion/data/combined_cn_ad"
+  checkpoints_dir: "checkpoints"
+  logs_dir: "logs"
+  results_dir: "results"
+
+preprocessing:
+  use_paper_preprocessing: true
+  target_spacing: 1.75
+
+training:
+  epochs: 100
+  batch_size: 2
+  learning_rate: 0.00001
+  weight_decay: 0.3
+  lr_min: 0.000001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  warmup_epochs: 5
+  freeze_backbone_epochs: 0
+  layer_wise_lr_decay: 0.75
+  gradient_accumulation_steps: 1
+  gradient_clip: 1.0
+  use_weighted_loss: true
+  label_smoothing: 0.0
+  seed: 42
+
+augmentation:
+  enabled: true
+  random_flip: true
+  random_rotate: 15
+  random_scale: [0.9, 1.1]
+  random_intensity: 0.1
+
+hardware:
+  device: "cuda"
+  num_workers: 4
+  pin_memory: true
+  mixed_precision: false
+
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 20
+    monitor: "val_accuracy"
+  checkpoint:
+    save_best: true
+    save_last: true
+
+wandb:
+  enabled: false

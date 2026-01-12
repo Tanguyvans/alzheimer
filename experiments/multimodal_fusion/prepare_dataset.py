@@ -4,12 +4,14 @@ Prepare Multi-Modal Dataset
 
 Creates train/val/test splits with both MRI paths and tabular features.
 Supports ADNI, OASIS, NACC, and combined datasets.
+Supports two tasks:
+  - cn_ad_trajectory: CN vs (AD + MCI converters) - harder, includes early-stage prediction
+  - cn_ad: CN vs stable AD only - easier, for comparison with literature
 
 Usage:
     python prepare_dataset.py --dataset adni --output-dir data/adni
-    python prepare_dataset.py --dataset oasis --output-dir data/oasis --oasis-mri-dir /path/to/OASIS-skull
-    python prepare_dataset.py --dataset nacc --output-dir data/nacc --nacc-mri-dir /path/to/NACC-skull
-    python prepare_dataset.py --dataset combined --output-dir data/combined --oasis-mri-dir /path/to/OASIS-skull --nacc-mri-dir /path/to/NACC-skull
+    python prepare_dataset.py --dataset combined --task cn_ad --output-dir data/combined_cn_ad
+    python prepare_dataset.py --dataset combined --task cn_ad_trajectory --output-dir data/combined
 """
 
 import pandas as pd
@@ -49,9 +51,14 @@ ADNI_FEATURES = COMMON_FEATURES + [
 ]
 
 
-def load_adni_data(adni_csv: str) -> pd.DataFrame:
-    """Load ADNI data with MRI paths and tabular features."""
-    logger.info(f"Loading ADNI data from {adni_csv}")
+def load_adni_data(adni_csv: str, task: str = 'cn_ad_trajectory') -> pd.DataFrame:
+    """Load ADNI data with MRI paths and tabular features.
+
+    Args:
+        adni_csv: Path to ADNI clinical CSV
+        task: 'cn_ad_trajectory' (CN vs AD + MCI converters) or 'cn_ad' (CN vs stable AD only)
+    """
+    logger.info(f"Loading ADNI data from {adni_csv} for task: {task}")
     df = pd.read_csv(adni_csv)
 
     # Standard column names
@@ -61,30 +68,56 @@ def load_adni_data(adni_csv: str) -> pd.DataFrame:
     # Add source column
     df['source'] = 'ADNI'
 
-    # Create label column
-    if 'DX' in df.columns:
-        df['label'] = df['DX'].map({'CN': 0, 'AD_trajectory': 1})
-    elif 'trajectory' in df.columns:
-        df['label'] = df['trajectory'].map({'CN': 0, 'AD_trajectory': 1})
+    if task == 'cn_ad':
+        # CN vs stable AD only - exclude MCI converters
+        # Need to check original diagnosis, not trajectory
+        if 'DX_original' in df.columns:
+            # Use original diagnosis column if available
+            df = df[df['DX_original'].isin(['CN', 'AD'])].copy()
+            df['label'] = df['DX_original'].map({'CN': 0, 'AD': 1})
+            df['DX'] = df['DX_original']
+        elif 'DX' in df.columns:
+            # Filter to only CN and AD (exclude trajectory labels)
+            # First check if we have the raw diagnosis
+            if 'AD_trajectory' in df['DX'].values:
+                # This CSV has trajectory labels, need to filter differently
+                # We need the original ADNI CSV to get stable AD
+                logger.warning("CSV contains trajectory labels. For cn_ad task, need original diagnoses.")
+                # Fall back to using trajectory but rename
+                df = df[df['DX'].isin(['CN', 'AD_trajectory'])].copy()
+                df['label'] = df['DX'].map({'CN': 0, 'AD_trajectory': 1})
+            else:
+                df = df[df['DX'].isin(['CN', 'AD'])].copy()
+                df['label'] = df['DX'].map({'CN': 0, 'AD': 1})
+        label_name = 'AD'
+    else:
+        # cn_ad_trajectory: CN vs (AD + MCI converters)
+        if 'DX' in df.columns:
+            df['label'] = df['DX'].map({'CN': 0, 'AD_trajectory': 1})
+        elif 'trajectory' in df.columns:
+            df['label'] = df['trajectory'].map({'CN': 0, 'AD_trajectory': 1})
+        label_name = 'AD_trajectory'
 
     # Filter valid labels
     df = df[df['label'].notna()].copy()
     df['label'] = df['label'].astype(int)
 
     logger.info(f"ADNI: {len(df)} samples loaded")
-    logger.info(f"  CN: {(df['label'] == 0).sum()}, AD_trajectory: {(df['label'] == 1).sum()}")
+    logger.info(f"  CN: {(df['label'] == 0).sum()}, {label_name}: {(df['label'] == 1).sum()}")
 
     return df
 
 
-def load_oasis_data(oasis_csv: str, oasis_mri_dir: str) -> pd.DataFrame:
-    """Load OASIS data and match with MRI paths."""
-    logger.info(f"Loading OASIS data from {oasis_csv}")
-    df = pd.read_csv(oasis_csv)
+def load_oasis_data(oasis_csv: str, oasis_mri_dir: str, task: str = 'cn_ad_trajectory') -> pd.DataFrame:
+    """Load OASIS data and match with MRI paths.
 
-    # Find patients who ever had AD diagnosis (for trajectory)
-    patients_with_ad = set(df[df['DX'] == 'AD']['Subject'].unique())
-    logger.info(f"OASIS patients who ever had AD: {len(patients_with_ad)}")
+    Args:
+        oasis_csv: Path to OASIS clinical CSV
+        oasis_mri_dir: Path to OASIS MRI directory
+        task: 'cn_ad_trajectory' (CN vs AD + MCI converters) or 'cn_ad' (CN vs stable AD only)
+    """
+    logger.info(f"Loading OASIS data from {oasis_csv} for task: {task}")
+    df = pd.read_csv(oasis_csv)
 
     # Take first visit per subject
     if 'days_to_visit' in df.columns:
@@ -92,17 +125,31 @@ def load_oasis_data(oasis_csv: str, oasis_mri_dir: str) -> pd.DataFrame:
     else:
         df = df.groupby('Subject').first().reset_index()
 
-    # Assign trajectory labels
-    def assign_trajectory(row):
-        if row['Subject'] in patients_with_ad:
-            return 'AD_trajectory'
-        elif row['DX'] == 'CN':
-            return 'CN'
-        else:
-            return None  # MCI non-converters excluded
+    if task == 'cn_ad':
+        # CN vs stable AD only - use first visit diagnosis directly
+        # Only include subjects whose first visit is CN or AD (not MCI)
+        df = df[df['DX'].isin(['CN', 'AD'])].copy()
+        df['trajectory'] = df['DX']
+        label_name = 'AD'
+    else:
+        # cn_ad_trajectory: CN vs (AD + MCI converters)
+        # Need to reload to find patients who ever had AD
+        df_all = pd.read_csv(oasis_csv)
+        patients_with_ad = set(df_all[df_all['DX'] == 'AD']['Subject'].unique())
+        logger.info(f"OASIS patients who ever had AD: {len(patients_with_ad)}")
 
-    df['trajectory'] = df.apply(assign_trajectory, axis=1)
-    df = df[df['trajectory'].notna()].copy()
+        # Assign trajectory labels
+        def assign_trajectory(row):
+            if row['Subject'] in patients_with_ad:
+                return 'AD_trajectory'
+            elif row['DX'] == 'CN':
+                return 'CN'
+            else:
+                return None  # MCI non-converters excluded
+
+        df['trajectory'] = df.apply(assign_trajectory, axis=1)
+        df = df[df['trajectory'].notna()].copy()
+        label_name = 'AD_trajectory'
 
     # Find MRI paths
     oasis_mri_path = Path(oasis_mri_dir)
@@ -123,20 +170,32 @@ def load_oasis_data(oasis_csv: str, oasis_mri_dir: str) -> pd.DataFrame:
     df['subject_id'] = df['Subject']
     df['DX'] = df['trajectory']
     df['source'] = 'OASIS'
-    df['label'] = df['trajectory'].map({'CN': 0, 'AD_trajectory': 1})
+
+    # Map labels based on task
+    if task == 'cn_ad':
+        df['label'] = df['trajectory'].map({'CN': 0, 'AD': 1})
+    else:
+        df['label'] = df['trajectory'].map({'CN': 0, 'AD_trajectory': 1})
 
     # Filter to samples with MRI
     before = len(df)
     df = df[df['scan_path'].notna()].copy()
     logger.info(f"OASIS: {len(df)} samples with MRI (filtered {before - len(df)} without MRI)")
-    logger.info(f"  CN: {(df['label'] == 0).sum()}, AD_trajectory: {(df['label'] == 1).sum()}")
+    logger.info(f"  CN: {(df['label'] == 0).sum()}, {label_name}: {(df['label'] == 1).sum()}")
 
     return df
 
 
-def load_nacc_data(nacc_csv: str, nacc_mri_meta: str, nacc_mri_dir: str) -> pd.DataFrame:
-    """Load NACC data and match with MRI paths."""
-    logger.info(f"Loading NACC data from {nacc_csv}")
+def load_nacc_data(nacc_csv: str, nacc_mri_meta: str, nacc_mri_dir: str, task: str = 'cn_ad_trajectory') -> pd.DataFrame:
+    """Load NACC data and match with MRI paths.
+
+    Args:
+        nacc_csv: Path to NACC tabular CSV
+        nacc_mri_meta: Path to NACC MRI metadata CSV
+        nacc_mri_dir: Path to NACC MRI directory
+        task: 'cn_ad_trajectory' or 'cn_ad' (same for NACC since we only have CN/AD)
+    """
+    logger.info(f"Loading NACC data from {nacc_csv} for task: {task}")
     df = pd.read_csv(nacc_csv)
 
     logger.info(f"Loading NACC MRI metadata from {nacc_mri_meta}")
@@ -145,7 +204,7 @@ def load_nacc_data(nacc_csv: str, nacc_mri_meta: str, nacc_mri_dir: str) -> pd.D
     # Create mapping from Subject to Image Data ID
     subject_to_image = mri_meta.set_index('Subject')['Image Data ID'].to_dict()
 
-    # Filter to CN and AD only (for cn_ad_trajectory task)
+    # Filter to CN and AD only
     df = df[df['DX'].isin(['CN', 'AD'])].copy()
     logger.info(f"NACC: {len(df)} samples with CN or AD diagnosis")
 
@@ -176,15 +235,21 @@ def load_nacc_data(nacc_csv: str, nacc_mri_meta: str, nacc_mri_dir: str) -> pd.D
     df['subject_id'] = df['Subject']
     df['source'] = 'NACC'
 
-    # Map AD to AD_trajectory for consistency
-    df['DX'] = df['DX'].map({'CN': 'CN', 'AD': 'AD_trajectory'})
-    df['label'] = df['DX'].map({'CN': 0, 'AD_trajectory': 1})
+    # Map labels based on task
+    if task == 'cn_ad':
+        df['label'] = df['DX'].map({'CN': 0, 'AD': 1})
+        label_name = 'AD'
+    else:
+        # Map AD to AD_trajectory for consistency
+        df['DX'] = df['DX'].map({'CN': 'CN', 'AD': 'AD_trajectory'})
+        df['label'] = df['DX'].map({'CN': 0, 'AD_trajectory': 1})
+        label_name = 'AD_trajectory'
 
     # Filter to samples with MRI
     before = len(df)
     df = df[df['scan_path'].notna()].copy()
     logger.info(f"NACC: {len(df)} samples with MRI (filtered {before - len(df)} without MRI)")
-    logger.info(f"  CN: {(df['label'] == 0).sum()}, AD_trajectory: {(df['label'] == 1).sum()}")
+    logger.info(f"  CN: {(df['label'] == 0).sum()}, {label_name}: {(df['label'] == 1).sum()}")
 
     return df
 
@@ -192,6 +257,7 @@ def load_nacc_data(nacc_csv: str, nacc_mri_meta: str, nacc_mri_dir: str) -> pd.D
 def prepare_multimodal_dataset(
     dataset: str = 'adni',
     output_dir: str = 'data/adni',
+    task: str = 'cn_ad_trajectory',
     adni_csv: str = None,
     oasis_csv: str = None,
     oasis_mri_dir: str = None,
@@ -210,6 +276,7 @@ def prepare_multimodal_dataset(
     Args:
         dataset: 'adni', 'oasis', 'nacc', or 'combined'
         output_dir: Output directory for train/val/test CSVs
+        task: 'cn_ad_trajectory' (CN vs AD + MCI converters) or 'cn_ad' (CN vs stable AD)
         adni_csv: Path to ADNI clinical CSV (with MRI paths)
         oasis_csv: Path to OASIS clinical CSV
         oasis_mri_dir: Path to OASIS MRI directory
@@ -230,22 +297,26 @@ def prepare_multimodal_dataset(
 
     logger.info(f"=" * 60)
     logger.info(f"Preparing {dataset.upper()} multimodal dataset")
+    logger.info(f"Task: {task}")
     logger.info(f"=" * 60)
+
+    # Determine label name based on task
+    label_name = 'AD' if task == 'cn_ad' else 'AD_trajectory'
 
     # Load data based on dataset type
     if dataset == 'adni':
-        df = load_adni_data(adni_csv)
+        df = load_adni_data(adni_csv, task=task)
         features_to_use = ADNI_FEATURES
     elif dataset == 'oasis':
-        df = load_oasis_data(oasis_csv, oasis_mri_dir)
+        df = load_oasis_data(oasis_csv, oasis_mri_dir, task=task)
         features_to_use = COMMON_FEATURES
     elif dataset == 'nacc':
-        df = load_nacc_data(nacc_csv, nacc_mri_meta, nacc_mri_dir)
+        df = load_nacc_data(nacc_csv, nacc_mri_meta, nacc_mri_dir, task=task)
         features_to_use = ADNI_FEATURES  # NACC has same features mapped to ADNI names
     elif dataset == 'combined':
-        adni_df = load_adni_data(adni_csv)
-        oasis_df = load_oasis_data(oasis_csv, oasis_mri_dir)
-        nacc_df = load_nacc_data(nacc_csv, nacc_mri_meta, nacc_mri_dir)
+        adni_df = load_adni_data(adni_csv, task=task)
+        oasis_df = load_oasis_data(oasis_csv, oasis_mri_dir, task=task)
+        nacc_df = load_nacc_data(nacc_csv, nacc_mri_meta, nacc_mri_dir, task=task)
 
         # Use only common columns for combined dataset
         common_cols = ['subject_id', 'scan_path', 'DX', 'label', 'source'] + COMMON_FEATURES
@@ -285,7 +356,7 @@ def prepare_multimodal_dataset(
     logger.info(f"\nClass distribution:")
     for label in sorted(df['label'].unique()):
         count = (df['label'] == label).sum()
-        name = 'CN' if label == 0 else 'AD_trajectory'
+        name = 'CN' if label == 0 else label_name
         logger.info(f"  {name}: {count} ({100*count/len(df):.1f}%)")
 
     # Stratified split
@@ -325,13 +396,14 @@ def prepare_multimodal_dataset(
     # Save metadata
     metadata = {
         'dataset': dataset,
+        'task': task,
         'total_samples': len(df),
         'train_samples': len(train_df),
         'val_samples': len(val_df),
         'test_samples': len(test_df),
         'class_distribution': {
             'CN': int((df['label'] == 0).sum()),
-            'AD_trajectory': int((df['label'] == 1).sum())
+            label_name: int((df['label'] == 1).sum())
         },
         'tabular_features_available': available_features,
         'seed': seed
@@ -358,8 +430,11 @@ def main():
     parser.add_argument('--dataset', type=str, default='adni',
                        choices=['adni', 'oasis', 'nacc', 'combined'],
                        help='Dataset to prepare')
+    parser.add_argument('--task', type=str, default='cn_ad_trajectory',
+                       choices=['cn_ad_trajectory', 'cn_ad'],
+                       help='Classification task: cn_ad_trajectory (CN vs AD+MCI converters) or cn_ad (CN vs stable AD)')
     parser.add_argument('--output-dir', type=str, default=None,
-                       help='Output directory (default: data/{dataset})')
+                       help='Output directory (default: data/{dataset} or data/{dataset}_cn_ad for cn_ad task)')
     parser.add_argument('--adni-csv', type=str, default=None,
                        help='Path to ADNI clinical CSV')
     parser.add_argument('--oasis-csv', type=str, default=None,
@@ -380,12 +455,18 @@ def main():
                        help='Verify MRI files exist (requires access to MRI directory)')
     args = parser.parse_args()
 
-    # Set default output dir based on dataset
-    output_dir = args.output_dir or f'data/{args.dataset}'
+    # Set default output dir based on dataset and task
+    if args.output_dir:
+        output_dir = args.output_dir
+    elif args.task == 'cn_ad':
+        output_dir = f'data/{args.dataset}_cn_ad'
+    else:
+        output_dir = f'data/{args.dataset}'
 
     prepare_multimodal_dataset(
         dataset=args.dataset,
         output_dir=output_dir,
+        task=args.task,
         adni_csv=args.adni_csv,
         oasis_csv=args.oasis_csv,
         oasis_mri_dir=args.oasis_mri_dir,

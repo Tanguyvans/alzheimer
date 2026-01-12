@@ -42,13 +42,13 @@ Alzheimer's disease, multimodal fusion, Vision Transformer, deep learning, MRI c
 
 \section{Introduction}
 
-Alzheimer's disease (AD) is the most common cause of dementia, affecting over 55 million people worldwide. Early and accurate diagnosis is crucial for patient care, clinical trials enrollment, and treatment planning. Structural MRI has emerged as a valuable biomarker for AD, revealing characteristic patterns of brain atrophy, particularly in the hippocampus and medial temporal lobe.
+Alzheimer's disease (AD) is the most common cause of dementia, contributing to 60--70\% of the 57 million dementia cases worldwide \cite{who2023}. Early and accurate diagnosis is crucial for patient care, clinical trials enrollment, and treatment planning. Structural MRI has emerged as a valuable biomarker for AD, revealing characteristic patterns of brain atrophy, particularly in the hippocampus and medial temporal lobe.
 
 Deep learning approaches for AD classification have proliferated in recent years, with many studies reporting accuracies exceeding 95\%. However, a recent scoping review by Young et al. \cite{young2025} revealed that only 4.5\% of published studies meet basic methodological standards. The primary issue is data leakage: when data from the same subject appears in both training and test sets, models learn to recognize individual brain morphology rather than disease-specific patterns.
 
 Yagis et al. \cite{yagis2021} demonstrated that slice-level data splitting inflates accuracy by 25-55\%, with random labels achieving 96\% ``accuracy'' under improper splitting but only 50\% (as expected) with correct subject-level splitting. Studies employing rigorous methodology report accuracies in the 66-90\% range, with 80-85\% representing the credible benchmark for clinical translation \cite{young2025}.
 
-Beyond methodological rigor, combining multiple data modalities has shown promise for improving AD classification. Clinical tabular data (demographics, cognitive assessments) provides complementary information to structural MRI. However, most multimodal approaches use separate models for each modality (e.g., CNN for images, gradient boosting for tabular data) rather than end-to-end deep learning \cite{qiu2022}.
+Beyond methodological rigor, combining multiple data modalities has shown promise for improving AD classification. Clinical tabular data (demographics, cognitive assessments) provides complementary information to structural MRI. Prior multimodal approaches have achieved strong results, such as Qiu et al. \cite{qiu2020} who combined CNN-derived features with clinical variables in an end-to-end framework, achieving AUC 0.996 on ADNI. However, no prior work has explored combining modern transformer architectures---specifically ViT for 3D MRI and FT-Transformer for tabular data---which represent the current state-of-the-art for their respective modalities.
 
 In this work, we present a fully end-to-end multimodal deep learning framework that combines:
 \begin{itemize}
@@ -77,7 +77,7 @@ For tabular data, the FT-Transformer \cite{gorishniy2021} embeds each feature as
 
 \subsection{Multimodal Fusion}
 
-Combining imaging with clinical data improves classification. Qiu et al. \cite{qiu2022} achieved AUC 0.91 on 8,916 subjects using CNN features with gradient boosting on tabular data---but as separate models rather than end-to-end learning. No prior work has combined 3D ViT with FT-Transformer in an end-to-end multimodal framework for AD classification.
+Combining imaging with clinical data improves classification. Qiu et al. \cite{qiu2020} achieved AUC 0.996 on ADNI using an end-to-end FCN-MLP framework. In a larger follow-up study, Qiu et al. \cite{qiu2022} achieved 95\% accuracy on 8,916 subjects using CNN features with CatBoost for tabular data as separate models. No prior work has combined 3D ViT with FT-Transformer in an end-to-end multimodal framework for AD classification.
 
 \section{Methods}
 
@@ -125,7 +125,7 @@ This approach follows recommendations from Wen et al.\ \cite{wen2020} and addres
 
 \subsection{MRI Preprocessing}
 
-T1-weighted MRI scans underwent standardized preprocessing:
+T1-weighted MRI scans underwent standardized preprocessing (Fig.~\ref{fig:preprocessing}):
 \begin{enumerate}
     \item Conversion from DICOM to NIfTI format
     \item N4 bias field correction to remove intensity inhomogeneities
@@ -133,6 +133,12 @@ T1-weighted MRI scans underwent standardized preprocessing:
     \item Skull stripping using SynthStrip \cite{synthstrip}
     \item Resampling to 128$\times$128$\times$128 voxels
 \end{enumerate}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{figures/preprocessing_pipeline.png}}
+\caption{MRI preprocessing pipeline showing (left to right): original T1-weighted scan, N4 bias-corrected image, MNI-152 registered volume, and skull-stripped brain.}
+\label{fig:preprocessing}
+\end{figure}
 
 \subsection{Clinical Features}
 
@@ -262,7 +268,7 @@ Table~\ref{tab:comparison} contextualizes our results within the broader literat
 \midrule
 \multicolumn{5}{l}{\textit{Proper subject-level splitting:}} \\
 \textbf{Ours} & MRI+Tab & 3 & 6,065 & 91.6\% \\
-Qiu et al. \cite{qiu2022} & MRI+Tab & 8 & 8,916 & AUC 0.91 \\
+Qiu et al. \cite{qiu2022} & MRI+Tab & 8 & 8,916 & 95\% \\
 VECNN \cite{vecnn2024} & MRI (ViT) & 1 & 818 & 92.1\% \\
 Hoang et al. \cite{hoang2023} & MRI (ViT) & 1 & 598 & 83.3\% \\
 Wen et al. \cite{wen2020} & MRI (CNN) & 3 & $\sim$1,000 & 83-88\% \\
@@ -309,7 +315,7 @@ Several limitations should be acknowledged:
 
 \subsection{Clinical Implications}
 
-Current gold-standard AD diagnosis relies on invasive biomarkers: cerebrospinal fluid (CSF) analysis requires lumbar puncture, while amyloid PET imaging involves radioactive tracers and costs approximately \$5,000 per scan. These procedures, while accurate (90-95\%), are impractical for routine screening.
+Current gold-standard AD diagnosis relies on invasive biomarkers: cerebrospinal fluid (CSF) analysis requires lumbar puncture, while amyloid PET imaging involves radioactive tracers and costs \$3,000--5,000 per scan \cite{alzfacts2024}. These procedures, while highly accurate (CSF biomarker panels achieve 85--95\% sensitivity/specificity \cite{blennow2010}), are impractical for routine screening.
 
 Our approach uses only non-invasive measures---structural MRI and cognitive assessments---achieving 91.58\% accuracy. This approaches invasive biomarker accuracy without the associated risks, discomfort, and costs. Such a model could serve as a screening tool in clinical practice: patients with high predicted AD probability would be referred for confirmatory biomarker testing, while low-risk patients could avoid unnecessary invasive procedures.
 
@@ -334,7 +340,9 @@ The NACC database is funded by NIA/NIH Grant U24 AG072122. NACC data are contrib
 
 \bibitem{wen2020} J. Wen et al., ``Convolutional neural networks for classification of Alzheimer's disease: Overview and reproducible evaluation,'' \textit{Med. Image Anal.}, vol. 63, p. 101694, 2020.
 
-\bibitem{qiu2022} S. Qiu et al., ``Development and validation of an interpretable deep learning framework for Alzheimer's disease classification,'' \textit{Nat. Commun.}, vol. 13, p. 5135, 2022.
+\bibitem{qiu2020} S. Qiu et al., ``Development and validation of an interpretable deep learning framework for Alzheimer's disease classification,'' \textit{Brain}, vol. 143, no. 6, pp. 1920--1933, 2020.
+
+\bibitem{qiu2022} S. Qiu et al., ``Multimodal deep learning for Alzheimer's disease dementia assessment,'' \textit{Nat. Commun.}, vol. 13, p. 3404, 2022.
 
 \bibitem{gorishniy2021} Y. Gorishniy, I. Rubachev, V. Khrulkov, and A. Babenko, ``Revisiting deep learning models for tabular data,'' in \textit{Proc. NeurIPS}, 2021.
 
@@ -347,6 +355,12 @@ The NACC database is funded by NIA/NIH Grant U24 AG072122. NACC data are contrib
 \bibitem{synthstrip} A. Hoopes, J. S. Mora, A. V. Dalca, B. Fischl, and M. Hoffmann, ``SynthStrip: Skull-stripping for any brain image,'' \textit{NeuroImage}, vol. 260, p. 119474, 2022.
 
 \bibitem{vecnn2024} M. H. Alshammari et al., ``Vision transformer-equipped convolutional neural networks for automated Alzheimer's disease diagnosis using 3D MRI scans,'' \textit{IEEE Access}, vol. 12, pp. 189341--189354, 2024.
+
+\bibitem{who2023} World Health Organization, ``Dementia,'' 2023. [Online]. Available: https://www.who.int/health-topics/dementia
+
+\bibitem{alzfacts2024} Alzheimer's Association, ``2024 Alzheimer's disease facts and figures,'' \textit{Alzheimer's Dement.}, vol. 20, no. 5, pp. 3708--3821, 2024.
+
+\bibitem{blennow2010} K. Blennow, H. Hampel, M. Weiner, and H. Zetterberg, ``Cerebrospinal fluid and plasma biomarkers in Alzheimer disease,'' \textit{Nat. Rev. Neurol.}, vol. 6, no. 3, pp. 131--144, 2010.
 
 \end{thebibliography}
 

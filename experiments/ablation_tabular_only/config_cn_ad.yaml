@@ -1,0 +1,81 @@
+# Ablation Study: Tabular Only (FT-Transformer)
+# CN vs AD stable (excluding MCI converters) for comparison with literature
+
+experiment:
+  name: "ablation_tabular_only_cn_ad"
+  task: "cn_ad"  # CN vs AD stable (not trajectory)
+  dataset: "multi_cohort_v2"
+  description: "FT-Transformer tabular-only baseline - CN vs AD stable for literature comparison"
+
+model:
+  type: "fttransformer"
+  hidden_dims: [64, 32]
+  dropout: 0.3
+  n_blocks: 2
+  d_token: 32
+  attention_dropout: 0.2
+  ffn_dropout: 0.1
+  num_classes: 2
+
+data:
+  data_dir: "../multimodal_fusion/data/combined_cn_ad"
+  checkpoints_dir: "checkpoints"
+  logs_dir: "logs"
+  results_dir: "results"
+
+  # All 16 tabular features
+  tabular_features:
+    # Demographics (99-100% coverage)
+    - "AGE"
+    - "PTGENDER"
+    - "PTEDUCAT"
+    - "PTMARRY"
+    # Cognitive tests - high coverage (87-89%)
+    - "CATANIMSC"
+    - "TRAASCOR"
+    - "TRABSCOR"
+    # Cognitive tests - lower coverage (23-24%)
+    - "DSPANFOR"
+    - "DSPANBAC"
+    - "BNTTOTAL"
+    # Physical (45% coverage)
+    - "VSWEIGHT"
+    - "BMI"
+    # Medical history (40% coverage)
+    - "MH14ALCH"
+    - "MH16SMOK"
+    - "MH4CARD"
+    - "MH2NEURL"
+
+preprocessing:
+  tabular_normalize: true
+  handle_missing: "median"
+
+training:
+  epochs: 100
+  batch_size: 32
+  learning_rate: 0.0001
+  weight_decay: 0.01
+  lr_min: 0.000001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  warmup_epochs: 5
+  gradient_clip: 1.0
+  use_weighted_loss: true
+  seed: 42
+
+hardware:
+  device: "cuda"
+  num_workers: 4
+  pin_memory: true
+
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 20
+    monitor: "val_accuracy"
+  checkpoint:
+    save_best: true
+
+wandb:
+  enabled: false
