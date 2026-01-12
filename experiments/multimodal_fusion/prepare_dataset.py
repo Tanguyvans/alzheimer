@@ -36,17 +36,22 @@ DEFAULT_NACC_CSV = DATA_DIR / "nacc" / "nacc_tabular_t1.csv"
 DEFAULT_NACC_MRI_META = DATA_DIR / "nacc" / "nacc-t1_12_16_2025.csv"
 DEFAULT_NACC_MRI_DIR = Path("/home/tanguy/medical/NACC-skull")
 
-# Common tabular features across ADNI and OASIS
+# Common tabular features across ADNI, OASIS, and NACC (16 features)
 COMMON_FEATURES = [
+    # Demographics (99-100% coverage)
     'AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY',
-    'CATANIMSC', 'TRAASCOR', 'TRABSCOR'
+    # Cognitive tests
+    'CATANIMSC', 'TRAASCOR', 'TRABSCOR',
+    'DSPANFOR', 'DSPANBAC', 'BNTTOTAL',
+    # Physical
+    'VSWEIGHT', 'BMI',
+    # Medical history
+    'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL'
 ]
 
-# ADNI-specific features (superset)
+# ADNI-specific features (superset with extra features)
 ADNI_FEATURES = COMMON_FEATURES + [
-    'VSWEIGHT', 'BMI',
-    'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MHPSYCH', 'MH2NEURL',
-    'TRABERRCOM', 'CLOCKSCOR', 'BNTTOTAL', 'DSPANFOR', 'DSPANBAC'
+    'MHPSYCH', 'TRABERRCOM', 'CLOCKSCOR'
 ]
 
 
