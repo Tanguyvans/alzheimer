@@ -1,0 +1,35 @@
+{
+  "training_task": "cn_ad_trajectory",
+  "seed": 42,
+  "best_val_accuracy": 93.62637362637362,
+  "test_cn_ad_trajectory": {
+    "accuracy": 93.2967032967033,
+    "balanced_accuracy": 87.87736919759392,
+    "sensitivity": 78.28282828282828,
+    "specificity": 97.47191011235955,
+    "subgroups": {
+      "AD": {
+        "accuracy": 97.05882352941177,
+        "n": 34
+      },
+      "AD_trajectory": {
+        "accuracy": 72.0,
+        "n": 125
+      },
+      "CN": {
+        "accuracy": 97.47191011235955,
+        "n": 712
+      },
+      "MCI_to_AD": {
+        "accuracy": 82.05128205128204,
+        "n": 39
+      }
+    }
+  },
+  "test_cn_ad": {
+    "accuracy": 96.14485981308411,
+    "balanced_accuracy": 92.14101166686852,
+    "sensitivity": 86.23188405797102,
+    "specificity": 98.05013927576601
+  }
+}
