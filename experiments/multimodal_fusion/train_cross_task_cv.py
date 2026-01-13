@@ -140,7 +140,7 @@ def train_fold(model, train_loader, val_loader, config, device, weights):
 
     criterion = nn.CrossEntropyLoss(weight=weights)
 
-    best_val_acc = 0.0
+    best_val_bal_acc = 0.0
     best_state = None
     patience = config['callbacks']['early_stopping']['patience']
     no_improve = 0
@@ -151,10 +151,10 @@ def train_fold(model, train_loader, val_loader, config, device, weights):
         val_m = evaluate(model, val_loader, device)
         scheduler.step()
 
-        pbar.set_postfix({'train': f"{train_m['accuracy']:.1f}%", 'val': f"{val_m['accuracy']:.1f}%"})
+        pbar.set_postfix({'train': f"{train_m['accuracy']:.1f}%", 'val_bal': f"{val_m['balanced_accuracy']:.1f}%"})
 
-        if val_m['accuracy'] > best_val_acc:
-            best_val_acc = val_m['accuracy']
+        if val_m['balanced_accuracy'] > best_val_bal_acc:
+            best_val_bal_acc = val_m['balanced_accuracy']
             best_state = {k: v.cpu().clone() for k, v in model.state_dict().items()}
             no_improve = 0
         else:
@@ -166,7 +166,7 @@ def train_fold(model, train_loader, val_loader, config, device, weights):
     if best_state:
         model.load_state_dict(best_state)
 
-    return model, best_val_acc
+    return model, best_val_bal_acc
 
 
 def main():
@@ -269,7 +269,7 @@ def main():
             traj_m = evaluate(model, test_traj_loader, device)
             cnad_m = evaluate(model, test_cnad_loader, device)
 
-            logger.info(f"  Val: {best_val:.1f}% | Traj: {traj_m['accuracy']:.1f}% | CN_AD: {cnad_m['accuracy']:.1f}%")
+            logger.info(f"  Val(bal): {best_val:.1f}% | Traj: {traj_m['balanced_accuracy']:.1f}% | CN_AD: {cnad_m['balanced_accuracy']:.1f}%")
 
             seed_traj_results.append({
                 'accuracy': traj_m['accuracy'],

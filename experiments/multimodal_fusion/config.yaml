@@ -109,8 +109,8 @@ hardware:
 callbacks:
   early_stopping:
     enabled: true
-    patience: 15
-    monitor: "val_accuracy"
+    patience: 20
+    monitor: "val_balanced_accuracy"
   checkpoint:
     save_best: true
 
