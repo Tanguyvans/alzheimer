@@ -35,6 +35,12 @@ maxime.gloesener@umons.ac.be}
 Rue de Houdain 9, 7000 Mons, Belgium \\
 otmane.amel@umons.ac.be}
 \and
+\IEEEauthorblockN{Vito Tota}
+\IEEEauthorblockA{\textit{Faculty of Engineering - ILIA} \\
+\textit{University of Mons}\\
+Rue de Houdain 9, 7000 Mons, Belgium \\
+vito.tota@umons.ac.be}
+\and
 \IEEEauthorblockN{Sa\"id Mahmoudi}
 \IEEEauthorblockA{\textit{Faculty of Engineering - ILIA} \\
 \textit{University of Mons}\\
@@ -54,13 +60,13 @@ Alzheimer's disease, multimodal fusion, Vision Transformer, deep learning, MRI c
 
 \section{Introduction}
 
-Alzheimer's disease (AD) is the most common cause of dementia, contributing to 60--70\% of the 57 million dementia cases worldwide \cite{who2023}. Early and accurate diagnosis is crucial for patient care, clinical trials enrollment, and treatment planning. Structural MRI has emerged as a valuable biomarker for AD, revealing characteristic patterns of brain atrophy, particularly in the hippocampus and medial temporal lobe.
+Alzheimer's disease (AD) is the most common cause of dementia, contributing to 60--70\% of the 57 million dementia cases worldwide \cite{who2023}. Early and accurate diagnosis is crucial for patient care, clinical trials enrollment, and treatment planning. Early diagnosis increasingly relies on biomarkers---CSF analysis requiring lumbar puncture, or amyloid PET imaging with radioactive tracers---which are impractical for routine screening. Structural MRI combined with clinical tabular data offers a practical alternative, capturing characteristic patterns of brain atrophy alongside demographic and cognitive assessments without invasive procedures or radiation exposure.
 
 Deep learning approaches for AD classification have proliferated in recent years, with many studies reporting accuracies exceeding 95\%. However, a recent scoping review by Young et al. \cite{young2025} revealed that fewer than 20\% of published studies employ external validation, and methodological issues remain widespread. The primary issue is data leakage: when data from the same subject appears in both training and test sets, models learn to recognize individual brain morphology rather than disease-specific patterns.
 
 Yagis et al. \cite{yagis2021} demonstrated that slice-level data splitting inflates accuracy by 25-55\%, with random labels achieving 96\% ``accuracy'' under improper splitting but only 50\% (as expected) with correct subject-level splitting. Studies employing rigorous methodology report accuracies in the 66-90\% range, with 80-85\% representing the credible benchmark for clinical translation \cite{young2025}.
 
-Beyond methodological rigor, combining multiple data modalities has shown promise for improving AD classification. Clinical tabular data (demographics, cognitive assessments) provides complementary information to structural MRI. Prior multimodal approaches have achieved strong results, such as Qiu et al. \cite{qiu2020} who combined CNN-derived features with clinical variables including MMSE scores, achieving AUC 0.996 on ADNI but 0.876--0.954 on external cohorts. However, no prior work has explored combining modern transformer architectures---specifically ViT for 3D MRI and FT-Transformer for tabular data---which represent the current state-of-the-art for their respective modalities, while excluding diagnostic scores to prevent data leakage.
+Beyond methodological rigor, combining multiple data modalities has shown promise for improving AD classification. Clinical tabular data (demographics, cognitive assessments) provides complementary information to structural MRI. Prior multimodal approaches have achieved strong results, such as Qiu et al. \cite{qiu2020} who combined CNN-derived features with clinical variables including MMSE scores, achieving 96.8\% accuracy on ADNI but 79.2--93.2\% on external cohorts. However, no prior work has explored combining modern transformer architectures---specifically ViT for 3D MRI and FT-Transformer for tabular data---which represent the current state-of-the-art for their respective modalities, while excluding diagnostic scores to prevent data leakage.
 
 In this work, we present a fully end-to-end multimodal deep learning framework that combines:
 \begin{itemize}
@@ -75,7 +81,7 @@ Our contributions are: (1) the first end-to-end combination of 3D ViT and FT-Tra
 
 \subsection{Deep Learning for AD Classification}
 
-Convolutional neural networks (CNNs) have dominated AD classification from MRI. Wen et al. \cite{wen2020} provided a comprehensive benchmark, showing that 3D CNNs achieve 83-88\% accuracy with proper methodology. More recently, Vision Transformers (ViT) \cite{dosovitskiy2021} have been adapted for 3D medical imaging. Hoang et al. \cite{hoang2023} applied ViT to ADNI data, achieving 83.3\% for MCI-to-AD progression prediction. VECNN \cite{vecnn2024} combined ViT with CNNs, reaching 92.1\% on a single cohort.
+Convolutional neural networks (CNNs) have dominated AD classification from MRI. Wen et al. \cite{wen2020} provided a comprehensive benchmark, showing that 3D CNNs achieve up to 86\% balanced accuracy with proper methodology. More recently, Vision Transformers (ViT) \cite{dosovitskiy2021} have been adapted for 3D medical imaging. Hoang et al. \cite{hoang2023} applied ViT to ADNI data, achieving 83\% for MCI-to-AD progression prediction. VECNN \cite{vecnn2024} combined ViT with CNNs, reaching 92.1\% on a single cohort.
 
 \subsection{Methodological Concerns}
 
@@ -89,7 +95,7 @@ For tabular data, the FT-Transformer \cite{gorishniy2021} embeds each feature as
 
 \subsection{Multimodal Fusion}
 
-Combining imaging with clinical data improves classification. Qiu et al. \cite{qiu2020} achieved AUC 0.996 on ADNI using an end-to-end FCN-MLP framework. In a larger follow-up study, Qiu et al. \cite{qiu2022} achieved 95\% accuracy on 8,916 subjects using CNN features with CatBoost for tabular data as separate models. No prior work has combined 3D ViT with FT-Transformer in an end-to-end multimodal framework for AD classification.
+Combining imaging with clinical data improves classification. Qiu et al. \cite{qiu2020} achieved 96.8\% accuracy on ADNI using an end-to-end FCN-MLP framework. In a larger follow-up study, Qiu et al. \cite{qiu2022} scaled to 8,916 subjects across 8 cohorts using CNN features with CatBoost for tabular data as separate models. No prior work has combined 3D ViT with FT-Transformer in an end-to-end multimodal framework for AD classification.
 
 \section{Methods}
 
@@ -219,52 +225,14 @@ Longitudinal neuroimaging studies provide strong evidence that MCI converters ex
 
 \subsection{Classification Performance}
 
-Our multimodal model achieved 93.3\% accuracy and 87.9\% balanced accuracy on the AD-trajectory test set (Table~\ref{tab:results}). The gap between accuracy and balanced accuracy reflects the class imbalance (78\% CN vs 22\% AD-trajectory).
+All models were trained on the \textbf{CN vs AD-trajectory} task, where AD-trajectory includes both clinically diagnosed AD patients and MCI subjects who later progressed to AD. We evaluate on two test sets: (1) an in-domain AD-trajectory test set matching the training distribution, and (2) a cross-task \textbf{CN vs stable AD} test set containing only clinically confirmed AD patients without MCI converters.
 
-Subgroup analysis (Table~\ref{tab:subgroups}) reveals important patterns: CN cases are classified with very high accuracy (97.5\%), while the heterogeneous AD-trajectory group is more challenging. Within AD-trajectory, established AD cases achieve 97.1\% accuracy, while MCI-to-AD converters are harder (82.1\%). This is expected---MCI converters represent early-stage disease with subtler structural changes.
+Table~\ref{tab:results} presents our main results. On the in-domain AD-trajectory task, our multimodal model achieved 93.3\% accuracy and 87.9\% balanced accuracy. The gap reflects class imbalance (78\% CN vs 22\% AD-trajectory). Subgroup analysis reveals CN cases achieved 97.5\% accuracy, established AD 97.1\%, while MCI-to-AD converters were harder at 82.1\%---expected given their subtler atrophy patterns.
 
-\begin{table}[htbp]
-\caption{Test Set Performance on AD-Trajectory Task}
-\begin{center}
-\begin{tabular}{lc}
-\toprule
-\textbf{Metric} & \textbf{Value} \\
-\midrule
-Accuracy & 93.3\% \\
-Balanced Accuracy & 87.9\% \\
-Sensitivity (AD-traj recall) & 78.3\% \\
-Specificity (CN recall) & 97.5\% \\
-\bottomrule
-\end{tabular}
-\label{tab:results}
-\end{center}
-\end{table}
+Remarkably, the same trajectory-trained model achieved \textbf{96.1\% accuracy} and \textbf{92.1\% balanced accuracy} on the stable AD test set, substantially exceeding its in-domain performance. This cross-task improvement demonstrates that training on heterogeneous presentations---including subtle early-stage MCI converters---forces the model to learn fine-grained discriminative features that generalize effectively to established disease with more pronounced atrophy.
 
 \begin{table}[htbp]
-\caption{Subgroup Classification Accuracy}
-\begin{center}
-\begin{tabular}{lcc}
-\toprule
-\textbf{Subgroup} & \textbf{Accuracy} & \textbf{N} \\
-\midrule
-Cognitively Normal (CN) & 97.5\% & 712 \\
-Alzheimer's Disease (AD) & 97.1\% & 34 \\
-MCI $\rightarrow$ AD converters & 82.1\% & 39 \\
-AD-trajectory (other) & 72.0\% & 125 \\
-\bottomrule
-\end{tabular}
-\label{tab:subgroups}
-\end{center}
-\end{table}
-
-\subsection{Cross-Task Generalization}
-
-A key question for clinical deployment is whether models trained to detect the full AD spectrum (including MCI converters) can accurately identify established AD cases. We performed a cross-task evaluation: training on cn\_ad\_trajectory (CN vs AD-trajectory) and testing on a held-out set containing only clinically confirmed, stable AD patients.
-
-Remarkably, the trajectory-trained model achieved \textbf{96.1\% accuracy} and \textbf{92.1\% balanced accuracy} on stable AD detection (Table~\ref{tab:crosstask}), substantially exceeding its performance on the mixed trajectory test set (93.3\%). This suggests that training on heterogeneous AD presentations---including subtle early-stage MCI converters---produces more robust features for detecting established disease.
-
-\begin{table}[htbp]
-\caption{Cross-Task Evaluation: Train on AD-Trajectory, Test on Stable AD}
+\caption{Classification Results: Models Trained on CN vs AD-Trajectory}
 \begin{center}
 \begin{tabular}{lcccc}
 \toprule
@@ -274,11 +242,9 @@ AD-trajectory (in-domain) & 93.3\% & 87.9\% & 78.3\% & 97.5\% \\
 \textbf{Stable AD (cross-task)} & \textbf{96.1\%} & \textbf{92.1\%} & \textbf{86.2\%} & \textbf{98.1\%} \\
 \bottomrule
 \end{tabular}
-\label{tab:crosstask}
+\label{tab:results}
 \end{center}
 \end{table}
-
-The improved cross-task performance can be attributed to the training distribution: MCI converters exhibit subtle, early-stage atrophy patterns that force the model to learn fine-grained discriminative features. When evaluated on established AD cases with more pronounced atrophy, these features generalize effectively.
 
 \subsection{Ablation Study}
 
@@ -310,24 +276,28 @@ Table~\ref{tab:comparison} contextualizes our results within the broader literat
 \begin{table}[htbp]
 \caption{Comparison with State-of-the-Art Methods}
 \begin{center}
-\begin{tabular}{lccccc}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcccrr@{}}
 \toprule
-\textbf{Study} & \textbf{Modalities} & \textbf{Cohorts} & \textbf{N} & \textbf{Acc/AUC} \\
+\textbf{Study} & \textbf{Data} & \textbf{Coh.} & \textbf{N} & \textbf{Acc} & \textbf{AUC} \\
 \midrule
-\multicolumn{5}{l}{\textit{Proper subject-level splitting:}} \\
-\textbf{Ours (stable AD)} & MRI+Tab & 3 & 6,065 & \textbf{96.1\%} \\
-\textbf{Ours (AD-traj)} & MRI+Tab & 3 & 6,065 & 93.3\% \\
-Qiu et al. \cite{qiu2022} & MRI+Tab & 8 & 8,916 & 95\% \\
-VECNN \cite{vecnn2024} & MRI (ViT) & 1 & 818 & 92.1\% \\
-Hoang et al. \cite{hoang2023} & MRI (ViT) & 1 & 598 & 83.3\% \\
-Wen et al. \cite{wen2020} & MRI (CNN) & 3 & $\sim$1,000 & 83-88\% \\
+\multicolumn{6}{@{}l}{\textit{Proper subject-level splitting:}} \\
+\textbf{Ours (stable)} & MRI+Tab & 3 & 6,065 & \textbf{96.1\%} & --- \\
+\textbf{Ours (traj)} & MRI+Tab & 3 & 6,065 & 93.3\% & --- \\
+Qiu \cite{qiu2022} & MRI+Tab & 8 & 8,916 & ---$^*$ & .94--.97$^*$ \\
+VECNN \cite{vecnn2024} & MRI & 1 & 818 & 94.1\% & --- \\
+Hoang \cite{hoang2023} & MRI & 1 & 598 & 83\% & 0.87 \\
+Wen \cite{wen2020} & MRI & 3 & 1k & 86\%$^\dagger$ & --- \\
 \midrule
-\multicolumn{5}{l}{\textit{Studies with potential data leakage:}} \\
-Various \cite{young2025} & MRI & 1 & $<$1,000 & 95-99\% \\
+\multicolumn{6}{@{}l}{\textit{Potential data leakage:}} \\
+Various \cite{young2025} & MRI & 1 & $<$1k & 95-99\% & --- \\
 \bottomrule
 \end{tabular}
 \label{tab:comparison}
 \end{center}
+\vspace{-2mm}
+{\scriptsize $^\dagger$Bal. acc.; $^*$Binary subtasks, not comparable}
 \end{table}
 
 Our 96.1\% accuracy on stable AD detection and 93.3\% on the challenging AD-trajectory task significantly exceed the 80-85\% ``credible benchmark'' established by Young et al. \cite{young2025} for methodologically rigorous studies. Key differentiators of our work:
@@ -336,21 +306,15 @@ Our 96.1\% accuracy on stable AD detection and 93.3\% on the challenging AD-traj
 
 \textbf{End-to-end multimodal learning:} Unlike Qiu et al. \cite{qiu2022} who use separate CNN and CatBoost models, our approach learns joint MRI-clinical representations through cross-attention fusion.
 
-\textbf{ViT improvement:} Compared to single-modality ViT approaches like Hoang et al. \cite{hoang2023} (83.3\%) and VECNN \cite{vecnn2024} (92.1\% on single cohort), our multimodal fusion achieves competitive performance while generalizing across cohorts.
+\textbf{ViT improvement:} Compared to single-modality ViT approaches like Hoang et al. \cite{hoang2023} (83\%) and VECNN \cite{vecnn2024} (94.1\% on single cohort), our multimodal fusion achieves competitive performance while generalizing across cohorts.
 
 \section{Discussion}
 
-\subsection{Methodological Contributions}
+\subsection{Why Cross-Task Generalization Works}
 
-Our work addresses several gaps in the AD classification literature:
+Our most striking finding is that models trained on the heterogeneous AD-trajectory task (including MCI converters) achieve \textit{higher} accuracy on stable AD detection than on the training distribution itself. This counterintuitive result has a principled explanation: MCI converters exhibit subtle, early-stage atrophy patterns that are harder to distinguish from normal aging. Training on these challenging cases forces the model to learn fine-grained discriminative features---subtle hippocampal volume differences, distributed cortical thinning patterns, and nuanced feature interactions between imaging and clinical data.
 
-\textbf{End-to-end multimodal learning:} Unlike Qiu et al. \cite{qiu2022} who use separate CNN and CatBoost models, our approach learns joint representations through end-to-end training with a learned fusion mechanism.
-
-\textbf{Modern architectures:} We are the first to combine ViT (with MAE pretraining) and FT-Transformer for AD classification. Both architectures represent state-of-the-art for their respective modalities.
-
-\textbf{Multi-cohort validation:} Training on three cohorts with different scanners, protocols, and populations tests generalizability more rigorously than single-cohort studies.
-
-\textbf{Rigorous methodology:} Our subject-level splitting prevents the data leakage that inflates results in many published studies.
+When this model is evaluated on established AD cases with more pronounced atrophy, the learned features remain highly discriminative but the classification becomes easier. In contrast, a model trained only on obvious CN vs late-stage AD cases might learn coarse features that fail on subtle presentations. This suggests a general principle for medical imaging: training on heterogeneous, challenging cases can improve generalization to easier cases.
 
 \subsection{Limitations}
 
@@ -362,13 +326,9 @@ Several limitations should be acknowledged:
 
 \textbf{No external validation:} While we use three cohorts, they are mixed in training. True external validation (train on ADNI+OASIS, test on NACC) would provide stronger generalizability evidence.
 
-\subsection{Clinical Implications}
+\subsection{Future Directions}
 
-Current gold-standard AD diagnosis relies on invasive biomarkers: cerebrospinal fluid (CSF) analysis requires lumbar puncture, while amyloid PET imaging involves radioactive tracers and costs \$3,000--5,000 per scan \cite{alzfacts2024}. These procedures, while highly accurate (CSF biomarker panels achieve 85--95\% sensitivity/specificity \cite{blennow2010}), are impractical for routine screening.
-
-Our approach uses only non-invasive measures---structural MRI and cognitive assessments---achieving 96.1\% accuracy on stable AD detection. This matches or exceeds invasive biomarker accuracy without the associated risks, discomfort, and costs. Such a model could serve as a screening tool in clinical practice: patients with high predicted AD probability would be referred for confirmatory biomarker testing, while low-risk patients could avoid unnecessary invasive procedures.
-
-The 80-85\% benchmark established by systematic reviews may be conservative; with modern transformer architectures, multimodal fusion, and rigorous methodology, non-invasive approaches can achieve clinically actionable accuracy competitive with invasive biomarkers.
+Several extensions merit investigation. First, incorporating attention visualization could identify which brain regions and clinical features drive predictions, improving interpretability for clinical adoption. Second, extending to multi-class classification (CN vs MCI vs AD) would enable earlier intervention. Third, true external validation on held-out cohorts would strengthen generalizability claims. Finally, prospective clinical validation is needed before deployment as a screening tool.
 
 \section{Conclusion}
 
@@ -406,10 +366,6 @@ The NACC database is funded by NIA/NIH Grant U24 AG072122. NACC data are contrib
 \bibitem{qiu2022} S. Qiu et al., ``Multimodal deep learning for Alzheimer's disease dementia assessment,'' \textit{Nat. Commun.}, vol. 13, p. 3404, 2022.
 
 \bibitem{synthstrip} A. Hoopes, J. S. Mora, A. V. Dalca, B. Fischl, and M. Hoffmann, ``SynthStrip: Skull-stripping for any brain image,'' \textit{NeuroImage}, vol. 260, p. 119474, 2022.
-
-\bibitem{alzfacts2024} Alzheimer's Association, ``2024 Alzheimer's disease facts and figures,'' \textit{Alzheimer's Dement.}, vol. 20, no. 5, pp. 3708--3821, 2024.
-
-\bibitem{blennow2010} K. Blennow, H. Hampel, M. Weiner, and H. Zetterberg, ``Cerebrospinal fluid and plasma biomarkers in Alzheimer disease,'' \textit{Nat. Rev. Neurol.}, vol. 6, no. 3, pp. 131--144, 2010.
 
 \bibitem{jack2018} C. R. Jack Jr. et al., ``NIA-AA Research Framework: Toward a biological definition of Alzheimer's disease,'' \textit{Alzheimer's Dement.}, vol. 14, no. 4, pp. 535--562, 2018.
 

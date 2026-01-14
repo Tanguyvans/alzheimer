@@ -108,9 +108,9 @@ hardware:
 
 callbacks:
   early_stopping:
-    enabled: false
+    enabled: true
     patience: 20
-    min_epochs: 40
+    min_epochs: 50
     monitor: "val_accuracy"
   checkpoint:
     save_best: true

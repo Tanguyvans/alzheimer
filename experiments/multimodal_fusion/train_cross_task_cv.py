@@ -21,7 +21,7 @@ import logging
 from tqdm import tqdm
 import argparse
 import json
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, roc_auc_score, roc_curve
 from sklearn.model_selection import StratifiedKFold
 import wandb
 
@@ -93,13 +93,22 @@ def evaluate(model, loader, device):
     else:
         sensitivity, specificity = 0, 0
 
+    # Compute AUC
+    all_probs = np.array(all_probs)
+    try:
+        auc = roc_auc_score(all_labels, all_probs)
+    except ValueError:
+        auc = 0.0  # Handle case where only one class is present
+
     return {
         'accuracy': accuracy,
         'balanced_accuracy': balanced_acc,
         'sensitivity': sensitivity,
         'specificity': specificity,
+        'auc': auc,
         'predictions': all_preds,
-        'labels': all_labels
+        'labels': all_labels,
+        'probs': all_probs
     }
 
 
@@ -294,20 +303,22 @@ def main():
             traj_m = evaluate(model, test_traj_loader, device)
             cnad_m = evaluate(model, test_cnad_loader, device)
 
-            logger.info(f"  Val: {best_val:.1f}% | Traj: {traj_m['balanced_accuracy']:.1f}% | CN_AD: {cnad_m['balanced_accuracy']:.1f}%")
+            logger.info(f"  Val: {best_val:.1f}% | Traj: {traj_m['balanced_accuracy']:.1f}% (AUC: {traj_m['auc']:.3f}) | CN_AD: {cnad_m['balanced_accuracy']:.1f}% (AUC: {cnad_m['auc']:.3f})")
 
             seed_traj_results.append({
                 'accuracy': traj_m['accuracy'],
                 'balanced_accuracy': traj_m['balanced_accuracy'],
                 'sensitivity': traj_m['sensitivity'],
-                'specificity': traj_m['specificity']
+                'specificity': traj_m['specificity'],
+                'auc': traj_m['auc']
             })
 
             seed_cnad_results.append({
                 'accuracy': cnad_m['accuracy'],
                 'balanced_accuracy': cnad_m['balanced_accuracy'],
                 'sensitivity': cnad_m['sensitivity'],
-                'specificity': cnad_m['specificity']
+                'specificity': cnad_m['specificity'],
+                'auc': cnad_m['auc']
             })
 
             # Save fold model
@@ -322,7 +333,7 @@ def main():
 
     # Compute overall statistics
     def aggregate_metrics(results_list):
-        metrics = ['accuracy', 'balanced_accuracy', 'sensitivity', 'specificity']
+        metrics = ['accuracy', 'balanced_accuracy', 'sensitivity', 'specificity', 'auc']
         agg = {}
         for m in metrics:
             vals = [r[m] for r in results_list]
@@ -337,22 +348,24 @@ def main():
     cnad_agg = aggregate_metrics(all_cnad)
 
     # Summary
-    logger.info("\n" + "="*80)
+    logger.info("\n" + "="*100)
     logger.info("FINAL RESULTS (5-fold CV x 3 seeds = 15 runs)")
-    logger.info("="*80)
-    logger.info(f"{'Test Set':<25} {'Accuracy':<20} {'Balanced':<20} {'Sensitivity':<20} {'Specificity':<20}")
-    logger.info("-"*80)
+    logger.info("="*100)
+    logger.info(f"{'Test Set':<25} {'Accuracy':<18} {'Balanced':<18} {'Sensitivity':<18} {'Specificity':<18} {'AUC':<12}")
+    logger.info("-"*100)
     logger.info(f"{'cn_ad_trajectory':<25} "
-                f"{traj_agg['accuracy']['mean']:.1f}±{traj_agg['accuracy']['std']:.1f}%{'':<6} "
-                f"{traj_agg['balanced_accuracy']['mean']:.1f}±{traj_agg['balanced_accuracy']['std']:.1f}%{'':<6} "
-                f"{traj_agg['sensitivity']['mean']:.1f}±{traj_agg['sensitivity']['std']:.1f}%{'':<6} "
-                f"{traj_agg['specificity']['mean']:.1f}±{traj_agg['specificity']['std']:.1f}%")
+                f"{traj_agg['accuracy']['mean']:.1f}±{traj_agg['accuracy']['std']:.1f}%{'':<5} "
+                f"{traj_agg['balanced_accuracy']['mean']:.1f}±{traj_agg['balanced_accuracy']['std']:.1f}%{'':<5} "
+                f"{traj_agg['sensitivity']['mean']:.1f}±{traj_agg['sensitivity']['std']:.1f}%{'':<5} "
+                f"{traj_agg['specificity']['mean']:.1f}±{traj_agg['specificity']['std']:.1f}%{'':<5} "
+                f"{traj_agg['auc']['mean']:.3f}±{traj_agg['auc']['std']:.3f}")
     logger.info(f"{'cn_ad (stable AD)':<25} "
-                f"{cnad_agg['accuracy']['mean']:.1f}±{cnad_agg['accuracy']['std']:.1f}%{'':<6} "
-                f"{cnad_agg['balanced_accuracy']['mean']:.1f}±{cnad_agg['balanced_accuracy']['std']:.1f}%{'':<6} "
-                f"{cnad_agg['sensitivity']['mean']:.1f}±{cnad_agg['sensitivity']['std']:.1f}%{'':<6} "
-                f"{cnad_agg['specificity']['mean']:.1f}±{cnad_agg['specificity']['std']:.1f}%")
-    logger.info("="*80)
+                f"{cnad_agg['accuracy']['mean']:.1f}±{cnad_agg['accuracy']['std']:.1f}%{'':<5} "
+                f"{cnad_agg['balanced_accuracy']['mean']:.1f}±{cnad_agg['balanced_accuracy']['std']:.1f}%{'':<5} "
+                f"{cnad_agg['sensitivity']['mean']:.1f}±{cnad_agg['sensitivity']['std']:.1f}%{'':<5} "
+                f"{cnad_agg['specificity']['mean']:.1f}±{cnad_agg['specificity']['std']:.1f}%{'':<5} "
+                f"{cnad_agg['auc']['mean']:.3f}±{cnad_agg['auc']['std']:.3f}")
+    logger.info("="*100)
 
     # Save results
     final_results = {
@@ -363,13 +376,15 @@ def main():
             'accuracy': {'mean': traj_agg['accuracy']['mean'], 'std': traj_agg['accuracy']['std']},
             'balanced_accuracy': {'mean': traj_agg['balanced_accuracy']['mean'], 'std': traj_agg['balanced_accuracy']['std']},
             'sensitivity': {'mean': traj_agg['sensitivity']['mean'], 'std': traj_agg['sensitivity']['std']},
-            'specificity': {'mean': traj_agg['specificity']['mean'], 'std': traj_agg['specificity']['std']}
+            'specificity': {'mean': traj_agg['specificity']['mean'], 'std': traj_agg['specificity']['std']},
+            'auc': {'mean': traj_agg['auc']['mean'], 'std': traj_agg['auc']['std']}
         },
         'cn_ad': {
             'accuracy': {'mean': cnad_agg['accuracy']['mean'], 'std': cnad_agg['accuracy']['std']},
             'balanced_accuracy': {'mean': cnad_agg['balanced_accuracy']['mean'], 'std': cnad_agg['balanced_accuracy']['std']},
             'sensitivity': {'mean': cnad_agg['sensitivity']['mean'], 'std': cnad_agg['sensitivity']['std']},
-            'specificity': {'mean': cnad_agg['specificity']['mean'], 'std': cnad_agg['specificity']['std']}
+            'specificity': {'mean': cnad_agg['specificity']['mean'], 'std': cnad_agg['specificity']['std']},
+            'auc': {'mean': cnad_agg['auc']['mean'], 'std': cnad_agg['auc']['std']}
         },
         'per_seed': all_results
     }
@@ -382,8 +397,10 @@ def main():
         wandb.log({
             'final/traj_acc': traj_agg['accuracy']['mean'],
             'final/traj_bal_acc': traj_agg['balanced_accuracy']['mean'],
+            'final/traj_auc': traj_agg['auc']['mean'],
             'final/cnad_acc': cnad_agg['accuracy']['mean'],
             'final/cnad_bal_acc': cnad_agg['balanced_accuracy']['mean'],
+            'final/cnad_auc': cnad_agg['auc']['mean'],
         })
         wandb.finish()
 
