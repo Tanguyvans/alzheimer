@@ -190,7 +190,7 @@ This enables each modality to attend to complementary information from the other
 
 \subsection{Training Details}
 
-Models were trained for 50 epochs with early stopping (patience=15) monitoring validation accuracy:
+Models were trained for 100 epochs, saving the best checkpoint based on validation accuracy:
 \begin{itemize}
     \item AdamW optimizer with weight decay 0.01
     \item Learning rate: 2$\times$10$^{-5}$ with cosine annealing

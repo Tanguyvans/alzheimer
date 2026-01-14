@@ -108,11 +108,14 @@ hardware:
 
 callbacks:
   early_stopping:
-    enabled: true
+    enabled: false
     patience: 20
-    monitor: "val_balanced_accuracy"
+    min_epochs: 40
+    monitor: "val_accuracy"
   checkpoint:
     save_best: true
 
 wandb:
-  enabled: false
+  enabled: true
+  project: "alzheimer-multimodal"
+  name: "cross_task_cv_100ep"

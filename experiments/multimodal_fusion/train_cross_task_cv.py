@@ -23,6 +23,7 @@ import argparse
 import json
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import StratifiedKFold
+import wandb
 
 from model import build_model
 from dataset import MultiModalDataset
@@ -124,7 +125,7 @@ def create_dataset(csv_path, config, scaler=None, augment=False):
     )
 
 
-def train_fold(model, train_loader, val_loader, config, device, weights):
+def train_fold(model, train_loader, val_loader, config, device, weights, fold_id=0, use_wandb=False):
     cfg = config['training']
     optimizer = optim.AdamW(model.parameters(), lr=cfg['learning_rate'], weight_decay=cfg['weight_decay'])
 
@@ -140,9 +141,12 @@ def train_fold(model, train_loader, val_loader, config, device, weights):
 
     criterion = nn.CrossEntropyLoss(weight=weights)
 
-    best_val_bal_acc = 0.0
+    best_val_acc = 0.0
     best_state = None
-    patience = config['callbacks']['early_stopping']['patience']
+    early_stop_cfg = config['callbacks']['early_stopping']
+    early_stop_enabled = early_stop_cfg.get('enabled', True)
+    patience = early_stop_cfg['patience']
+    min_epochs = early_stop_cfg.get('min_epochs', 0)
     no_improve = 0
 
     pbar = tqdm(range(cfg['epochs']), desc="Training", leave=False)
@@ -151,22 +155,33 @@ def train_fold(model, train_loader, val_loader, config, device, weights):
         val_m = evaluate(model, val_loader, device)
         scheduler.step()
 
-        pbar.set_postfix({'train': f"{train_m['accuracy']:.1f}%", 'val_bal': f"{val_m['balanced_accuracy']:.1f}%"})
+        pbar.set_postfix({'train': f"{train_m['accuracy']:.1f}%", 'val': f"{val_m['accuracy']:.1f}%"})
 
-        if val_m['balanced_accuracy'] > best_val_bal_acc:
-            best_val_bal_acc = val_m['balanced_accuracy']
+        # Log to wandb
+        if use_wandb:
+            wandb.log({
+                f'fold{fold_id}/train_acc': train_m['accuracy'],
+                f'fold{fold_id}/val_acc': val_m['accuracy'],
+                f'fold{fold_id}/val_bal_acc': val_m['balanced_accuracy'],
+                f'fold{fold_id}/lr': optimizer.param_groups[0]['lr'],
+                'epoch': epoch
+            })
+
+        if val_m['accuracy'] > best_val_acc:
+            best_val_acc = val_m['accuracy']
             best_state = {k: v.cpu().clone() for k, v in model.state_dict().items()}
             no_improve = 0
         else:
             no_improve += 1
 
-        if no_improve >= patience:
+        # Only allow early stopping if enabled and after min_epochs
+        if early_stop_enabled and epoch >= min_epochs and no_improve >= patience:
             break
 
     if best_state:
         model.load_state_dict(best_state)
 
-    return model, best_val_bal_acc
+    return model, best_val_acc
 
 
 def main():
@@ -180,6 +195,15 @@ def main():
 
     with open(args.config) as f:
         config = yaml.safe_load(f)
+
+    # Initialize wandb if enabled
+    use_wandb = config.get('wandb', {}).get('enabled', False)
+    if use_wandb:
+        wandb.init(
+            project=config['wandb'].get('project', 'alzheimer-multimodal'),
+            name=config['wandb'].get('name', 'cross_task_cv'),
+            config=config
+        )
 
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -263,13 +287,14 @@ def main():
 
             # Fresh model
             model = build_model(config, num_features).to(device)
-            model, best_val = train_fold(model, train_loader, val_loader, config, device, weights)
+            model, best_val = train_fold(model, train_loader, val_loader, config, device, weights,
+                                         fold_id=fold+1, use_wandb=use_wandb)
 
             # Evaluate on both test sets
             traj_m = evaluate(model, test_traj_loader, device)
             cnad_m = evaluate(model, test_cnad_loader, device)
 
-            logger.info(f"  Val(bal): {best_val:.1f}% | Traj: {traj_m['balanced_accuracy']:.1f}% | CN_AD: {cnad_m['balanced_accuracy']:.1f}%")
+            logger.info(f"  Val: {best_val:.1f}% | Traj: {traj_m['balanced_accuracy']:.1f}% | CN_AD: {cnad_m['balanced_accuracy']:.1f}%")
 
             seed_traj_results.append({
                 'accuracy': traj_m['accuracy'],
@@ -351,6 +376,16 @@ def main():
 
     with open(output_dir / 'results.json', 'w') as f:
         json.dump(final_results, f, indent=2)
+
+    # Log final summary to wandb
+    if use_wandb:
+        wandb.log({
+            'final/traj_acc': traj_agg['accuracy']['mean'],
+            'final/traj_bal_acc': traj_agg['balanced_accuracy']['mean'],
+            'final/cnad_acc': cnad_agg['accuracy']['mean'],
+            'final/cnad_bal_acc': cnad_agg['balanced_accuracy']['mean'],
+        })
+        wandb.finish()
 
     logger.info(f"\nResults saved to {output_dir}")
 
