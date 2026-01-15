@@ -20,8 +20,11 @@ model:
   num_classes: 2
 
 data:
-  # Use same data as multimodal experiment
+  # Use same data as multimodal experiment (cn_ad_trajectory)
   data_dir: "../multimodal_fusion/data/combined_trajectory"
+
+  # Reference to trajectory CSV for subgroup analysis
+  trajectory_csv: "../../data/adni/adni_cn_ad_trajectory.csv"
 
   # Same 16 tabular features as multimodal
   tabular_features:
@@ -72,3 +75,8 @@ callbacks:
     monitor: "val_accuracy"
   checkpoint:
     save_best: true
+
+wandb:
+  enabled: true
+  project: "alzheimer-ablation"
+  name: "tabular_only_cv"
