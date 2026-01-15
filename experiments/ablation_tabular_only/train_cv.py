@@ -173,7 +173,7 @@ class TabularCVTrainer:
         correct = 0
         total = 0
 
-        for tabular, labels in tqdm(train_loader, desc=f"Training", leave=False):
+        for tabular, labels in train_loader:
             tabular = tabular.to(self.device)
             labels = labels.to(self.device)
 
