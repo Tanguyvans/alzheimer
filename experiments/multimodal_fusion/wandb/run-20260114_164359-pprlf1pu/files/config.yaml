@@ -1,0 +1,166 @@
+_wandb:
+    value:
+        cli_version: 0.23.1
+        e:
+            bghwsbx7vy3krvaefvldtyhftin4vr37:
+                args:
+                    - --seeds
+                    - "42"
+                    - --n-folds
+                    - "5"
+                codePath: experiments/multimodal_fusion/train_cross_task_cv.py
+                codePathLocal: train_cross_task_cv.py
+                cpu_count: 20
+                cpu_count_logical: 28
+                cudaVersion: "12.2"
+                disk:
+                    /:
+                        total: "1595870232576"
+                        used: "992635174912"
+                email: tanguyvans@gmail.com
+                executable: /home/tanguy/medical/alzheimer/env/bin/python
+                git:
+                    commit: cbc2b2bdf24145dbcdf92f3669cf9498bd4dc5ff
+                    remote: https://github.com/Tanguyvans/alzheimer.git
+                gpu: NVIDIA GeForce RTX 4080
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ada
+                      cudaCores: 9728
+                      memoryTotal: "17171480576"
+                      name: NVIDIA GeForce RTX 4080
+                      uuid: GPU-7bd8a1a2-4418-d7ee-6ab4-3a6e4a383196
+                host: ilia-corsair-5000x
+                memory:
+                    total: "33448153088"
+                os: Linux-6.14.0-37-generic-x86_64-with-glibc2.39
+                program: /home/tanguy/medical/alzheimer/experiments/multimodal_fusion/train_cross_task_cv.py
+                python: CPython 3.12.3
+                root: /home/tanguy/medical/alzheimer/experiments/multimodal_fusion
+                startedAt: "2026-01-14T15:43:59.156237Z"
+                writerId: bghwsbx7vy3krvaefvldtyhftin4vr37
+        m: []
+        python_version: 3.12.3
+        t:
+            "1":
+                - 1
+                - 5
+                - 11
+                - 41
+                - 48
+                - 49
+                - 53
+            "2":
+                - 1
+                - 5
+                - 11
+                - 41
+                - 48
+                - 49
+                - 53
+            "3":
+                - 2
+                - 13
+                - 16
+            "4": 3.12.3
+            "5": 0.23.1
+            "6": 4.57.3
+            "12": 0.23.1
+            "13": linux-x86_64
+callbacks:
+    value:
+        checkpoint:
+            save_best: true
+        early_stopping:
+            enabled: true
+            min_epochs: 50
+            monitor: val_accuracy
+            patience: 20
+data:
+    value:
+        checkpoints_dir: checkpoints
+        clinical_csv: ../../data/adni/adni_cn_ad_trajectory.csv
+        results_dir: results
+        tabular_features:
+            - AGE
+            - PTGENDER
+            - PTEDUCAT
+            - PTMARRY
+            - CATANIMSC
+            - TRAASCOR
+            - TRABSCOR
+            - DSPANFOR
+            - DSPANBAC
+            - BNTTOTAL
+            - VSWEIGHT
+            - BMI
+            - MH14ALCH
+            - MH16SMOK
+            - MH4CARD
+            - MH2NEURL
+        test_csv: data/combined_trajectory/test.csv
+        train_csv: data/combined_trajectory/train.csv
+        val_csv: data/combined_trajectory/val.csv
+experiment:
+    value:
+        dataset: multi_cohort_v2
+        description: Improved fusion with all 16 common tabular features from ADNI+OASIS+NACC
+        name: multimodal_fusion_combined_trajectory
+        task: cn_ad_trajectory
+hardware:
+    value:
+        device: cuda
+        num_workers: 4
+        pin_memory: true
+model:
+    value:
+        fusion:
+            auxiliary_losses: true
+            dropout: 0.3
+            hidden_dim: 512
+            method: cross_modal
+            num_heads: 8
+        num_classes: 2
+        tabular:
+            dropout: 0.1
+            embed_dim: 64
+            num_heads: 4
+            num_layers: 3
+            output_dim: 64
+            type: ft_transformer
+        vit:
+            architecture: vit_base
+            feature_dim: 768
+            freeze_backbone: false
+            image_size: 128
+            pretrained_path: ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+preprocessing:
+    value:
+        handle_missing: median
+        tabular_normalize: true
+        target_spacing: 1.75
+        use_paper_preprocessing: true
+training:
+    value:
+        auxiliary_loss_weight: 0.3
+        batch_size: 4
+        epochs: 100
+        gradient_clip: 1
+        label_smoothing: 0.1
+        layer_wise_lr_decay: 0.75
+        learning_rate: 2e-05
+        lr_min: 1e-07
+        optimizer: adamw
+        scheduler: cosine
+        seed: 42
+        tta_augmentations: 8
+        use_auxiliary_loss: true
+        use_tta: true
+        use_weighted_loss: true
+        warmup_epochs: 5
+        weight_decay: 0.01
+wandb:
+    value:
+        enabled: true
+        name: cross_task_cv_100ep
+        project: alzheimer-multimodal
