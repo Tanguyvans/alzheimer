@@ -63,15 +63,13 @@ callbacks:
   early_stopping:
     enabled: true
     patience: 20  # More patience for ViT
+    min_epochs: 50  # Same as multimodal
     monitor: "val_accuracy"
   checkpoint:
     save_best: true
     save_last: true
 
 wandb:
-  enabled: false
-  project: "alzheimer-classification"
-  entity: null
-  run_name: "ablation_mri_only"
-  tags: ["vit", "transformer", "mae", "pretrained", "ablation"]
-  notes: "MRI-only ablation using combined multi-cohort dataset"
+  enabled: true
+  project: "alzheimer-ablation"
+  name: "mri_only_cv"

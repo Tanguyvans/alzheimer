@@ -19,12 +19,19 @@ import pandas as pd
 from pathlib import Path
 from typing import Dict, List, Optional
 import logging
-from tqdm import tqdm
 import argparse
 import json
+from datetime import datetime
 from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import roc_auc_score
 import nibabel as nib
 from scipy import ndimage
+
+try:
+    import wandb
+    WANDB_AVAILABLE = True
+except ImportError:
+    WANDB_AVAILABLE = False
 
 # Add parent directory for imports
 sys.path.append(str(Path(__file__).parent.parent / "mri_vit_ad"))
@@ -123,12 +130,13 @@ class MRIDataset(Dataset):
 class MRICVTrainer:
     """Cross-validation trainer for MRI-only model"""
 
-    def __init__(self, config: Dict, fold: int, seed: int, output_dir: Path):
+    def __init__(self, config: Dict, fold: int, seed: int, output_dir: Path, use_wandb: bool = False):
         self.config = config
         self.fold = fold
         self.seed = seed
         self.output_dir = output_dir
         self.device = self._setup_device()
+        self.use_wandb = use_wandb and WANDB_AVAILABLE
 
         set_seed(seed)
 
@@ -180,7 +188,7 @@ class MRICVTrainer:
         correct = 0
         total = 0
 
-        for mri, labels in tqdm(train_loader, desc=f"Training", leave=False):
+        for mri, labels in train_loader:
             mri = mri.to(self.device)
             labels = labels.to(self.device)
 
@@ -216,6 +224,7 @@ class MRICVTrainer:
         total = 0
         all_preds = []
         all_labels = []
+        all_probs = []
 
         for mri, labels in loader:
             mri = mri.to(self.device)
@@ -232,17 +241,20 @@ class MRICVTrainer:
             loss = criterion(outputs, labels)
 
             total_loss += loss.item()
+            probs = torch.softmax(outputs, dim=1)
             _, predicted = outputs.max(1)
             total += labels.size(0)
             correct += predicted.eq(labels).sum().item()
 
             all_preds.extend(predicted.cpu().numpy())
             all_labels.extend(labels.cpu().numpy())
+            all_probs.extend(probs[:, 1].cpu().numpy())
 
-        # Calculate balanced accuracy
         all_preds = np.array(all_preds)
         all_labels = np.array(all_labels)
+        all_probs = np.array(all_probs)
 
+        # Calculate balanced accuracy
         classes = np.unique(all_labels)
         recalls = []
         for c in classes:
@@ -251,10 +263,27 @@ class MRICVTrainer:
                 recalls.append((all_preds[mask] == c).mean())
         balanced_acc = np.mean(recalls) * 100
 
+        # Sensitivity (recall for positive class = AD = 1)
+        pos_mask = all_labels == 1
+        sensitivity = (all_preds[pos_mask] == 1).mean() * 100 if pos_mask.sum() > 0 else 0.0
+
+        # Specificity (recall for negative class = CN = 0)
+        neg_mask = all_labels == 0
+        specificity = (all_preds[neg_mask] == 0).mean() * 100 if neg_mask.sum() > 0 else 0.0
+
+        # AUC
+        try:
+            auc = roc_auc_score(all_labels, all_probs)
+        except:
+            auc = 0.0
+
         return {
             'loss': total_loss / len(loader),
             'accuracy': 100.0 * correct / total,
             'balanced_accuracy': balanced_acc,
+            'sensitivity': sensitivity,
+            'specificity': specificity,
+            'auc': auc,
             'predictions': all_preds,
             'labels': all_labels
         }
@@ -308,7 +337,23 @@ class MRICVTrainer:
 
             logger.info(f"Epoch {epoch+1}/{cfg['epochs']} - "
                        f"Train Loss: {train_metrics['loss']:.4f}, Train Acc: {train_metrics['accuracy']:.2f}% - "
-                       f"Val Loss: {val_metrics['loss']:.4f}, Val Acc: {val_metrics['accuracy']:.2f}%")
+                       f"Val Loss: {val_metrics['loss']:.4f}, Val Acc: {val_metrics['accuracy']:.2f}%, "
+                       f"Val AUC: {val_metrics['auc']:.3f}")
+
+            # Log to WandB
+            if self.use_wandb:
+                wandb.log({
+                    f"fold_{self.fold}/train_loss": train_metrics['loss'],
+                    f"fold_{self.fold}/train_acc": train_metrics['accuracy'],
+                    f"fold_{self.fold}/val_loss": val_metrics['loss'],
+                    f"fold_{self.fold}/val_acc": val_metrics['accuracy'],
+                    f"fold_{self.fold}/val_balanced_acc": val_metrics['balanced_accuracy'],
+                    f"fold_{self.fold}/val_auc": val_metrics['auc'],
+                    f"fold_{self.fold}/val_sensitivity": val_metrics['sensitivity'],
+                    f"fold_{self.fold}/val_specificity": val_metrics['specificity'],
+                    f"fold_{self.fold}/epoch": epoch + 1,
+                    f"fold_{self.fold}/lr": optimizer.param_groups[0]['lr'],
+                })
 
             # Early stopping
             if val_metrics['accuracy'] > self.best_val_acc:
@@ -317,7 +362,8 @@ class MRICVTrainer:
                 best_model_state = model.state_dict().copy()
             else:
                 self.epochs_without_improvement += 1
-                if self.epochs_without_improvement >= self.config['callbacks']['early_stopping']['patience']:
+                min_epochs = self.config['callbacks']['early_stopping'].get('min_epochs', 0)
+                if epoch >= min_epochs and self.epochs_without_improvement >= self.config['callbacks']['early_stopping']['patience']:
                     logger.info(f"Early stopping at epoch {epoch+1}")
                     break
 
@@ -331,6 +377,9 @@ class MRICVTrainer:
             'val_accuracy': self.best_val_acc,
             'test_accuracy': test_metrics['accuracy'],
             'test_balanced_accuracy': test_metrics['balanced_accuracy'],
+            'test_sensitivity': test_metrics['sensitivity'],
+            'test_specificity': test_metrics['specificity'],
+            'test_auc': test_metrics['auc'],
             'test_predictions': test_metrics['predictions'],
             'test_labels': test_metrics['labels']
         }
@@ -338,6 +387,24 @@ class MRICVTrainer:
 
 def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_dir: Path):
     """Run K-fold cross-validation with multiple seeds"""
+
+    # Initialize WandB if enabled
+    use_wandb = False
+    wandb_config = config.get('wandb', {})
+    if wandb_config.get('enabled', False) and WANDB_AVAILABLE:
+        wandb.init(
+            project=wandb_config.get('project', 'alzheimer-ablation'),
+            name=f"{wandb_config.get('name', 'mri_only_cv')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            config={
+                'model': config['model'],
+                'training': config['training'],
+                'n_folds': n_folds,
+                'seeds': seeds,
+                'experiment': config.get('experiment', {}),
+            }
+        )
+        use_wandb = True
+        logger.info("WandB initialized successfully")
 
     data_dir = Path(config['data']['data_dir'])
 
@@ -398,20 +465,35 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
                                       target_size=config['model'].get('image_size', 128))
 
             # Train
-            trainer = MRICVTrainer(config, fold, seed, fold_dir)
+            trainer = MRICVTrainer(config, fold, seed, fold_dir, use_wandb=use_wandb)
             results = trainer.train(train_dataset, val_dataset, test_dataset)
 
-            logger.info(f"Fold {fold+1} - Val: {results['val_accuracy']:.2f}%, "
-                       f"Test: {results['test_accuracy']:.2f}%, "
-                       f"Balanced: {results['test_balanced_accuracy']:.2f}%")
+            logger.info(f"  Val: {results['val_accuracy']:.1f}% | "
+                       f"Test: Acc={results['test_accuracy']:.1f}%, BalAcc={results['test_balanced_accuracy']:.1f}%, "
+                       f"Sens={results['test_sensitivity']:.1f}%, Spec={results['test_specificity']:.1f}%, "
+                       f"AUC={results['test_auc']:.3f}")
+
+            # Log fold test metrics to WandB
+            if use_wandb:
+                wandb.log({
+                    f"seed_{seed}/fold_{fold}/test_acc": results['test_accuracy'],
+                    f"seed_{seed}/fold_{fold}/test_balanced_acc": results['test_balanced_accuracy'],
+                    f"seed_{seed}/fold_{fold}/test_sensitivity": results['test_sensitivity'],
+                    f"seed_{seed}/fold_{fold}/test_specificity": results['test_specificity'],
+                    f"seed_{seed}/fold_{fold}/test_auc": results['test_auc'],
+                })
 
             seed_results.append(results)
 
         # Summarize seed results
         test_accs = [r['test_accuracy'] for r in seed_results]
         balanced_accs = [r['test_balanced_accuracy'] for r in seed_results]
+        sensitivities = [r['test_sensitivity'] for r in seed_results]
+        specificities = [r['test_specificity'] for r in seed_results]
+        aucs = [r['test_auc'] for r in seed_results]
 
-        logger.info(f"\nSeed {seed} Summary: {np.mean(test_accs):.2f}% +/- {np.std(test_accs):.2f}%")
+        logger.info(f"\nSeed {seed} Summary: Acc={np.mean(test_accs):.1f}±{np.std(test_accs):.1f}%, "
+                   f"AUC={np.mean(aucs):.3f}±{np.std(aucs):.3f}")
 
         all_results.append({
             'seed': seed,
@@ -419,23 +501,45 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
             'test_accuracy_std': np.std(test_accs),
             'balanced_accuracy_mean': np.mean(balanced_accs),
             'balanced_accuracy_std': np.std(balanced_accs),
+            'sensitivity_mean': np.mean(sensitivities),
+            'sensitivity_std': np.std(sensitivities),
+            'specificity_mean': np.mean(specificities),
+            'specificity_std': np.std(specificities),
+            'auc_mean': np.mean(aucs),
+            'auc_std': np.std(aucs),
             'fold_results': seed_results
         })
 
-    # Final summary
+    # Final summary - collect all fold results across all seeds
+    all_accs = []
+    all_bal_accs = []
+    all_sens = []
+    all_spec = []
+    all_aucs = []
+
+    for result in all_results:
+        for fold_res in result['fold_results']:
+            all_accs.append(fold_res['test_accuracy'])
+            all_bal_accs.append(fold_res['test_balanced_accuracy'])
+            all_sens.append(fold_res['test_sensitivity'])
+            all_spec.append(fold_res['test_specificity'])
+            all_aucs.append(fold_res['test_auc'])
+
     logger.info(f"\n{'='*60}")
     logger.info("CROSS-VALIDATION RESULTS")
     logger.info(f"{'='*60}")
 
     for result in all_results:
-        logger.info(f"Seed {result['seed']}: {result['test_accuracy_mean']:.2f}% +/- {result['test_accuracy_std']:.2f}%")
-
-    all_test_accs = [r['test_accuracy_mean'] for r in all_results]
-    all_balanced_accs = [r['balanced_accuracy_mean'] for r in all_results]
+        logger.info(f"Seed {result['seed']}: Acc={result['test_accuracy_mean']:.1f}±{result['test_accuracy_std']:.1f}%, "
+                   f"AUC={result['auc_mean']:.3f}±{result['auc_std']:.3f}")
 
     logger.info(f"\n{'='*40}")
-    logger.info(f"OVERALL: {np.mean(all_test_accs):.2f}% +/- {np.std(all_test_accs):.2f}%")
-    logger.info(f"BALANCED: {np.mean(all_balanced_accs):.2f}% +/- {np.std(all_balanced_accs):.2f}%")
+    logger.info(f"OVERALL ({len(all_accs)} folds):")
+    logger.info(f"  Accuracy:      {np.mean(all_accs):.1f}% ± {np.std(all_accs):.1f}%")
+    logger.info(f"  Balanced Acc:  {np.mean(all_bal_accs):.1f}% ± {np.std(all_bal_accs):.1f}%")
+    logger.info(f"  Sensitivity:   {np.mean(all_sens):.1f}% ± {np.std(all_sens):.1f}%")
+    logger.info(f"  Specificity:   {np.mean(all_spec):.1f}% ± {np.std(all_spec):.1f}%")
+    logger.info(f"  AUC:           {np.mean(all_aucs):.3f} ± {np.std(all_aucs):.3f}")
     logger.info(f"{'='*40}")
 
     # Save results
@@ -451,15 +555,41 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
             return obj
 
         json.dump({
-            'overall_accuracy': float(np.mean(all_test_accs)),
-            'overall_accuracy_std': float(np.std(all_test_accs)),
-            'overall_balanced_accuracy': float(np.mean(all_balanced_accs)),
-            'overall_balanced_accuracy_std': float(np.std(all_balanced_accs)),
+            'accuracy': float(np.mean(all_accs)),
+            'accuracy_std': float(np.std(all_accs)),
+            'balanced_accuracy': float(np.mean(all_bal_accs)),
+            'balanced_accuracy_std': float(np.std(all_bal_accs)),
+            'sensitivity': float(np.mean(all_sens)),
+            'sensitivity_std': float(np.std(all_sens)),
+            'specificity': float(np.mean(all_spec)),
+            'specificity_std': float(np.std(all_spec)),
+            'auc': float(np.mean(all_aucs)),
+            'auc_std': float(np.std(all_aucs)),
+            'n_folds': n_folds,
+            'n_seeds': len(seeds),
+            'seeds': seeds,
             'per_seed_results': [{k: convert(v) if k != 'fold_results' else None
                                   for k, v in r.items()} for r in all_results]
         }, f, indent=2)
 
     logger.info(f"\nResults saved to {results_file}")
+
+    # Log final summary to WandB
+    if use_wandb:
+        wandb.summary.update({
+            'accuracy_mean': float(np.mean(all_accs)),
+            'accuracy_std': float(np.std(all_accs)),
+            'balanced_accuracy_mean': float(np.mean(all_bal_accs)),
+            'balanced_accuracy_std': float(np.std(all_bal_accs)),
+            'sensitivity_mean': float(np.mean(all_sens)),
+            'sensitivity_std': float(np.std(all_sens)),
+            'specificity_mean': float(np.mean(all_spec)),
+            'specificity_std': float(np.std(all_spec)),
+            'auc_mean': float(np.mean(all_aucs)),
+            'auc_std': float(np.std(all_aucs)),
+        })
+        wandb.finish()
+        logger.info("WandB run finished")
 
     return all_results
 
@@ -468,13 +598,18 @@ def main():
     parser = argparse.ArgumentParser(description="MRI-only ablation study")
     parser.add_argument('--config', type=str, default='config.yaml', help='Config file')
     parser.add_argument('--n-folds', type=int, default=5, help='Number of CV folds')
-    parser.add_argument('--seeds', type=int, nargs='+', default=[42, 123, 456, 789, 2024],
+    parser.add_argument('--seeds', type=int, nargs='+', default=[42, 123, 456],
                         help='Random seeds')
     parser.add_argument('--output-dir', type=str, default='cv_results', help='Output directory')
+    parser.add_argument('--no-wandb', action='store_true', help='Disable WandB logging')
     args = parser.parse_args()
 
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
+
+    # Override WandB setting if --no-wandb is passed
+    if args.no_wandb:
+        config['wandb'] = {'enabled': False}
 
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
