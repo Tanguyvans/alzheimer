@@ -213,13 +213,7 @@ Experiments used 5-fold cross-validation to assess stability.
 
 Our classification groups established AD patients with MCI subjects who subsequently progressed to AD (MCI converters). This grouping is grounded in the 2018 NIA-AA Research Framework \cite{jack2018}, which defines AD as a biological continuum rather than a clinical syndrome---individuals with AD pathology are on the ``Alzheimer's continuum'' regardless of clinical stage.
 
-Longitudinal neuroimaging studies provide strong evidence that MCI converters exhibit AD-like atrophy patterns detectable on structural MRI. Misra et al. \cite{misra2009} demonstrated using ADNI data that MCI converters show significantly higher hippocampal atrophy rates ($-3.5\%$/year) compared to stable MCI patients ($-2.2\%$/year), with baseline MRI achieving 81.5\% accuracy in predicting future conversion. Importantly, converters had already reached ``levels of widespread and significant brain atrophy at baseline,'' indicating that structural changes precede clinical diagnosis. Figure~\ref{fig:continuum} illustrates this progression from cognitively normal through MCI to AD dementia.
-
-\begin{figure}[htbp]
-\centerline{\includegraphics[width=\columnwidth]{figures/ad_continuum.png}}
-\caption{The Alzheimer's disease continuum showing progressive brain atrophy from cognitively normal (CN) through mild cognitive impairment (MCI) to AD dementia. MCI converters exhibit intermediate atrophy patterns that predict future clinical progression.}
-\label{fig:continuum}
-\end{figure}
+Longitudinal neuroimaging studies provide strong evidence that MCI converters exhibit AD-like atrophy patterns detectable on structural MRI. Misra et al. \cite{misra2009} demonstrated using ADNI data that MCI converters show significantly higher hippocampal atrophy rates ($-3.5\%$/year) compared to stable MCI patients ($-2.2\%$/year), with baseline MRI achieving 81.5\% accuracy in predicting future conversion. Importantly, converters had already reached ``levels of widespread and significant brain atrophy at baseline,'' indicating that structural changes precede clinical diagnosis.
 
 \subsection{Classification Performance}
 
@@ -268,6 +262,14 @@ Tabular only (FT-T) & 84.8$\pm$0.5\% & 84.9$\pm$0.3\% & 0.929 \\
 \vspace{-2mm}
 {\scriptsize Note: Results on AD-trajectory test set with 5-fold CV. Cross-task evaluation on stable AD achieves 94.1\% (Table~\ref{tab:results}).}
 \end{table}
+
+Figure~\ref{fig:roc} shows the ROC curves comparing multimodal fusion against unimodal baselines. The multimodal model achieves substantially higher AUC (0.948) than both MRI-only and tabular-only models, demonstrating the benefit of cross-modal attention fusion.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{figures/roc_curves.pdf}}
+\caption{ROC curves comparing multimodal fusion (AUC=0.948) with tabular-only (AUC=0.929) and MRI-only baselines on the AD-trajectory test set. The multimodal model achieves superior discrimination across all operating points.}
+\label{fig:roc}
+\end{figure}
 
 \subsection{Comparison with Literature}
 
