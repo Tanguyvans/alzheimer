@@ -303,7 +303,7 @@ def main():
             traj_m = evaluate(model, test_traj_loader, device)
             cnad_m = evaluate(model, test_cnad_loader, device)
 
-            logger.info(f"  Val: {best_val:.1f}% | Traj: {traj_m['balanced_accuracy']:.1f}% (AUC: {traj_m['auc']:.3f}) | CN_AD: {cnad_m['balanced_accuracy']:.1f}% (AUC: {cnad_m['auc']:.3f})")
+            logger.info(f"  Val: {best_val:.1f}% | Traj: Acc={traj_m['accuracy']:.1f}%, BalAcc={traj_m['balanced_accuracy']:.1f}%, AUC={traj_m['auc']:.3f} | CN_AD: Acc={cnad_m['accuracy']:.1f}%, BalAcc={cnad_m['balanced_accuracy']:.1f}%, AUC={cnad_m['auc']:.3f}")
 
             seed_traj_results.append({
                 'accuracy': traj_m['accuracy'],
