@@ -1,0 +1,112 @@
+_wandb:
+    value:
+        cli_version: 0.23.1
+        e:
+            h2r34raq5xmixibtoy8o3u0wy5g5ylb9:
+                args:
+                    - --config
+                    - config.yaml
+                    - --n-folds
+                    - "5"
+                    - --seeds
+                    - "42"
+                    - "123"
+                    - "456"
+                    - --output-dir
+                    - cv_results
+                codePath: experiments/ablation_tabular_only/train_cv.py
+                codePathLocal: train_cv.py
+                cpu_count: 20
+                cpu_count_logical: 28
+                cudaVersion: "12.2"
+                disk:
+                    /:
+                        total: "1595870232576"
+                        used: "992354566144"
+                email: tanguyvans@gmail.com
+                executable: /home/tanguy/medical/alzheimer/env/bin/python
+                git:
+                    commit: 64275fc84f099a1e4e38922cefeadb6f7b84bd8d
+                    remote: https://github.com/Tanguyvans/alzheimer.git
+                gpu: NVIDIA GeForce RTX 4080
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ada
+                      cudaCores: 9728
+                      memoryTotal: "17171480576"
+                      name: NVIDIA GeForce RTX 4080
+                      uuid: GPU-7bd8a1a2-4418-d7ee-6ab4-3a6e4a383196
+                host: ilia-corsair-5000x
+                memory:
+                    total: "33448153088"
+                os: Linux-6.14.0-37-generic-x86_64-with-glibc2.39
+                program: /home/tanguy/medical/alzheimer/experiments/ablation_tabular_only/train_cv.py
+                python: CPython 3.12.3
+                root: /home/tanguy/medical/alzheimer/experiments/ablation_tabular_only
+                startedAt: "2026-01-16T15:10:40.199775Z"
+                writerId: h2r34raq5xmixibtoy8o3u0wy5g5ylb9
+        m: []
+        python_version: 3.12.3
+        t:
+            "1":
+                - 1
+                - 5
+                - 11
+                - 41
+                - 48
+                - 49
+                - 53
+            "2":
+                - 1
+                - 5
+                - 11
+                - 41
+                - 48
+                - 49
+                - 53
+            "3":
+                - 2
+                - 13
+                - 16
+                - 62
+            "4": 3.12.3
+            "5": 0.23.1
+            "6": 4.57.3
+            "12": 0.23.1
+            "13": linux-x86_64
+experiment:
+    value:
+        dataset: multi_cohort_v2
+        description: FT-Transformer only baseline for ablation study
+        name: ablation_tabular_only
+        task: cn_ad_trajectory
+model:
+    value:
+        num_classes: 2
+        tabular:
+            dropout: 0.1
+            embed_dim: 64
+            num_heads: 4
+            num_layers: 3
+            output_dim: 64
+            type: ft_transformer
+n_folds:
+    value: 5
+seeds:
+    value:
+        - 42
+        - 123
+        - 456
+training:
+    value:
+        batch_size: 32
+        epochs: 100
+        label_smoothing: 0.1
+        learning_rate: 0.001
+        lr_min: 1e-05
+        optimizer: adamw
+        scheduler: cosine
+        seed: 42
+        use_weighted_loss: true
+        warmup_epochs: 5
+        weight_decay: 0.01

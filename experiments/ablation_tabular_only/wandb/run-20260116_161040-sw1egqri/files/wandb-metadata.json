@@ -1,0 +1,52 @@
+{
+  "os":  "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+  "python":  "CPython 3.12.3",
+  "startedAt":  "2026-01-16T15:10:40.199775Z",
+  "args":  [
+    "--config",
+    "config.yaml",
+    "--n-folds",
+    "5",
+    "--seeds",
+    "42",
+    "123",
+    "456",
+    "--output-dir",
+    "cv_results"
+  ],
+  "program":  "/home/tanguy/medical/alzheimer/experiments/ablation_tabular_only/train_cv.py",
+  "codePath":  "experiments/ablation_tabular_only/train_cv.py",
+  "codePathLocal":  "train_cv.py",
+  "git":  {
+    "remote":  "https://github.com/Tanguyvans/alzheimer.git",
+    "commit":  "64275fc84f099a1e4e38922cefeadb6f7b84bd8d"
+  },
+  "email":  "tanguyvans@gmail.com",
+  "root":  "/home/tanguy/medical/alzheimer/experiments/ablation_tabular_only",
+  "host":  "ilia-corsair-5000x",
+  "executable":  "/home/tanguy/medical/alzheimer/env/bin/python",
+  "cpu_count":  20,
+  "cpu_count_logical":  28,
+  "gpu":  "NVIDIA GeForce RTX 4080",
+  "gpu_count":  1,
+  "disk":  {
+    "/":  {
+      "total":  "1595870232576",
+      "used":  "992354566144"
+    }
+  },
+  "memory":  {
+    "total":  "33448153088"
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "NVIDIA GeForce RTX 4080",
+      "memoryTotal":  "17171480576",
+      "cudaCores":  9728,
+      "architecture":  "Ada",
+      "uuid":  "GPU-7bd8a1a2-4418-d7ee-6ab4-3a6e4a383196"
+    }
+  ],
+  "cudaVersion":  "12.2",
+  "writerId":  "h2r34raq5xmixibtoy8o3u0wy5g5ylb9"
+}

@@ -1,0 +1,723 @@
+nohup: les entrées sont ignorées
+[0;93m2026-01-16 16:10:38.743728832 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"[m
+wandb: Currently logged in as: tanguyvans to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run sw1egqri
+wandb: Tracking run with wandb version 0.23.1
+wandb: Run data is saved locally in /home/tanguy/medical/alzheimer/experiments/ablation_tabular_only/wandb/run-20260116_161040-sw1egqri
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run tabular_only_cv_20260116_161039
+wandb: ⭐️ View project at https://wandb.ai/tanguyvans/alzheimer-ablation
+wandb: 🚀 View run at https://wandb.ai/tanguyvans/alzheimer-ablation/runs/sw1egqri
+2026-01-16 16:10:41,081 - INFO - WandB initialized successfully
+2026-01-16 16:10:41,092 - INFO - Total samples: 6065
+2026-01-16 16:10:41,092 - INFO - Label distribution:
+label
+0    4747
+1    1318
+Name: count, dtype: int64
+2026-01-16 16:10:41,102 - INFO - Loaded 5706 stable subject_ids for CN_AD filtering
+2026-01-16 16:10:41,102 - INFO - 
+============================================================
+2026-01-16 16:10:41,102 - INFO - Running with seed 42
+2026-01-16 16:10:41,102 - INFO - ============================================================
+2026-01-16 16:10:41,113 - INFO - 
+--- Fold 1/5 ---
+2026-01-16 16:10:41,114 - INFO - Train: 4367, Val: 485, Test: 1213
+/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:392: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+2026-01-16 16:10:42,716 - INFO - Epoch 1/100 - Train Loss: 0.5928, Train Acc: 75.25% - Val Loss: 0.5258, Val Acc: 84.12%, Val AUC: 0.908
+2026-01-16 16:10:43,973 - INFO - Epoch 2/100 - Train Loss: 0.5216, Train Acc: 82.78% - Val Loss: 0.5498, Val Acc: 85.98%, Val AUC: 0.910
+2026-01-16 16:10:45,271 - INFO - Epoch 3/100 - Train Loss: 0.5178, Train Acc: 83.63% - Val Loss: 0.5228, Val Acc: 79.79%, Val AUC: 0.909
+2026-01-16 16:10:46,550 - INFO - Epoch 4/100 - Train Loss: 0.5052, Train Acc: 83.67% - Val Loss: 0.5096, Val Acc: 82.06%, Val AUC: 0.921
+2026-01-16 16:10:47,807 - INFO - Epoch 5/100 - Train Loss: 0.5030, Train Acc: 84.02% - Val Loss: 0.5043, Val Acc: 84.12%, Val AUC: 0.922
+2026-01-16 16:10:49,096 - INFO - Epoch 6/100 - Train Loss: 0.5034, Train Acc: 84.59% - Val Loss: 0.5039, Val Acc: 83.09%, Val AUC: 0.921
+2026-01-16 16:10:50,371 - INFO - Epoch 7/100 - Train Loss: 0.4956, Train Acc: 84.41% - Val Loss: 0.5236, Val Acc: 81.86%, Val AUC: 0.924
+2026-01-16 16:10:51,664 - INFO - Epoch 8/100 - Train Loss: 0.5007, Train Acc: 84.22% - Val Loss: 0.4961, Val Acc: 82.06%, Val AUC: 0.923
+2026-01-16 16:10:53,001 - INFO - Epoch 9/100 - Train Loss: 0.4963, Train Acc: 83.88% - Val Loss: 0.5142, Val Acc: 81.65%, Val AUC: 0.915
+2026-01-16 16:10:54,254 - INFO - Epoch 10/100 - Train Loss: 0.4951, Train Acc: 84.57% - Val Loss: 0.5163, Val Acc: 87.22%, Val AUC: 0.923
+2026-01-16 16:10:55,535 - INFO - Epoch 11/100 - Train Loss: 0.4855, Train Acc: 85.67% - Val Loss: 0.5275, Val Acc: 84.54%, Val AUC: 0.922
+2026-01-16 16:10:56,779 - INFO - Epoch 12/100 - Train Loss: 0.4837, Train Acc: 85.44% - Val Loss: 0.5120, Val Acc: 84.12%, Val AUC: 0.922
+2026-01-16 16:10:58,019 - INFO - Epoch 13/100 - Train Loss: 0.4864, Train Acc: 85.64% - Val Loss: 0.4959, Val Acc: 83.51%, Val AUC: 0.926
+2026-01-16 16:10:59,312 - INFO - Epoch 14/100 - Train Loss: 0.4857, Train Acc: 85.57% - Val Loss: 0.5188, Val Acc: 84.74%, Val AUC: 0.919
+2026-01-16 16:11:00,557 - INFO - Epoch 15/100 - Train Loss: 0.4858, Train Acc: 84.89% - Val Loss: 0.5088, Val Acc: 83.51%, Val AUC: 0.925
+2026-01-16 16:11:01,808 - INFO - Epoch 16/100 - Train Loss: 0.4848, Train Acc: 84.61% - Val Loss: 0.5255, Val Acc: 85.15%, Val AUC: 0.920
+2026-01-16 16:11:03,123 - INFO - Epoch 17/100 - Train Loss: 0.4822, Train Acc: 85.64% - Val Loss: 0.5076, Val Acc: 82.47%, Val AUC: 0.919
+2026-01-16 16:11:04,379 - INFO - Epoch 18/100 - Train Loss: 0.4817, Train Acc: 84.25% - Val Loss: 0.5172, Val Acc: 83.09%, Val AUC: 0.916
+2026-01-16 16:11:05,683 - INFO - Epoch 19/100 - Train Loss: 0.4773, Train Acc: 86.21% - Val Loss: 0.5051, Val Acc: 83.30%, Val AUC: 0.921
+2026-01-16 16:11:06,950 - INFO - Epoch 20/100 - Train Loss: 0.4784, Train Acc: 86.26% - Val Loss: 0.5099, Val Acc: 82.89%, Val AUC: 0.923
+2026-01-16 16:11:08,228 - INFO - Epoch 21/100 - Train Loss: 0.4769, Train Acc: 86.03% - Val Loss: 0.5072, Val Acc: 85.77%, Val AUC: 0.927
+2026-01-16 16:11:09,461 - INFO - Epoch 22/100 - Train Loss: 0.4762, Train Acc: 85.62% - Val Loss: 0.5168, Val Acc: 82.06%, Val AUC: 0.921
+2026-01-16 16:11:10,695 - INFO - Epoch 23/100 - Train Loss: 0.4703, Train Acc: 86.51% - Val Loss: 0.5188, Val Acc: 85.57%, Val AUC: 0.921
+2026-01-16 16:11:11,969 - INFO - Epoch 24/100 - Train Loss: 0.4702, Train Acc: 87.18% - Val Loss: 0.5214, Val Acc: 82.27%, Val AUC: 0.919
+2026-01-16 16:11:13,233 - INFO - Epoch 25/100 - Train Loss: 0.4728, Train Acc: 86.12% - Val Loss: 0.5081, Val Acc: 83.51%, Val AUC: 0.920
+2026-01-16 16:11:14,502 - INFO - Epoch 26/100 - Train Loss: 0.4711, Train Acc: 86.58% - Val Loss: 0.4947, Val Acc: 82.27%, Val AUC: 0.928
+2026-01-16 16:11:15,750 - INFO - Epoch 27/100 - Train Loss: 0.4647, Train Acc: 87.04% - Val Loss: 0.5357, Val Acc: 83.09%, Val AUC: 0.911
+2026-01-16 16:11:17,004 - INFO - Epoch 28/100 - Train Loss: 0.4720, Train Acc: 85.67% - Val Loss: 0.5122, Val Acc: 83.30%, Val AUC: 0.919
+2026-01-16 16:11:18,261 - INFO - Epoch 29/100 - Train Loss: 0.4667, Train Acc: 86.92% - Val Loss: 0.5129, Val Acc: 83.09%, Val AUC: 0.918
+2026-01-16 16:11:19,501 - INFO - Epoch 30/100 - Train Loss: 0.4649, Train Acc: 87.02% - Val Loss: 0.5186, Val Acc: 82.47%, Val AUC: 0.919
+2026-01-16 16:11:19,502 - INFO - Early stopping at epoch 30
+2026-01-16 16:11:19,721 - INFO -   Val: 87.2% | Traj: Acc=84.1%, BalAcc=83.8%, Sens=83.3%, Spec=84.3%, AUC=0.927
+2026-01-16 16:11:19,826 - INFO -        CN_AD (1130 stable): Acc=84.6%, BalAcc=83.2%, Sens=81.1%, Spec=85.3%, AUC=0.925
+2026-01-16 16:11:19,827 - INFO - 
+--- Fold 2/5 ---
+2026-01-16 16:11:19,828 - INFO - Train: 4367, Val: 485, Test: 1213
+/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:392: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+2026-01-16 16:11:21,123 - INFO - Epoch 1/100 - Train Loss: 0.5808, Train Acc: 76.05% - Val Loss: 0.5347, Val Acc: 84.74%, Val AUC: 0.912
+2026-01-16 16:11:22,397 - INFO - Epoch 2/100 - Train Loss: 0.5216, Train Acc: 83.83% - Val Loss: 0.5146, Val Acc: 88.04%, Val AUC: 0.931
+2026-01-16 16:11:23,696 - INFO - Epoch 3/100 - Train Loss: 0.5098, Train Acc: 84.38% - Val Loss: 0.5152, Val Acc: 85.98%, Val AUC: 0.928
+2026-01-16 16:11:24,971 - INFO - Epoch 4/100 - Train Loss: 0.5050, Train Acc: 84.11% - Val Loss: 0.5026, Val Acc: 86.19%, Val AUC: 0.927
+2026-01-16 16:11:26,232 - INFO - Epoch 5/100 - Train Loss: 0.5019, Train Acc: 84.82% - Val Loss: 0.5259, Val Acc: 85.57%, Val AUC: 0.921
+2026-01-16 16:11:27,512 - INFO - Epoch 6/100 - Train Loss: 0.4957, Train Acc: 85.32% - Val Loss: 0.5025, Val Acc: 87.42%, Val AUC: 0.932
+2026-01-16 16:11:28,778 - INFO - Epoch 7/100 - Train Loss: 0.4987, Train Acc: 84.15% - Val Loss: 0.5167, Val Acc: 85.77%, Val AUC: 0.927
+2026-01-16 16:11:30,052 - INFO - Epoch 8/100 - Train Loss: 0.4977, Train Acc: 84.84% - Val Loss: 0.5072, Val Acc: 83.51%, Val AUC: 0.932
+2026-01-16 16:11:31,323 - INFO - Epoch 9/100 - Train Loss: 0.4939, Train Acc: 85.30% - Val Loss: 0.5231, Val Acc: 81.65%, Val AUC: 0.928
+2026-01-16 16:11:32,591 - INFO - Epoch 10/100 - Train Loss: 0.4905, Train Acc: 85.83% - Val Loss: 0.4977, Val Acc: 86.60%, Val AUC: 0.930
+2026-01-16 16:11:33,869 - INFO - Epoch 11/100 - Train Loss: 0.4951, Train Acc: 85.09% - Val Loss: 0.5153, Val Acc: 81.65%, Val AUC: 0.928
+2026-01-16 16:11:35,134 - INFO - Epoch 12/100 - Train Loss: 0.4904, Train Acc: 84.75% - Val Loss: 0.5048, Val Acc: 86.39%, Val AUC: 0.937
+2026-01-16 16:11:36,399 - INFO - Epoch 13/100 - Train Loss: 0.4883, Train Acc: 84.50% - Val Loss: 0.5026, Val Acc: 83.92%, Val AUC: 0.934
+2026-01-16 16:11:37,705 - INFO - Epoch 14/100 - Train Loss: 0.4909, Train Acc: 86.33% - Val Loss: 0.4949, Val Acc: 85.77%, Val AUC: 0.935
+2026-01-16 16:11:38,957 - INFO - Epoch 15/100 - Train Loss: 0.4852, Train Acc: 86.12% - Val Loss: 0.5038, Val Acc: 84.12%, Val AUC: 0.937
+2026-01-16 16:11:40,211 - INFO - Epoch 16/100 - Train Loss: 0.4881, Train Acc: 85.62% - Val Loss: 0.5035, Val Acc: 83.30%, Val AUC: 0.931
+2026-01-16 16:11:41,462 - INFO - Epoch 17/100 - Train Loss: 0.4892, Train Acc: 85.55% - Val Loss: 0.4917, Val Acc: 85.15%, Val AUC: 0.933
+2026-01-16 16:11:42,726 - INFO - Epoch 18/100 - Train Loss: 0.4866, Train Acc: 85.37% - Val Loss: 0.5049, Val Acc: 84.54%, Val AUC: 0.935
+2026-01-16 16:11:43,973 - INFO - Epoch 19/100 - Train Loss: 0.4774, Train Acc: 86.97% - Val Loss: 0.4964, Val Acc: 82.89%, Val AUC: 0.942
+2026-01-16 16:11:45,232 - INFO - Epoch 20/100 - Train Loss: 0.4828, Train Acc: 85.37% - Val Loss: 0.4883, Val Acc: 80.82%, Val AUC: 0.942
+2026-01-16 16:11:46,496 - INFO - Epoch 21/100 - Train Loss: 0.4822, Train Acc: 85.23% - Val Loss: 0.5009, Val Acc: 86.60%, Val AUC: 0.929
+2026-01-16 16:11:47,778 - INFO - Epoch 22/100 - Train Loss: 0.4760, Train Acc: 85.78% - Val Loss: 0.4998, Val Acc: 85.57%, Val AUC: 0.936
+2026-01-16 16:11:47,779 - INFO - Early stopping at epoch 22
+2026-01-16 16:11:48,001 - INFO -   Val: 88.0% | Traj: Acc=83.8%, BalAcc=83.6%, Sens=83.3%, Spec=84.0%, AUC=0.926
+2026-01-16 16:11:48,108 - INFO -        CN_AD (1149 stable): Acc=83.3%, BalAcc=81.9%, Sens=79.9%, Spec=84.0%, AUC=0.916
+2026-01-16 16:11:48,109 - INFO - 
+--- Fold 3/5 ---
+2026-01-16 16:11:48,109 - INFO - Train: 4367, Val: 485, Test: 1213
+/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:392: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+2026-01-16 16:11:49,417 - INFO - Epoch 1/100 - Train Loss: 0.5731, Train Acc: 76.67% - Val Loss: 0.5383, Val Acc: 74.02%, Val AUC: 0.915
+2026-01-16 16:11:50,675 - INFO - Epoch 2/100 - Train Loss: 0.5144, Train Acc: 81.70% - Val Loss: 0.5125, Val Acc: 69.07%, Val AUC: 0.920
+2026-01-16 16:11:51,930 - INFO - Epoch 3/100 - Train Loss: 0.5025, Train Acc: 82.62% - Val Loss: 0.5184, Val Acc: 81.65%, Val AUC: 0.924
+2026-01-16 16:11:53,199 - INFO - Epoch 4/100 - Train Loss: 0.5126, Train Acc: 82.46% - Val Loss: 0.5379, Val Acc: 64.33%, Val AUC: 0.918
+2026-01-16 16:11:54,490 - INFO - Epoch 5/100 - Train Loss: 0.4981, Train Acc: 83.51% - Val Loss: 0.5107, Val Acc: 84.95%, Val AUC: 0.915
+2026-01-16 16:11:55,802 - INFO - Epoch 6/100 - Train Loss: 0.5010, Train Acc: 83.35% - Val Loss: 0.5043, Val Acc: 74.43%, Val AUC: 0.923
+2026-01-16 16:11:57,114 - INFO - Epoch 7/100 - Train Loss: 0.4966, Train Acc: 83.76% - Val Loss: 0.4908, Val Acc: 78.97%, Val AUC: 0.927
+2026-01-16 16:11:58,388 - INFO - Epoch 8/100 - Train Loss: 0.4906, Train Acc: 84.54% - Val Loss: 0.4914, Val Acc: 77.94%, Val AUC: 0.923
+2026-01-16 16:11:59,668 - INFO - Epoch 9/100 - Train Loss: 0.4861, Train Acc: 83.63% - Val Loss: 0.4893, Val Acc: 80.21%, Val AUC: 0.928
+2026-01-16 16:12:00,934 - INFO - Epoch 10/100 - Train Loss: 0.4876, Train Acc: 85.28% - Val Loss: 0.5389, Val Acc: 76.29%, Val AUC: 0.920
+2026-01-16 16:12:02,184 - INFO - Epoch 11/100 - Train Loss: 0.4857, Train Acc: 85.41% - Val Loss: 0.4951, Val Acc: 83.92%, Val AUC: 0.925
+2026-01-16 16:12:03,438 - INFO - Epoch 12/100 - Train Loss: 0.4792, Train Acc: 84.61% - Val Loss: 0.4865, Val Acc: 83.30%, Val AUC: 0.925
+2026-01-16 16:12:04,732 - INFO - Epoch 13/100 - Train Loss: 0.4814, Train Acc: 84.22% - Val Loss: 0.5155, Val Acc: 78.76%, Val AUC: 0.918
+2026-01-16 16:12:05,984 - INFO - Epoch 14/100 - Train Loss: 0.4915, Train Acc: 85.02% - Val Loss: 0.5033, Val Acc: 75.26%, Val AUC: 0.915
+2026-01-16 16:12:07,265 - INFO - Epoch 15/100 - Train Loss: 0.4883, Train Acc: 85.60% - Val Loss: 0.5008, Val Acc: 84.33%, Val AUC: 0.924
+2026-01-16 16:12:08,540 - INFO - Epoch 16/100 - Train Loss: 0.4796, Train Acc: 85.48% - Val Loss: 0.4943, Val Acc: 85.57%, Val AUC: 0.927
+2026-01-16 16:12:09,787 - INFO - Epoch 17/100 - Train Loss: 0.4771, Train Acc: 85.50% - Val Loss: 0.4981, Val Acc: 82.47%, Val AUC: 0.925
+2026-01-16 16:12:11,039 - INFO - Epoch 18/100 - Train Loss: 0.4782, Train Acc: 85.30% - Val Loss: 0.4919, Val Acc: 87.22%, Val AUC: 0.929
+2026-01-16 16:12:12,284 - INFO - Epoch 19/100 - Train Loss: 0.4724, Train Acc: 85.85% - Val Loss: 0.5083, Val Acc: 79.79%, Val AUC: 0.928
+2026-01-16 16:12:13,562 - INFO - Epoch 20/100 - Train Loss: 0.4695, Train Acc: 86.58% - Val Loss: 0.5106, Val Acc: 78.76%, Val AUC: 0.923
+2026-01-16 16:12:14,832 - INFO - Epoch 21/100 - Train Loss: 0.4701, Train Acc: 85.78% - Val Loss: 0.4956, Val Acc: 80.00%, Val AUC: 0.926
+2026-01-16 16:12:16,059 - INFO - Epoch 22/100 - Train Loss: 0.4685, Train Acc: 86.01% - Val Loss: 0.5022, Val Acc: 82.47%, Val AUC: 0.927
+2026-01-16 16:12:17,355 - INFO - Epoch 23/100 - Train Loss: 0.4710, Train Acc: 85.99% - Val Loss: 0.4991, Val Acc: 81.86%, Val AUC: 0.929
+2026-01-16 16:12:18,604 - INFO - Epoch 24/100 - Train Loss: 0.4687, Train Acc: 85.73% - Val Loss: 0.5223, Val Acc: 86.39%, Val AUC: 0.922
+2026-01-16 16:12:19,847 - INFO - Epoch 25/100 - Train Loss: 0.4693, Train Acc: 85.78% - Val Loss: 0.5148, Val Acc: 80.82%, Val AUC: 0.921
+2026-01-16 16:12:21,147 - INFO - Epoch 26/100 - Train Loss: 0.4680, Train Acc: 86.54% - Val Loss: 0.5012, Val Acc: 82.47%, Val AUC: 0.927
+2026-01-16 16:12:22,407 - INFO - Epoch 27/100 - Train Loss: 0.4678, Train Acc: 86.01% - Val Loss: 0.5193, Val Acc: 78.76%, Val AUC: 0.919
+2026-01-16 16:12:23,686 - INFO - Epoch 28/100 - Train Loss: 0.4694, Train Acc: 85.37% - Val Loss: 0.4956, Val Acc: 84.74%, Val AUC: 0.931
+2026-01-16 16:12:24,961 - INFO - Epoch 29/100 - Train Loss: 0.4631, Train Acc: 86.44% - Val Loss: 0.4973, Val Acc: 81.44%, Val AUC: 0.928
+2026-01-16 16:12:26,285 - INFO - Epoch 30/100 - Train Loss: 0.4660, Train Acc: 85.96% - Val Loss: 0.5087, Val Acc: 84.95%, Val AUC: 0.925
+2026-01-16 16:12:27,545 - INFO - Epoch 31/100 - Train Loss: 0.4644, Train Acc: 85.94% - Val Loss: 0.4956, Val Acc: 76.91%, Val AUC: 0.928
+2026-01-16 16:12:28,801 - INFO - Epoch 32/100 - Train Loss: 0.4614, Train Acc: 85.87% - Val Loss: 0.4971, Val Acc: 84.12%, Val AUC: 0.930
+2026-01-16 16:12:30,053 - INFO - Epoch 33/100 - Train Loss: 0.4590, Train Acc: 85.87% - Val Loss: 0.4885, Val Acc: 82.06%, Val AUC: 0.933
+2026-01-16 16:12:31,310 - INFO - Epoch 34/100 - Train Loss: 0.4619, Train Acc: 87.02% - Val Loss: 0.4885, Val Acc: 81.44%, Val AUC: 0.931
+2026-01-16 16:12:32,603 - INFO - Epoch 35/100 - Train Loss: 0.4594, Train Acc: 86.74% - Val Loss: 0.5070, Val Acc: 82.27%, Val AUC: 0.927
+2026-01-16 16:12:33,902 - INFO - Epoch 36/100 - Train Loss: 0.4610, Train Acc: 87.57% - Val Loss: 0.4832, Val Acc: 80.82%, Val AUC: 0.929
+2026-01-16 16:12:35,172 - INFO - Epoch 37/100 - Train Loss: 0.4652, Train Acc: 86.86% - Val Loss: 0.4774, Val Acc: 83.30%, Val AUC: 0.932
+2026-01-16 16:12:36,468 - INFO - Epoch 38/100 - Train Loss: 0.4600, Train Acc: 87.15% - Val Loss: 0.5210, Val Acc: 84.54%, Val AUC: 0.920
+2026-01-16 16:12:36,469 - INFO - Early stopping at epoch 38
+2026-01-16 16:12:36,678 - INFO -   Val: 87.2% | Traj: Acc=85.2%, BalAcc=81.4%, Sens=74.6%, Spec=88.2%, AUC=0.900
+2026-01-16 16:12:36,785 - INFO -        CN_AD (1148 stable): Acc=86.7%, BalAcc=83.4%, Sens=78.4%, Spec=88.4%, AUC=0.901
+2026-01-16 16:12:36,786 - INFO - 
+--- Fold 4/5 ---
+2026-01-16 16:12:36,786 - INFO - Train: 4367, Val: 485, Test: 1213
+/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:392: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+2026-01-16 16:12:38,088 - INFO - Epoch 1/100 - Train Loss: 0.5763, Train Acc: 78.73% - Val Loss: 0.5227, Val Acc: 85.77%, Val AUC: 0.914
+2026-01-16 16:12:39,359 - INFO - Epoch 2/100 - Train Loss: 0.5181, Train Acc: 82.37% - Val Loss: 0.5420, Val Acc: 81.65%, Val AUC: 0.910
+2026-01-16 16:12:40,631 - INFO - Epoch 3/100 - Train Loss: 0.5188, Train Acc: 83.28% - Val Loss: 0.5407, Val Acc: 81.44%, Val AUC: 0.913
+2026-01-16 16:12:41,868 - INFO - Epoch 4/100 - Train Loss: 0.5050, Train Acc: 83.51% - Val Loss: 0.5276, Val Acc: 83.71%, Val AUC: 0.914
+2026-01-16 16:12:43,157 - INFO - Epoch 5/100 - Train Loss: 0.5023, Train Acc: 84.59% - Val Loss: 0.5265, Val Acc: 85.15%, Val AUC: 0.912
+2026-01-16 16:12:44,407 - INFO - Epoch 6/100 - Train Loss: 0.5017, Train Acc: 84.84% - Val Loss: 0.5288, Val Acc: 82.47%, Val AUC: 0.919
+2026-01-16 16:12:45,686 - INFO - Epoch 7/100 - Train Loss: 0.5015, Train Acc: 84.31% - Val Loss: 0.5395, Val Acc: 80.62%, Val AUC: 0.910
+2026-01-16 16:12:46,938 - INFO - Epoch 8/100 - Train Loss: 0.4942, Train Acc: 84.22% - Val Loss: 0.5398, Val Acc: 88.25%, Val AUC: 0.914
+2026-01-16 16:12:48,219 - INFO - Epoch 9/100 - Train Loss: 0.4985, Train Acc: 83.95% - Val Loss: 0.5470, Val Acc: 78.76%, Val AUC: 0.917
+2026-01-16 16:12:49,464 - INFO - Epoch 10/100 - Train Loss: 0.4964, Train Acc: 84.38% - Val Loss: 0.5246, Val Acc: 84.12%, Val AUC: 0.915
+2026-01-16 16:12:50,717 - INFO - Epoch 11/100 - Train Loss: 0.4913, Train Acc: 83.81% - Val Loss: 0.5262, Val Acc: 85.36%, Val AUC: 0.921
+2026-01-16 16:12:51,994 - INFO - Epoch 12/100 - Train Loss: 0.4925, Train Acc: 84.25% - Val Loss: 0.5417, Val Acc: 82.06%, Val AUC: 0.913
+2026-01-16 16:12:53,283 - INFO - Epoch 13/100 - Train Loss: 0.4911, Train Acc: 84.80% - Val Loss: 0.5340, Val Acc: 78.56%, Val AUC: 0.919
+2026-01-16 16:12:54,532 - INFO - Epoch 14/100 - Train Loss: 0.4877, Train Acc: 84.98% - Val Loss: 0.5440, Val Acc: 81.65%, Val AUC: 0.918
+2026-01-16 16:12:55,802 - INFO - Epoch 15/100 - Train Loss: 0.4851, Train Acc: 85.71% - Val Loss: 0.5513, Val Acc: 79.79%, Val AUC: 0.902
+2026-01-16 16:12:57,055 - INFO - Epoch 16/100 - Train Loss: 0.4829, Train Acc: 85.53% - Val Loss: 0.5248, Val Acc: 84.33%, Val AUC: 0.924
+2026-01-16 16:12:58,305 - INFO - Epoch 17/100 - Train Loss: 0.4831, Train Acc: 85.14% - Val Loss: 0.5381, Val Acc: 83.51%, Val AUC: 0.919
+2026-01-16 16:12:59,569 - INFO - Epoch 18/100 - Train Loss: 0.4899, Train Acc: 84.34% - Val Loss: 0.5266, Val Acc: 85.36%, Val AUC: 0.920
+2026-01-16 16:13:00,847 - INFO - Epoch 19/100 - Train Loss: 0.4867, Train Acc: 84.47% - Val Loss: 0.5467, Val Acc: 80.82%, Val AUC: 0.915
+2026-01-16 16:13:02,102 - INFO - Epoch 20/100 - Train Loss: 0.4776, Train Acc: 85.50% - Val Loss: 0.5142, Val Acc: 81.24%, Val AUC: 0.924
+2026-01-16 16:13:03,356 - INFO - Epoch 21/100 - Train Loss: 0.4775, Train Acc: 84.25% - Val Loss: 0.5383, Val Acc: 80.00%, Val AUC: 0.915
+2026-01-16 16:13:04,636 - INFO - Epoch 22/100 - Train Loss: 0.4762, Train Acc: 85.32% - Val Loss: 0.5304, Val Acc: 78.97%, Val AUC: 0.923
+2026-01-16 16:13:05,899 - INFO - Epoch 23/100 - Train Loss: 0.4733, Train Acc: 85.30% - Val Loss: 0.5145, Val Acc: 83.30%, Val AUC: 0.927
+2026-01-16 16:13:07,138 - INFO - Epoch 24/100 - Train Loss: 0.4732, Train Acc: 84.54% - Val Loss: 0.5273, Val Acc: 85.36%, Val AUC: 0.921
+2026-01-16 16:13:08,410 - INFO - Epoch 25/100 - Train Loss: 0.4794, Train Acc: 85.23% - Val Loss: 0.5319, Val Acc: 79.38%, Val AUC: 0.920
+2026-01-16 16:13:09,704 - INFO - Epoch 26/100 - Train Loss: 0.4718, Train Acc: 85.53% - Val Loss: 0.5407, Val Acc: 83.09%, Val AUC: 0.918
+2026-01-16 16:13:10,998 - INFO - Epoch 27/100 - Train Loss: 0.4713, Train Acc: 86.31% - Val Loss: 0.5334, Val Acc: 87.22%, Val AUC: 0.922
+2026-01-16 16:13:12,336 - INFO - Epoch 28/100 - Train Loss: 0.4664, Train Acc: 86.72% - Val Loss: 0.5303, Val Acc: 85.98%, Val AUC: 0.923
+2026-01-16 16:13:12,337 - INFO - Early stopping at epoch 28
+2026-01-16 16:13:12,548 - INFO -   Val: 88.2% | Traj: Acc=85.1%, BalAcc=84.9%, Sens=84.5%, Spec=85.2%, AUC=0.933
+2026-01-16 16:13:12,657 - INFO -        CN_AD (1139 stable): Acc=85.4%, BalAcc=85.6%, Sens=85.8%, Spec=85.4%, AUC=0.933
+2026-01-16 16:13:12,658 - INFO - 
+--- Fold 5/5 ---
+2026-01-16 16:13:12,658 - INFO - Train: 4367, Val: 485, Test: 1213
+/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:392: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+2026-01-16 16:13:13,964 - INFO - Epoch 1/100 - Train Loss: 0.5780, Train Acc: 77.38% - Val Loss: 0.4905, Val Acc: 83.71%, Val AUC: 0.911
+2026-01-16 16:13:15,248 - INFO - Epoch 2/100 - Train Loss: 0.5319, Train Acc: 80.88% - Val Loss: 0.5160, Val Acc: 69.07%, Val AUC: 0.909
+2026-01-16 16:13:16,512 - INFO - Epoch 3/100 - Train Loss: 0.5233, Train Acc: 80.67% - Val Loss: 0.4936, Val Acc: 75.26%, Val AUC: 0.916
+2026-01-16 16:13:17,792 - INFO - Epoch 4/100 - Train Loss: 0.5210, Train Acc: 82.48% - Val Loss: 0.5341, Val Acc: 88.25%, Val AUC: 0.917
+2026-01-16 16:13:19,043 - INFO - Epoch 5/100 - Train Loss: 0.5167, Train Acc: 81.82% - Val Loss: 0.4784, Val Acc: 84.74%, Val AUC: 0.917
+2026-01-16 16:13:20,303 - INFO - Epoch 6/100 - Train Loss: 0.5126, Train Acc: 81.66% - Val Loss: 0.4994, Val Acc: 87.42%, Val AUC: 0.912
+2026-01-16 16:13:21,580 - INFO - Epoch 7/100 - Train Loss: 0.5076, Train Acc: 83.44% - Val Loss: 0.4916, Val Acc: 82.68%, Val AUC: 0.907
+2026-01-16 16:13:22,852 - INFO - Epoch 8/100 - Train Loss: 0.5118, Train Acc: 84.13% - Val Loss: 0.4812, Val Acc: 83.30%, Val AUC: 0.919
+2026-01-16 16:13:24,198 - INFO - Epoch 9/100 - Train Loss: 0.5087, Train Acc: 82.39% - Val Loss: 0.4901, Val Acc: 83.51%, Val AUC: 0.919
+2026-01-16 16:13:25,470 - INFO - Epoch 10/100 - Train Loss: 0.5035, Train Acc: 83.38% - Val Loss: 0.5005, Val Acc: 86.60%, Val AUC: 0.916
+2026-01-16 16:13:26,737 - INFO - Epoch 11/100 - Train Loss: 0.5000, Train Acc: 83.92% - Val Loss: 0.5069, Val Acc: 75.26%, Val AUC: 0.911
+2026-01-16 16:13:28,000 - INFO - Epoch 12/100 - Train Loss: 0.5031, Train Acc: 82.14% - Val Loss: 0.4986, Val Acc: 83.51%, Val AUC: 0.916
+2026-01-16 16:13:29,260 - INFO - Epoch 13/100 - Train Loss: 0.4997, Train Acc: 82.85% - Val Loss: 0.4861, Val Acc: 80.62%, Val AUC: 0.921
+2026-01-16 16:13:30,530 - INFO - Epoch 14/100 - Train Loss: 0.4990, Train Acc: 85.21% - Val Loss: 0.4943, Val Acc: 78.56%, Val AUC: 0.911
+2026-01-16 16:13:31,801 - INFO - Epoch 15/100 - Train Loss: 0.4944, Train Acc: 83.54% - Val Loss: 0.4899, Val Acc: 85.57%, Val AUC: 0.919
+2026-01-16 16:13:33,094 - INFO - Epoch 16/100 - Train Loss: 0.5008, Train Acc: 83.72% - Val Loss: 0.5036, Val Acc: 75.67%, Val AUC: 0.913
+2026-01-16 16:13:34,383 - INFO - Epoch 17/100 - Train Loss: 0.4955, Train Acc: 84.20% - Val Loss: 0.4902, Val Acc: 82.06%, Val AUC: 0.914
+2026-01-16 16:13:35,674 - INFO - Epoch 18/100 - Train Loss: 0.4927, Train Acc: 83.51% - Val Loss: 0.4836, Val Acc: 81.86%, Val AUC: 0.919
+2026-01-16 16:13:36,933 - INFO - Epoch 19/100 - Train Loss: 0.4907, Train Acc: 84.18% - Val Loss: 0.4925, Val Acc: 77.73%, Val AUC: 0.914
+2026-01-16 16:13:38,201 - INFO - Epoch 20/100 - Train Loss: 0.4857, Train Acc: 84.54% - Val Loss: 0.4735, Val Acc: 85.36%, Val AUC: 0.927
+2026-01-16 16:13:39,478 - INFO - Epoch 21/100 - Train Loss: 0.4920, Train Acc: 84.91% - Val Loss: 0.4900, Val Acc: 85.36%, Val AUC: 0.915
+2026-01-16 16:13:40,728 - INFO - Epoch 22/100 - Train Loss: 0.4836, Train Acc: 85.05% - Val Loss: 0.4892, Val Acc: 84.33%, Val AUC: 0.913
+2026-01-16 16:13:41,982 - INFO - Epoch 23/100 - Train Loss: 0.4869, Train Acc: 84.70% - Val Loss: 0.4871, Val Acc: 80.41%, Val AUC: 0.918
+2026-01-16 16:13:43,283 - INFO - Epoch 24/100 - Train Loss: 0.4803, Train Acc: 85.14% - Val Loss: 0.4845, Val Acc: 82.89%, Val AUC: 0.920
+2026-01-16 16:13:43,283 - INFO - Early stopping at epoch 24
+2026-01-16 16:13:43,493 - INFO -   Val: 88.2% | Traj: Acc=83.3%, BalAcc=86.0%, Sens=90.9%, Spec=81.1%, AUC=0.947
+2026-01-16 16:13:43,599 - INFO -        CN_AD (1140 stable): Acc=83.1%, BalAcc=86.9%, Sens=92.7%, Spec=81.1%, AUC=0.954
+2026-01-16 16:13:43,600 - INFO - 
+Seed 42 Trajectory Summary:
+2026-01-16 16:13:43,600 - INFO -   Acc: 84.3±0.8%
+2026-01-16 16:13:43,600 - INFO -   BalAcc: 83.9±1.5%
+2026-01-16 16:13:43,600 - INFO -   Sens: 83.3±5.2%
+2026-01-16 16:13:43,601 - INFO -   Spec: 84.6±2.3%
+2026-01-16 16:13:43,601 - INFO -   AUC: 0.926±0.015
+2026-01-16 16:13:43,601 - INFO - Seed 42 CN_AD Summary:
+2026-01-16 16:13:43,601 - INFO -   Acc: 84.6±1.3%
+2026-01-16 16:13:43,601 - INFO -   BalAcc: 84.2±1.8%
+2026-01-16 16:13:43,601 - INFO -   Sens: 83.6±5.2%
+2026-01-16 16:13:43,601 - INFO -   Spec: 84.8±2.3%
+2026-01-16 16:13:43,601 - INFO -   AUC: 0.926±0.018
+2026-01-16 16:13:43,601 - INFO - 
+============================================================
+2026-01-16 16:13:43,601 - INFO - Running with seed 123
+2026-01-16 16:13:43,601 - INFO - ============================================================
+2026-01-16 16:13:43,602 - INFO - 
+--- Fold 1/5 ---
+2026-01-16 16:13:43,602 - INFO - Train: 4367, Val: 485, Test: 1213
+/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:392: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+2026-01-16 16:13:44,914 - INFO - Epoch 1/100 - Train Loss: 0.5816, Train Acc: 76.57% - Val Loss: 0.5055, Val Acc: 77.11%, Val AUC: 0.927
+2026-01-16 16:13:46,177 - INFO - Epoch 2/100 - Train Loss: 0.5252, Train Acc: 82.25% - Val Loss: 0.5097, Val Acc: 89.69%, Val AUC: 0.927
+2026-01-16 16:13:47,428 - INFO - Epoch 3/100 - Train Loss: 0.5222, Train Acc: 82.60% - Val Loss: 0.4800, Val Acc: 84.12%, Val AUC: 0.927
+2026-01-16 16:13:48,732 - INFO - Epoch 4/100 - Train Loss: 0.5144, Train Acc: 83.38% - Val Loss: 0.4793, Val Acc: 85.98%, Val AUC: 0.924
+2026-01-16 16:13:49,987 - INFO - Epoch 5/100 - Train Loss: 0.5127, Train Acc: 83.15% - Val Loss: 0.4796, Val Acc: 84.74%, Val AUC: 0.925
+2026-01-16 16:13:51,259 - INFO - Epoch 6/100 - Train Loss: 0.5080, Train Acc: 82.41% - Val Loss: 0.4887, Val Acc: 89.69%, Val AUC: 0.929
+2026-01-16 16:13:52,539 - INFO - Epoch 7/100 - Train Loss: 0.5098, Train Acc: 82.83% - Val Loss: 0.4869, Val Acc: 88.25%, Val AUC: 0.929
+2026-01-16 16:13:53,850 - INFO - Epoch 8/100 - Train Loss: 0.5112, Train Acc: 83.40% - Val Loss: 0.4861, Val Acc: 84.54%, Val AUC: 0.928
+2026-01-16 16:13:55,115 - INFO - Epoch 9/100 - Train Loss: 0.5072, Train Acc: 82.62% - Val Loss: 0.4853, Val Acc: 85.36%, Val AUC: 0.930
+2026-01-16 16:13:56,418 - INFO - Epoch 10/100 - Train Loss: 0.4990, Train Acc: 82.83% - Val Loss: 0.4727, Val Acc: 88.04%, Val AUC: 0.932
+2026-01-16 16:13:57,681 - INFO - Epoch 11/100 - Train Loss: 0.4966, Train Acc: 83.17% - Val Loss: 0.4838, Val Acc: 87.01%, Val AUC: 0.930
+2026-01-16 16:13:58,940 - INFO - Epoch 12/100 - Train Loss: 0.4944, Train Acc: 82.83% - Val Loss: 0.4808, Val Acc: 79.18%, Val AUC: 0.927
+2026-01-16 16:14:00,207 - INFO - Epoch 13/100 - Train Loss: 0.4926, Train Acc: 83.33% - Val Loss: 0.4800, Val Acc: 85.77%, Val AUC: 0.928
+2026-01-16 16:14:01,507 - INFO - Epoch 14/100 - Train Loss: 0.4935, Train Acc: 84.96% - Val Loss: 0.4747, Val Acc: 85.15%, Val AUC: 0.928
+2026-01-16 16:14:02,764 - INFO - Epoch 15/100 - Train Loss: 0.4913, Train Acc: 84.43% - Val Loss: 0.5359, Val Acc: 88.66%, Val AUC: 0.923
+2026-01-16 16:14:04,067 - INFO - Epoch 16/100 - Train Loss: 0.4959, Train Acc: 84.66% - Val Loss: 0.4820, Val Acc: 87.22%, Val AUC: 0.933
+2026-01-16 16:14:05,316 - INFO - Epoch 17/100 - Train Loss: 0.4848, Train Acc: 85.21% - Val Loss: 0.4809, Val Acc: 84.74%, Val AUC: 0.931
+2026-01-16 16:14:06,559 - INFO - Epoch 18/100 - Train Loss: 0.4887, Train Acc: 83.60% - Val Loss: 0.4739, Val Acc: 85.98%, Val AUC: 0.930
+2026-01-16 16:14:07,804 - INFO - Epoch 19/100 - Train Loss: 0.4815, Train Acc: 84.63% - Val Loss: 0.4864, Val Acc: 79.38%, Val AUC: 0.931
+2026-01-16 16:14:09,096 - INFO - Epoch 20/100 - Train Loss: 0.4849, Train Acc: 84.66% - Val Loss: 0.4821, Val Acc: 79.59%, Val AUC: 0.928
+2026-01-16 16:14:10,354 - INFO - Epoch 21/100 - Train Loss: 0.4834, Train Acc: 84.45% - Val Loss: 0.4925, Val Acc: 85.98%, Val AUC: 0.923
+2026-01-16 16:14:11,626 - INFO - Epoch 22/100 - Train Loss: 0.4854, Train Acc: 84.80% - Val Loss: 0.4853, Val Acc: 86.60%, Val AUC: 0.923
+2026-01-16 16:14:11,627 - INFO - Early stopping at epoch 22
+2026-01-16 16:14:11,835 - INFO -   Val: 89.7% | Traj: Acc=84.3%, BalAcc=85.8%, Sens=88.6%, Spec=83.1%, AUC=0.943
+2026-01-16 16:14:11,941 - INFO -        CN_AD (1141 stable): Acc=84.0%, BalAcc=85.8%, Sens=88.5%, Spec=83.1%, AUC=0.944
+2026-01-16 16:14:11,942 - INFO - 
+--- Fold 2/5 ---
+2026-01-16 16:14:11,943 - INFO - Train: 4367, Val: 485, Test: 1213
+/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:392: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+2026-01-16 16:14:13,251 - INFO - Epoch 1/100 - Train Loss: 0.5888, Train Acc: 72.66% - Val Loss: 0.5439, Val Acc: 77.32%, Val AUC: 0.897
+2026-01-16 16:14:14,507 - INFO - Epoch 2/100 - Train Loss: 0.5272, Train Acc: 82.78% - Val Loss: 0.5477, Val Acc: 85.57%, Val AUC: 0.899
+2026-01-16 16:14:15,768 - INFO - Epoch 3/100 - Train Loss: 0.5059, Train Acc: 83.86% - Val Loss: 0.5377, Val Acc: 83.92%, Val AUC: 0.899
+2026-01-16 16:14:17,049 - INFO - Epoch 4/100 - Train Loss: 0.5026, Train Acc: 82.92% - Val Loss: 0.5386, Val Acc: 84.12%, Val AUC: 0.908
+2026-01-16 16:14:18,307 - INFO - Epoch 5/100 - Train Loss: 0.4917, Train Acc: 83.51% - Val Loss: 0.5535, Val Acc: 86.80%, Val AUC: 0.901
+2026-01-16 16:14:19,605 - INFO - Epoch 6/100 - Train Loss: 0.5007, Train Acc: 83.56% - Val Loss: 0.5380, Val Acc: 78.97%, Val AUC: 0.904
+2026-01-16 16:14:20,899 - INFO - Epoch 7/100 - Train Loss: 0.4932, Train Acc: 85.09% - Val Loss: 0.5581, Val Acc: 88.25%, Val AUC: 0.912
+2026-01-16 16:14:22,156 - INFO - Epoch 8/100 - Train Loss: 0.4925, Train Acc: 84.66% - Val Loss: 0.5378, Val Acc: 82.89%, Val AUC: 0.903
+2026-01-16 16:14:23,411 - INFO - Epoch 9/100 - Train Loss: 0.4895, Train Acc: 85.05% - Val Loss: 0.5372, Val Acc: 85.98%, Val AUC: 0.906
+2026-01-16 16:14:24,666 - INFO - Epoch 10/100 - Train Loss: 0.4870, Train Acc: 84.57% - Val Loss: 0.5254, Val Acc: 79.59%, Val AUC: 0.912
+2026-01-16 16:14:25,924 - INFO - Epoch 11/100 - Train Loss: 0.4875, Train Acc: 84.18% - Val Loss: 0.5332, Val Acc: 83.92%, Val AUC: 0.908
+2026-01-16 16:14:27,271 - INFO - Epoch 12/100 - Train Loss: 0.4826, Train Acc: 84.02% - Val Loss: 0.5300, Val Acc: 85.15%, Val AUC: 0.903
+2026-01-16 16:14:28,518 - INFO - Epoch 13/100 - Train Loss: 0.4837, Train Acc: 84.36% - Val Loss: 0.5439, Val Acc: 83.71%, Val AUC: 0.900
+2026-01-16 16:14:29,831 - INFO - Epoch 14/100 - Train Loss: 0.4849, Train Acc: 85.02% - Val Loss: 0.5349, Val Acc: 84.54%, Val AUC: 0.903
+2026-01-16 16:14:31,093 - INFO - Epoch 15/100 - Train Loss: 0.4803, Train Acc: 85.00% - Val Loss: 0.5275, Val Acc: 82.47%, Val AUC: 0.911
+2026-01-16 16:14:32,368 - INFO - Epoch 16/100 - Train Loss: 0.4782, Train Acc: 85.07% - Val Loss: 0.5331, Val Acc: 84.54%, Val AUC: 0.904
+2026-01-16 16:14:33,617 - INFO - Epoch 17/100 - Train Loss: 0.4768, Train Acc: 85.14% - Val Loss: 0.5426, Val Acc: 87.42%, Val AUC: 0.911
+2026-01-16 16:14:34,867 - INFO - Epoch 18/100 - Train Loss: 0.4841, Train Acc: 85.39% - Val Loss: 0.5295, Val Acc: 80.41%, Val AUC: 0.907
+2026-01-16 16:14:36,116 - INFO - Epoch 19/100 - Train Loss: 0.4790, Train Acc: 85.16% - Val Loss: 0.5326, Val Acc: 82.68%, Val AUC: 0.900
+2026-01-16 16:14:37,421 - INFO - Epoch 20/100 - Train Loss: 0.4741, Train Acc: 85.76% - Val Loss: 0.5396, Val Acc: 85.98%, Val AUC: 0.899
+2026-01-16 16:14:38,682 - INFO - Epoch 21/100 - Train Loss: 0.4728, Train Acc: 86.47% - Val Loss: 0.5396, Val Acc: 86.60%, Val AUC: 0.903
+2026-01-16 16:14:39,960 - INFO - Epoch 22/100 - Train Loss: 0.4738, Train Acc: 85.53% - Val Loss: 0.5280, Val Acc: 81.24%, Val AUC: 0.906
+2026-01-16 16:14:41,229 - INFO - Epoch 23/100 - Train Loss: 0.4759, Train Acc: 85.80% - Val Loss: 0.5343, Val Acc: 84.74%, Val AUC: 0.900
+2026-01-16 16:14:42,499 - INFO - Epoch 24/100 - Train Loss: 0.4728, Train Acc: 85.41% - Val Loss: 0.5337, Val Acc: 83.09%, Val AUC: 0.905
+2026-01-16 16:14:43,763 - INFO - Epoch 25/100 - Train Loss: 0.4710, Train Acc: 86.44% - Val Loss: 0.5480, Val Acc: 86.80%, Val AUC: 0.905
+2026-01-16 16:14:45,009 - INFO - Epoch 26/100 - Train Loss: 0.4724, Train Acc: 86.90% - Val Loss: 0.5257, Val Acc: 85.15%, Val AUC: 0.913
+2026-01-16 16:14:46,261 - INFO - Epoch 27/100 - Train Loss: 0.4668, Train Acc: 86.47% - Val Loss: 0.5306, Val Acc: 82.89%, Val AUC: 0.908
+2026-01-16 16:14:46,261 - INFO - Early stopping at epoch 27
+2026-01-16 16:14:46,461 - INFO -   Val: 88.2% | Traj: Acc=83.7%, BalAcc=85.7%, Sens=89.4%, Spec=82.1%, AUC=0.934
+2026-01-16 16:14:46,567 - INFO -        CN_AD (1149 stable): Acc=83.4%, BalAcc=85.4%, Sens=88.4%, Spec=82.3%, AUC=0.932
+2026-01-16 16:14:46,568 - INFO - 
+--- Fold 3/5 ---
+2026-01-16 16:14:46,568 - INFO - Train: 4367, Val: 485, Test: 1213
+/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:392: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+2026-01-16 16:14:47,882 - INFO - Epoch 1/100 - Train Loss: 0.5917, Train Acc: 73.48% - Val Loss: 0.5285, Val Acc: 69.48%, Val AUC: 0.923
+2026-01-16 16:14:49,130 - INFO - Epoch 2/100 - Train Loss: 0.5270, Train Acc: 81.91% - Val Loss: 0.4837, Val Acc: 82.27%, Val AUC: 0.932
+2026-01-16 16:14:50,394 - INFO - Epoch 3/100 - Train Loss: 0.5149, Train Acc: 83.08% - Val Loss: 0.4970, Val Acc: 86.60%, Val AUC: 0.925
+2026-01-16 16:14:51,646 - INFO - Epoch 4/100 - Train Loss: 0.5139, Train Acc: 83.58% - Val Loss: 0.4941, Val Acc: 85.98%, Val AUC: 0.927
+2026-01-16 16:14:52,915 - INFO - Epoch 5/100 - Train Loss: 0.4985, Train Acc: 83.90% - Val Loss: 0.4884, Val Acc: 81.24%, Val AUC: 0.929
+2026-01-16 16:14:54,191 - INFO - Epoch 6/100 - Train Loss: 0.5040, Train Acc: 83.19% - Val Loss: 0.4959, Val Acc: 84.33%, Val AUC: 0.923
+2026-01-16 16:14:55,484 - INFO - Epoch 7/100 - Train Loss: 0.5053, Train Acc: 83.67% - Val Loss: 0.4858, Val Acc: 83.51%, Val AUC: 0.934
+2026-01-16 16:14:56,746 - INFO - Epoch 8/100 - Train Loss: 0.4967, Train Acc: 83.99% - Val Loss: 0.5016, Val Acc: 82.68%, Val AUC: 0.922
+2026-01-16 16:14:58,005 - INFO - Epoch 9/100 - Train Loss: 0.5024, Train Acc: 84.66% - Val Loss: 0.4947, Val Acc: 78.56%, Val AUC: 0.929
+2026-01-16 16:14:59,262 - INFO - Epoch 10/100 - Train Loss: 0.4995, Train Acc: 83.63% - Val Loss: 0.4987, Val Acc: 78.76%, Val AUC: 0.934
+2026-01-16 16:15:00,532 - INFO - Epoch 11/100 - Train Loss: 0.4935, Train Acc: 84.80% - Val Loss: 0.5361, Val Acc: 74.43%, Val AUC: 0.932
+2026-01-16 16:15:01,807 - INFO - Epoch 12/100 - Train Loss: 0.4971, Train Acc: 84.61% - Val Loss: 0.4861, Val Acc: 87.01%, Val AUC: 0.933
+2026-01-16 16:15:03,041 - INFO - Epoch 13/100 - Train Loss: 0.4895, Train Acc: 85.16% - Val Loss: 0.4852, Val Acc: 83.51%, Val AUC: 0.930
+2026-01-16 16:15:04,296 - INFO - Epoch 14/100 - Train Loss: 0.4890, Train Acc: 84.80% - Val Loss: 0.4879, Val Acc: 87.63%, Val AUC: 0.932
+2026-01-16 16:15:05,587 - INFO - Epoch 15/100 - Train Loss: 0.4859, Train Acc: 84.61% - Val Loss: 0.5011, Val Acc: 86.39%, Val AUC: 0.919
+2026-01-16 16:15:06,858 - INFO - Epoch 16/100 - Train Loss: 0.4874, Train Acc: 84.84% - Val Loss: 0.4865, Val Acc: 85.98%, Val AUC: 0.933
+2026-01-16 16:15:08,140 - INFO - Epoch 17/100 - Train Loss: 0.4863, Train Acc: 85.48% - Val Loss: 0.4985, Val Acc: 78.35%, Val AUC: 0.933
+2026-01-16 16:15:09,401 - INFO - Epoch 18/100 - Train Loss: 0.4799, Train Acc: 85.44% - Val Loss: 0.4920, Val Acc: 80.00%, Val AUC: 0.933
+2026-01-16 16:15:10,672 - INFO - Epoch 19/100 - Train Loss: 0.4818, Train Acc: 85.50% - Val Loss: 0.4846, Val Acc: 83.30%, Val AUC: 0.935
+2026-01-16 16:15:11,929 - INFO - Epoch 20/100 - Train Loss: 0.4811, Train Acc: 84.77% - Val Loss: 0.4786, Val Acc: 85.36%, Val AUC: 0.937
+2026-01-16 16:15:13,208 - INFO - Epoch 21/100 - Train Loss: 0.4771, Train Acc: 86.17% - Val Loss: 0.4730, Val Acc: 85.98%, Val AUC: 0.936
+2026-01-16 16:15:14,450 - INFO - Epoch 22/100 - Train Loss: 0.4748, Train Acc: 86.24% - Val Loss: 0.4897, Val Acc: 84.54%, Val AUC: 0.932
+2026-01-16 16:15:15,729 - INFO - Epoch 23/100 - Train Loss: 0.4782, Train Acc: 84.61% - Val Loss: 0.4835, Val Acc: 84.74%, Val AUC: 0.933
+2026-01-16 16:15:16,990 - INFO - Epoch 24/100 - Train Loss: 0.4738, Train Acc: 86.74% - Val Loss: 0.4898, Val Acc: 88.25%, Val AUC: 0.926
+2026-01-16 16:15:18,261 - INFO - Epoch 25/100 - Train Loss: 0.4710, Train Acc: 86.76% - Val Loss: 0.4958, Val Acc: 81.65%, Val AUC: 0.931
+2026-01-16 16:15:19,496 - INFO - Epoch 26/100 - Train Loss: 0.4749, Train Acc: 86.63% - Val Loss: 0.4858, Val Acc: 84.74%, Val AUC: 0.926
+2026-01-16 16:15:20,759 - INFO - Epoch 27/100 - Train Loss: 0.4756, Train Acc: 86.12% - Val Loss: 0.4841, Val Acc: 85.15%, Val AUC: 0.929
+2026-01-16 16:15:22,043 - INFO - Epoch 28/100 - Train Loss: 0.4683, Train Acc: 86.97% - Val Loss: 0.4861, Val Acc: 85.98%, Val AUC: 0.928
+2026-01-16 16:15:23,313 - INFO - Epoch 29/100 - Train Loss: 0.4726, Train Acc: 87.22% - Val Loss: 0.4938, Val Acc: 86.60%, Val AUC: 0.929
+2026-01-16 16:15:24,624 - INFO - Epoch 30/100 - Train Loss: 0.4686, Train Acc: 86.56% - Val Loss: 0.4951, Val Acc: 87.63%, Val AUC: 0.929
+2026-01-16 16:15:25,887 - INFO - Epoch 31/100 - Train Loss: 0.4723, Train Acc: 86.26% - Val Loss: 0.4909, Val Acc: 82.47%, Val AUC: 0.934
+2026-01-16 16:15:27,148 - INFO - Epoch 32/100 - Train Loss: 0.4678, Train Acc: 85.80% - Val Loss: 0.4919, Val Acc: 84.33%, Val AUC: 0.930
+2026-01-16 16:15:28,404 - INFO - Epoch 33/100 - Train Loss: 0.4668, Train Acc: 86.47% - Val Loss: 0.4860, Val Acc: 86.60%, Val AUC: 0.929
+2026-01-16 16:15:29,691 - INFO - Epoch 34/100 - Train Loss: 0.4622, Train Acc: 86.60% - Val Loss: 0.4947, Val Acc: 84.74%, Val AUC: 0.922
+2026-01-16 16:15:30,936 - INFO - Epoch 35/100 - Train Loss: 0.4624, Train Acc: 87.52% - Val Loss: 0.4834, Val Acc: 85.77%, Val AUC: 0.928
+2026-01-16 16:15:32,213 - INFO - Epoch 36/100 - Train Loss: 0.4615, Train Acc: 87.45% - Val Loss: 0.4832, Val Acc: 82.06%, Val AUC: 0.932
+2026-01-16 16:15:33,456 - INFO - Epoch 37/100 - Train Loss: 0.4611, Train Acc: 86.44% - Val Loss: 0.4864, Val Acc: 83.71%, Val AUC: 0.924
+2026-01-16 16:15:34,727 - INFO - Epoch 38/100 - Train Loss: 0.4583, Train Acc: 86.99% - Val Loss: 0.5010, Val Acc: 82.68%, Val AUC: 0.919
+2026-01-16 16:15:35,998 - INFO - Epoch 39/100 - Train Loss: 0.4565, Train Acc: 86.65% - Val Loss: 0.4923, Val Acc: 87.84%, Val AUC: 0.922
+2026-01-16 16:15:37,291 - INFO - Epoch 40/100 - Train Loss: 0.4583, Train Acc: 87.63% - Val Loss: 0.4874, Val Acc: 82.89%, Val AUC: 0.925
+2026-01-16 16:15:38,555 - INFO - Epoch 41/100 - Train Loss: 0.4538, Train Acc: 87.77% - Val Loss: 0.4988, Val Acc: 85.98%, Val AUC: 0.922
+2026-01-16 16:15:39,827 - INFO - Epoch 42/100 - Train Loss: 0.4543, Train Acc: 87.36% - Val Loss: 0.4846, Val Acc: 86.39%, Val AUC: 0.925
+2026-01-16 16:15:41,104 - INFO - Epoch 43/100 - Train Loss: 0.4521, Train Acc: 88.23% - Val Loss: 0.4911, Val Acc: 84.54%, Val AUC: 0.924
+2026-01-16 16:15:42,398 - INFO - Epoch 44/100 - Train Loss: 0.4517, Train Acc: 88.62% - Val Loss: 0.4805, Val Acc: 88.04%, Val AUC: 0.928
+2026-01-16 16:15:42,399 - INFO - Early stopping at epoch 44
+2026-01-16 16:15:42,597 - INFO -   Val: 88.2% | Traj: Acc=86.6%, BalAcc=84.1%, Sens=79.5%, Spec=88.6%, AUC=0.924
+2026-01-16 16:15:42,703 - INFO -        CN_AD (1138 stable): Acc=87.8%, BalAcc=84.8%, Sens=80.4%, Spec=89.3%, AUC=0.932
+2026-01-16 16:15:42,704 - INFO - 
+--- Fold 4/5 ---
+2026-01-16 16:15:42,704 - INFO - Train: 4367, Val: 485, Test: 1213
+/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:392: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+2026-01-16 16:15:44,044 - INFO - Epoch 1/100 - Train Loss: 0.5997, Train Acc: 72.22% - Val Loss: 0.5872, Val Acc: 87.63%, Val AUC: 0.908
+2026-01-16 16:15:45,285 - INFO - Epoch 2/100 - Train Loss: 0.5333, Train Acc: 80.79% - Val Loss: 0.5432, Val Acc: 80.00%, Val AUC: 0.918
+2026-01-16 16:15:46,535 - INFO - Epoch 3/100 - Train Loss: 0.5128, Train Acc: 82.44% - Val Loss: 0.5242, Val Acc: 85.98%, Val AUC: 0.926
+2026-01-16 16:15:47,806 - INFO - Epoch 4/100 - Train Loss: 0.5042, Train Acc: 83.44% - Val Loss: 0.5402, Val Acc: 83.09%, Val AUC: 0.918
+2026-01-16 16:15:49,061 - INFO - Epoch 5/100 - Train Loss: 0.5098, Train Acc: 82.85% - Val Loss: 0.5282, Val Acc: 85.98%, Val AUC: 0.926
+2026-01-16 16:15:50,320 - INFO - Epoch 6/100 - Train Loss: 0.5069, Train Acc: 82.37% - Val Loss: 0.5100, Val Acc: 86.39%, Val AUC: 0.931
+2026-01-16 16:15:51,594 - INFO - Epoch 7/100 - Train Loss: 0.5007, Train Acc: 82.83% - Val Loss: 0.5205, Val Acc: 84.95%, Val AUC: 0.925
+2026-01-16 16:15:52,853 - INFO - Epoch 8/100 - Train Loss: 0.4983, Train Acc: 84.06% - Val Loss: 0.5329, Val Acc: 81.65%, Val AUC: 0.915
+2026-01-16 16:15:54,110 - INFO - Epoch 9/100 - Train Loss: 0.4977, Train Acc: 84.41% - Val Loss: 0.5104, Val Acc: 85.57%, Val AUC: 0.929
+2026-01-16 16:15:55,377 - INFO - Epoch 10/100 - Train Loss: 0.4943, Train Acc: 84.25% - Val Loss: 0.5227, Val Acc: 83.92%, Val AUC: 0.928
+2026-01-16 16:15:56,628 - INFO - Epoch 11/100 - Train Loss: 0.4939, Train Acc: 84.89% - Val Loss: 0.5317, Val Acc: 84.12%, Val AUC: 0.925
+2026-01-16 16:15:57,890 - INFO - Epoch 12/100 - Train Loss: 0.4894, Train Acc: 85.28% - Val Loss: 0.5272, Val Acc: 88.25%, Val AUC: 0.929
+2026-01-16 16:15:59,142 - INFO - Epoch 13/100 - Train Loss: 0.4916, Train Acc: 85.21% - Val Loss: 0.5249, Val Acc: 84.33%, Val AUC: 0.924
+2026-01-16 16:16:00,416 - INFO - Epoch 14/100 - Train Loss: 0.4923, Train Acc: 84.13% - Val Loss: 0.5206, Val Acc: 85.98%, Val AUC: 0.928
+2026-01-16 16:16:01,672 - INFO - Epoch 15/100 - Train Loss: 0.4836, Train Acc: 85.34% - Val Loss: 0.5239, Val Acc: 83.71%, Val AUC: 0.928
+2026-01-16 16:16:02,925 - INFO - Epoch 16/100 - Train Loss: 0.4823, Train Acc: 84.82% - Val Loss: 0.5275, Val Acc: 85.36%, Val AUC: 0.926
+2026-01-16 16:16:04,183 - INFO - Epoch 17/100 - Train Loss: 0.4790, Train Acc: 85.92% - Val Loss: 0.5277, Val Acc: 86.60%, Val AUC: 0.921
+2026-01-16 16:16:05,460 - INFO - Epoch 18/100 - Train Loss: 0.4826, Train Acc: 85.14% - Val Loss: 0.5252, Val Acc: 81.65%, Val AUC: 0.925
+2026-01-16 16:16:06,735 - INFO - Epoch 19/100 - Train Loss: 0.4757, Train Acc: 85.09% - Val Loss: 0.5212, Val Acc: 85.15%, Val AUC: 0.924
+2026-01-16 16:16:08,059 - INFO - Epoch 20/100 - Train Loss: 0.4797, Train Acc: 85.12% - Val Loss: 0.5293, Val Acc: 82.89%, Val AUC: 0.930
+2026-01-16 16:16:09,348 - INFO - Epoch 21/100 - Train Loss: 0.4801, Train Acc: 85.69% - Val Loss: 0.5150, Val Acc: 85.36%, Val AUC: 0.928
+2026-01-16 16:16:10,625 - INFO - Epoch 22/100 - Train Loss: 0.4754, Train Acc: 85.67% - Val Loss: 0.5169, Val Acc: 85.36%, Val AUC: 0.929
+2026-01-16 16:16:11,919 - INFO - Epoch 23/100 - Train Loss: 0.4747, Train Acc: 85.89% - Val Loss: 0.5294, Val Acc: 84.54%, Val AUC: 0.926
+2026-01-16 16:16:13,191 - INFO - Epoch 24/100 - Train Loss: 0.4726, Train Acc: 85.53% - Val Loss: 0.5164, Val Acc: 84.54%, Val AUC: 0.930
+2026-01-16 16:16:14,465 - INFO - Epoch 25/100 - Train Loss: 0.4744, Train Acc: 85.76% - Val Loss: 0.5222, Val Acc: 81.03%, Val AUC: 0.923
+2026-01-16 16:16:15,760 - INFO - Epoch 26/100 - Train Loss: 0.4744, Train Acc: 86.01% - Val Loss: 0.5153, Val Acc: 85.57%, Val AUC: 0.925
+2026-01-16 16:16:17,005 - INFO - Epoch 27/100 - Train Loss: 0.4713, Train Acc: 85.41% - Val Loss: 0.5238, Val Acc: 85.98%, Val AUC: 0.924
+2026-01-16 16:16:18,273 - INFO - Epoch 28/100 - Train Loss: 0.4705, Train Acc: 86.49% - Val Loss: 0.5341, Val Acc: 85.36%, Val AUC: 0.916
+2026-01-16 16:16:19,546 - INFO - Epoch 29/100 - Train Loss: 0.4715, Train Acc: 86.05% - Val Loss: 0.5227, Val Acc: 86.19%, Val AUC: 0.921
+2026-01-16 16:16:20,813 - INFO - Epoch 30/100 - Train Loss: 0.4679, Train Acc: 85.99% - Val Loss: 0.5185, Val Acc: 83.71%, Val AUC: 0.930
+2026-01-16 16:16:22,071 - INFO - Epoch 31/100 - Train Loss: 0.4641, Train Acc: 86.51% - Val Loss: 0.5339, Val Acc: 83.30%, Val AUC: 0.922
+2026-01-16 16:16:23,337 - INFO - Epoch 32/100 - Train Loss: 0.4653, Train Acc: 85.94% - Val Loss: 0.5259, Val Acc: 85.77%, Val AUC: 0.918
+2026-01-16 16:16:23,338 - INFO - Early stopping at epoch 32
+2026-01-16 16:16:23,544 - INFO -   Val: 88.2% | Traj: Acc=85.7%, BalAcc=84.2%, Sens=81.4%, Spec=86.9%, AUC=0.920
+2026-01-16 16:16:23,651 - INFO -        CN_AD (1147 stable): Acc=86.5%, BalAcc=83.6%, Sens=79.3%, Spec=88.0%, AUC=0.910
+2026-01-16 16:16:23,652 - INFO - 
+--- Fold 5/5 ---
+2026-01-16 16:16:23,652 - INFO - Train: 4367, Val: 485, Test: 1213
+/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:392: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+2026-01-16 16:16:24,974 - INFO - Epoch 1/100 - Train Loss: 0.5738, Train Acc: 74.77% - Val Loss: 0.4965, Val Acc: 86.39%, Val AUC: 0.935
+2026-01-16 16:16:26,220 - INFO - Epoch 2/100 - Train Loss: 0.5166, Train Acc: 81.22% - Val Loss: 0.4782, Val Acc: 84.74%, Val AUC: 0.943
+2026-01-16 16:16:27,480 - INFO - Epoch 3/100 - Train Loss: 0.5137, Train Acc: 82.21% - Val Loss: 0.4820, Val Acc: 83.92%, Val AUC: 0.940
+2026-01-16 16:16:28,754 - INFO - Epoch 4/100 - Train Loss: 0.5087, Train Acc: 83.24% - Val Loss: 0.4843, Val Acc: 88.04%, Val AUC: 0.935
+2026-01-16 16:16:30,020 - INFO - Epoch 5/100 - Train Loss: 0.5036, Train Acc: 83.95% - Val Loss: 0.5042, Val Acc: 81.65%, Val AUC: 0.931
+2026-01-16 16:16:31,295 - INFO - Epoch 6/100 - Train Loss: 0.4973, Train Acc: 84.11% - Val Loss: 0.4943, Val Acc: 88.45%, Val AUC: 0.937
+2026-01-16 16:16:32,601 - INFO - Epoch 7/100 - Train Loss: 0.4966, Train Acc: 84.06% - Val Loss: 0.4741, Val Acc: 89.07%, Val AUC: 0.941
+2026-01-16 16:16:33,884 - INFO - Epoch 8/100 - Train Loss: 0.4880, Train Acc: 83.97% - Val Loss: 0.4881, Val Acc: 84.33%, Val AUC: 0.934
+2026-01-16 16:16:35,159 - INFO - Epoch 9/100 - Train Loss: 0.4900, Train Acc: 83.42% - Val Loss: 0.5062, Val Acc: 88.25%, Val AUC: 0.932
+2026-01-16 16:16:36,463 - INFO - Epoch 10/100 - Train Loss: 0.4932, Train Acc: 84.96% - Val Loss: 0.4812, Val Acc: 86.39%, Val AUC: 0.940
+2026-01-16 16:16:37,725 - INFO - Epoch 11/100 - Train Loss: 0.4874, Train Acc: 84.70% - Val Loss: 0.4957, Val Acc: 82.89%, Val AUC: 0.938
+2026-01-16 16:16:38,995 - INFO - Epoch 12/100 - Train Loss: 0.4856, Train Acc: 83.49% - Val Loss: 0.5014, Val Acc: 82.89%, Val AUC: 0.928
+2026-01-16 16:16:40,276 - INFO - Epoch 13/100 - Train Loss: 0.4814, Train Acc: 83.72% - Val Loss: 0.5107, Val Acc: 81.44%, Val AUC: 0.919
+2026-01-16 16:16:41,568 - INFO - Epoch 14/100 - Train Loss: 0.4859, Train Acc: 84.04% - Val Loss: 0.4951, Val Acc: 86.39%, Val AUC: 0.927
+2026-01-16 16:16:42,838 - INFO - Epoch 15/100 - Train Loss: 0.4785, Train Acc: 85.67% - Val Loss: 0.4800, Val Acc: 87.22%, Val AUC: 0.939
+2026-01-16 16:16:44,129 - INFO - Epoch 16/100 - Train Loss: 0.4775, Train Acc: 85.30% - Val Loss: 0.4946, Val Acc: 81.65%, Val AUC: 0.933
+2026-01-16 16:16:45,399 - INFO - Epoch 17/100 - Train Loss: 0.4759, Train Acc: 85.76% - Val Loss: 0.4852, Val Acc: 84.95%, Val AUC: 0.936
+2026-01-16 16:16:46,661 - INFO - Epoch 18/100 - Train Loss: 0.4778, Train Acc: 85.94% - Val Loss: 0.4899, Val Acc: 84.74%, Val AUC: 0.931
+2026-01-16 16:16:47,922 - INFO - Epoch 19/100 - Train Loss: 0.4705, Train Acc: 85.60% - Val Loss: 0.4939, Val Acc: 84.12%, Val AUC: 0.931
+2026-01-16 16:16:49,196 - INFO - Epoch 20/100 - Train Loss: 0.4749, Train Acc: 85.94% - Val Loss: 0.4902, Val Acc: 86.19%, Val AUC: 0.940
+2026-01-16 16:16:50,452 - INFO - Epoch 21/100 - Train Loss: 0.4686, Train Acc: 86.21% - Val Loss: 0.5017, Val Acc: 86.60%, Val AUC: 0.922
+2026-01-16 16:16:51,711 - INFO - Epoch 22/100 - Train Loss: 0.4745, Train Acc: 86.24% - Val Loss: 0.4887, Val Acc: 89.90%, Val AUC: 0.938
+2026-01-16 16:16:52,974 - INFO - Epoch 23/100 - Train Loss: 0.4685, Train Acc: 86.31% - Val Loss: 0.4863, Val Acc: 86.60%, Val AUC: 0.928
+2026-01-16 16:16:54,247 - INFO - Epoch 24/100 - Train Loss: 0.4694, Train Acc: 86.83% - Val Loss: 0.5128, Val Acc: 81.65%, Val AUC: 0.916
+2026-01-16 16:16:55,514 - INFO - Epoch 25/100 - Train Loss: 0.4697, Train Acc: 85.76% - Val Loss: 0.4892, Val Acc: 85.15%, Val AUC: 0.929
+2026-01-16 16:16:56,778 - INFO - Epoch 26/100 - Train Loss: 0.4731, Train Acc: 85.55% - Val Loss: 0.4936, Val Acc: 84.95%, Val AUC: 0.931
+2026-01-16 16:16:58,036 - INFO - Epoch 27/100 - Train Loss: 0.4689, Train Acc: 86.51% - Val Loss: 0.4943, Val Acc: 86.60%, Val AUC: 0.922
+2026-01-16 16:16:59,289 - INFO - Epoch 28/100 - Train Loss: 0.4692, Train Acc: 85.69% - Val Loss: 0.4849, Val Acc: 84.95%, Val AUC: 0.932
+2026-01-16 16:17:00,539 - INFO - Epoch 29/100 - Train Loss: 0.4652, Train Acc: 86.42% - Val Loss: 0.4949, Val Acc: 85.77%, Val AUC: 0.924
+2026-01-16 16:17:01,829 - INFO - Epoch 30/100 - Train Loss: 0.4630, Train Acc: 86.31% - Val Loss: 0.4876, Val Acc: 87.84%, Val AUC: 0.918
+2026-01-16 16:17:03,103 - INFO - Epoch 31/100 - Train Loss: 0.4648, Train Acc: 86.35% - Val Loss: 0.4992, Val Acc: 80.62%, Val AUC: 0.924
+2026-01-16 16:17:04,374 - INFO - Epoch 32/100 - Train Loss: 0.4676, Train Acc: 86.19% - Val Loss: 0.4997, Val Acc: 84.54%, Val AUC: 0.922
+2026-01-16 16:17:05,622 - INFO - Epoch 33/100 - Train Loss: 0.4607, Train Acc: 87.22% - Val Loss: 0.4926, Val Acc: 84.33%, Val AUC: 0.929
+2026-01-16 16:17:06,893 - INFO - Epoch 34/100 - Train Loss: 0.4619, Train Acc: 87.82% - Val Loss: 0.5037, Val Acc: 83.71%, Val AUC: 0.925
+2026-01-16 16:17:08,145 - INFO - Epoch 35/100 - Train Loss: 0.4594, Train Acc: 87.22% - Val Loss: 0.4939, Val Acc: 85.77%, Val AUC: 0.926
+2026-01-16 16:17:09,409 - INFO - Epoch 36/100 - Train Loss: 0.4542, Train Acc: 87.02% - Val Loss: 0.5036, Val Acc: 84.95%, Val AUC: 0.918
+2026-01-16 16:17:10,664 - INFO - Epoch 37/100 - Train Loss: 0.4547, Train Acc: 87.29% - Val Loss: 0.5149, Val Acc: 84.12%, Val AUC: 0.906
+2026-01-16 16:17:11,931 - INFO - Epoch 38/100 - Train Loss: 0.4544, Train Acc: 87.36% - Val Loss: 0.5047, Val Acc: 82.27%, Val AUC: 0.919
+2026-01-16 16:17:13,252 - INFO - Epoch 39/100 - Train Loss: 0.4522, Train Acc: 87.38% - Val Loss: 0.5053, Val Acc: 85.77%, Val AUC: 0.910
+2026-01-16 16:17:14,534 - INFO - Epoch 40/100 - Train Loss: 0.4538, Train Acc: 88.02% - Val Loss: 0.5020, Val Acc: 87.01%, Val AUC: 0.919
+2026-01-16 16:17:15,796 - INFO - Epoch 41/100 - Train Loss: 0.4509, Train Acc: 88.28% - Val Loss: 0.5070, Val Acc: 85.98%, Val AUC: 0.916
+2026-01-16 16:17:17,057 - INFO - Epoch 42/100 - Train Loss: 0.4529, Train Acc: 86.97% - Val Loss: 0.4989, Val Acc: 85.98%, Val AUC: 0.910
+2026-01-16 16:17:17,058 - INFO - Early stopping at epoch 42
+2026-01-16 16:17:17,275 - INFO -   Val: 89.9% | Traj: Acc=85.5%, BalAcc=83.6%, Sens=80.3%, Spec=86.9%, AUC=0.908
+2026-01-16 16:17:17,381 - INFO -        CN_AD (1131 stable): Acc=85.4%, BalAcc=82.2%, Sens=77.5%, Spec=86.9%, AUC=0.898
+2026-01-16 16:17:17,382 - INFO - 
+Seed 123 Trajectory Summary:
+2026-01-16 16:17:17,382 - INFO -   Acc: 85.2±1.1%
+2026-01-16 16:17:17,382 - INFO -   BalAcc: 84.7±0.9%
+2026-01-16 16:17:17,383 - INFO -   Sens: 83.8±4.2%
+2026-01-16 16:17:17,383 - INFO -   Spec: 85.5±2.5%
+2026-01-16 16:17:17,383 - INFO -   AUC: 0.926±0.012
+2026-01-16 16:17:17,383 - INFO - Seed 123 CN_AD Summary:
+2026-01-16 16:17:17,383 - INFO -   Acc: 85.4±1.6%
+2026-01-16 16:17:17,383 - INFO -   BalAcc: 84.4±1.3%
+2026-01-16 16:17:17,383 - INFO -   Sens: 82.8±4.7%
+2026-01-16 16:17:17,383 - INFO -   Spec: 85.9±2.7%
+2026-01-16 16:17:17,383 - INFO -   AUC: 0.923±0.017
+2026-01-16 16:17:17,384 - INFO - 
+============================================================
+2026-01-16 16:17:17,384 - INFO - Running with seed 456
+2026-01-16 16:17:17,384 - INFO - ============================================================
+2026-01-16 16:17:17,385 - INFO - 
+--- Fold 1/5 ---
+2026-01-16 16:17:17,385 - INFO - Train: 4367, Val: 485, Test: 1213
+/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:392: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+2026-01-16 16:17:18,697 - INFO - Epoch 1/100 - Train Loss: 0.5675, Train Acc: 76.25% - Val Loss: 0.5506, Val Acc: 63.09%, Val AUC: 0.887
+2026-01-16 16:17:19,970 - INFO - Epoch 2/100 - Train Loss: 0.5255, Train Acc: 82.18% - Val Loss: 0.5068, Val Acc: 78.56%, Val AUC: 0.903
+2026-01-16 16:17:21,248 - INFO - Epoch 3/100 - Train Loss: 0.5141, Train Acc: 83.28% - Val Loss: 0.5053, Val Acc: 78.97%, Val AUC: 0.905
+2026-01-16 16:17:22,512 - INFO - Epoch 4/100 - Train Loss: 0.5118, Train Acc: 83.56% - Val Loss: 0.5274, Val Acc: 81.24%, Val AUC: 0.896
+2026-01-16 16:17:23,785 - INFO - Epoch 5/100 - Train Loss: 0.5171, Train Acc: 82.16% - Val Loss: 0.5086, Val Acc: 71.55%, Val AUC: 0.907
+2026-01-16 16:17:25,028 - INFO - Epoch 6/100 - Train Loss: 0.5100, Train Acc: 82.48% - Val Loss: 0.5113, Val Acc: 78.56%, Val AUC: 0.910
+2026-01-16 16:17:26,292 - INFO - Epoch 7/100 - Train Loss: 0.4983, Train Acc: 82.25% - Val Loss: 0.5118, Val Acc: 81.24%, Val AUC: 0.904
+2026-01-16 16:17:27,536 - INFO - Epoch 8/100 - Train Loss: 0.5030, Train Acc: 81.86% - Val Loss: 0.5085, Val Acc: 82.27%, Val AUC: 0.908
+2026-01-16 16:17:28,794 - INFO - Epoch 9/100 - Train Loss: 0.5006, Train Acc: 82.87% - Val Loss: 0.5092, Val Acc: 81.44%, Val AUC: 0.910
+2026-01-16 16:17:30,055 - INFO - Epoch 10/100 - Train Loss: 0.4941, Train Acc: 83.05% - Val Loss: 0.4969, Val Acc: 77.94%, Val AUC: 0.910
+2026-01-16 16:17:31,343 - INFO - Epoch 11/100 - Train Loss: 0.4909, Train Acc: 83.97% - Val Loss: 0.4972, Val Acc: 85.15%, Val AUC: 0.915
+2026-01-16 16:17:32,598 - INFO - Epoch 12/100 - Train Loss: 0.4912, Train Acc: 84.15% - Val Loss: 0.5044, Val Acc: 82.89%, Val AUC: 0.913
+2026-01-16 16:17:33,841 - INFO - Epoch 13/100 - Train Loss: 0.4863, Train Acc: 85.50% - Val Loss: 0.4903, Val Acc: 81.03%, Val AUC: 0.916
+2026-01-16 16:17:35,095 - INFO - Epoch 14/100 - Train Loss: 0.4894, Train Acc: 84.70% - Val Loss: 0.4897, Val Acc: 82.89%, Val AUC: 0.917
+2026-01-16 16:17:36,337 - INFO - Epoch 15/100 - Train Loss: 0.4857, Train Acc: 85.05% - Val Loss: 0.5044, Val Acc: 78.76%, Val AUC: 0.918
+2026-01-16 16:17:37,578 - INFO - Epoch 16/100 - Train Loss: 0.4836, Train Acc: 84.77% - Val Loss: 0.4936, Val Acc: 81.86%, Val AUC: 0.916
+2026-01-16 16:17:38,860 - INFO - Epoch 17/100 - Train Loss: 0.4847, Train Acc: 86.05% - Val Loss: 0.4868, Val Acc: 84.74%, Val AUC: 0.920
+2026-01-16 16:17:40,126 - INFO - Epoch 18/100 - Train Loss: 0.4774, Train Acc: 86.19% - Val Loss: 0.4990, Val Acc: 84.74%, Val AUC: 0.911
+2026-01-16 16:17:41,381 - INFO - Epoch 19/100 - Train Loss: 0.4831, Train Acc: 85.83% - Val Loss: 0.4940, Val Acc: 81.24%, Val AUC: 0.914
+2026-01-16 16:17:42,628 - INFO - Epoch 20/100 - Train Loss: 0.4830, Train Acc: 85.55% - Val Loss: 0.5209, Val Acc: 87.01%, Val AUC: 0.915
+2026-01-16 16:17:43,881 - INFO - Epoch 21/100 - Train Loss: 0.4777, Train Acc: 87.04% - Val Loss: 0.4909, Val Acc: 82.89%, Val AUC: 0.918
+2026-01-16 16:17:45,132 - INFO - Epoch 22/100 - Train Loss: 0.4743, Train Acc: 86.28% - Val Loss: 0.4920, Val Acc: 84.95%, Val AUC: 0.921
+2026-01-16 16:17:46,408 - INFO - Epoch 23/100 - Train Loss: 0.4746, Train Acc: 84.57% - Val Loss: 0.5049, Val Acc: 86.80%, Val AUC: 0.915
+2026-01-16 16:17:47,698 - INFO - Epoch 24/100 - Train Loss: 0.4779, Train Acc: 84.96% - Val Loss: 0.5150, Val Acc: 83.92%, Val AUC: 0.912
+2026-01-16 16:17:48,963 - INFO - Epoch 25/100 - Train Loss: 0.4742, Train Acc: 85.83% - Val Loss: 0.5067, Val Acc: 87.01%, Val AUC: 0.915
+2026-01-16 16:17:50,225 - INFO - Epoch 26/100 - Train Loss: 0.4742, Train Acc: 86.42% - Val Loss: 0.4888, Val Acc: 83.71%, Val AUC: 0.916
+2026-01-16 16:17:51,478 - INFO - Epoch 27/100 - Train Loss: 0.4705, Train Acc: 87.18% - Val Loss: 0.4821, Val Acc: 85.15%, Val AUC: 0.922
+2026-01-16 16:17:52,726 - INFO - Epoch 28/100 - Train Loss: 0.4706, Train Acc: 85.78% - Val Loss: 0.5082, Val Acc: 81.65%, Val AUC: 0.910
+2026-01-16 16:17:54,005 - INFO - Epoch 29/100 - Train Loss: 0.4750, Train Acc: 85.71% - Val Loss: 0.4974, Val Acc: 82.27%, Val AUC: 0.911
+2026-01-16 16:17:55,273 - INFO - Epoch 30/100 - Train Loss: 0.4696, Train Acc: 87.27% - Val Loss: 0.5046, Val Acc: 79.38%, Val AUC: 0.911
+2026-01-16 16:17:56,533 - INFO - Epoch 31/100 - Train Loss: 0.4657, Train Acc: 86.44% - Val Loss: 0.5023, Val Acc: 82.06%, Val AUC: 0.914
+2026-01-16 16:17:57,788 - INFO - Epoch 32/100 - Train Loss: 0.4645, Train Acc: 86.24% - Val Loss: 0.4819, Val Acc: 82.06%, Val AUC: 0.922
+2026-01-16 16:17:59,040 - INFO - Epoch 33/100 - Train Loss: 0.4623, Train Acc: 86.17% - Val Loss: 0.5032, Val Acc: 83.09%, Val AUC: 0.917
+2026-01-16 16:18:00,346 - INFO - Epoch 34/100 - Train Loss: 0.4629, Train Acc: 87.41% - Val Loss: 0.4873, Val Acc: 82.89%, Val AUC: 0.917
+2026-01-16 16:18:01,611 - INFO - Epoch 35/100 - Train Loss: 0.4598, Train Acc: 86.86% - Val Loss: 0.5224, Val Acc: 83.92%, Val AUC: 0.897
+2026-01-16 16:18:02,885 - INFO - Epoch 36/100 - Train Loss: 0.4595, Train Acc: 86.88% - Val Loss: 0.4969, Val Acc: 82.68%, Val AUC: 0.915
+2026-01-16 16:18:04,152 - INFO - Epoch 37/100 - Train Loss: 0.4552, Train Acc: 87.59% - Val Loss: 0.5002, Val Acc: 83.92%, Val AUC: 0.914
+2026-01-16 16:18:05,436 - INFO - Epoch 38/100 - Train Loss: 0.4526, Train Acc: 87.25% - Val Loss: 0.4924, Val Acc: 84.12%, Val AUC: 0.911
+2026-01-16 16:18:06,770 - INFO - Epoch 39/100 - Train Loss: 0.4538, Train Acc: 87.52% - Val Loss: 0.4950, Val Acc: 81.24%, Val AUC: 0.913
+2026-01-16 16:18:08,028 - INFO - Epoch 40/100 - Train Loss: 0.4561, Train Acc: 87.91% - Val Loss: 0.5048, Val Acc: 83.51%, Val AUC: 0.912
+2026-01-16 16:18:08,029 - INFO - Early stopping at epoch 40
+2026-01-16 16:18:08,241 - INFO -   Val: 87.0% | Traj: Acc=87.1%, BalAcc=86.1%, Sens=84.4%, Spec=87.8%, AUC=0.932
+2026-01-16 16:18:08,347 - INFO -        CN_AD (1149 stable): Acc=87.5%, BalAcc=85.9%, Sens=83.4%, Spec=88.3%, AUC=0.928
+2026-01-16 16:18:08,349 - INFO - 
+--- Fold 2/5 ---
+2026-01-16 16:18:08,349 - INFO - Train: 4367, Val: 485, Test: 1213
+/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:392: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+2026-01-16 16:18:09,673 - INFO - Epoch 1/100 - Train Loss: 0.5691, Train Acc: 76.99% - Val Loss: 0.5396, Val Acc: 82.89%, Val AUC: 0.914
+2026-01-16 16:18:10,934 - INFO - Epoch 2/100 - Train Loss: 0.5103, Train Acc: 81.70% - Val Loss: 0.5493, Val Acc: 86.19%, Val AUC: 0.918
+2026-01-16 16:18:12,216 - INFO - Epoch 3/100 - Train Loss: 0.5107, Train Acc: 82.05% - Val Loss: 0.5401, Val Acc: 86.60%, Val AUC: 0.917
+2026-01-16 16:18:13,494 - INFO - Epoch 4/100 - Train Loss: 0.5028, Train Acc: 83.67% - Val Loss: 0.5291, Val Acc: 82.68%, Val AUC: 0.921
+2026-01-16 16:18:14,754 - INFO - Epoch 5/100 - Train Loss: 0.4976, Train Acc: 84.13% - Val Loss: 0.5330, Val Acc: 83.30%, Val AUC: 0.923
+2026-01-16 16:18:16,022 - INFO - Epoch 6/100 - Train Loss: 0.4929, Train Acc: 84.45% - Val Loss: 0.5304, Val Acc: 81.65%, Val AUC: 0.917
+2026-01-16 16:18:17,307 - INFO - Epoch 7/100 - Train Loss: 0.4955, Train Acc: 84.54% - Val Loss: 0.5343, Val Acc: 86.80%, Val AUC: 0.919
+2026-01-16 16:18:18,569 - INFO - Epoch 8/100 - Train Loss: 0.4926, Train Acc: 84.86% - Val Loss: 0.5204, Val Acc: 88.87%, Val AUC: 0.928
+2026-01-16 16:18:19,809 - INFO - Epoch 9/100 - Train Loss: 0.4907, Train Acc: 85.46% - Val Loss: 0.5417, Val Acc: 77.53%, Val AUC: 0.924
+2026-01-16 16:18:21,105 - INFO - Epoch 10/100 - Train Loss: 0.4895, Train Acc: 85.69% - Val Loss: 0.5161, Val Acc: 80.41%, Val AUC: 0.925
+2026-01-16 16:18:22,379 - INFO - Epoch 11/100 - Train Loss: 0.4835, Train Acc: 84.80% - Val Loss: 0.5307, Val Acc: 88.25%, Val AUC: 0.927
+2026-01-16 16:18:23,648 - INFO - Epoch 12/100 - Train Loss: 0.4782, Train Acc: 84.91% - Val Loss: 0.5169, Val Acc: 84.33%, Val AUC: 0.924
+2026-01-16 16:18:24,935 - INFO - Epoch 13/100 - Train Loss: 0.4925, Train Acc: 84.18% - Val Loss: 0.5146, Val Acc: 83.09%, Val AUC: 0.919
+2026-01-16 16:18:26,229 - INFO - Epoch 14/100 - Train Loss: 0.4826, Train Acc: 85.34% - Val Loss: 0.5225, Val Acc: 81.86%, Val AUC: 0.927
+2026-01-16 16:18:27,482 - INFO - Epoch 15/100 - Train Loss: 0.4797, Train Acc: 85.46% - Val Loss: 0.5209, Val Acc: 85.36%, Val AUC: 0.924
+2026-01-16 16:18:28,747 - INFO - Epoch 16/100 - Train Loss: 0.4799, Train Acc: 84.77% - Val Loss: 0.5260, Val Acc: 82.68%, Val AUC: 0.923
+2026-01-16 16:18:30,022 - INFO - Epoch 17/100 - Train Loss: 0.4778, Train Acc: 85.23% - Val Loss: 0.5271, Val Acc: 87.84%, Val AUC: 0.923
+2026-01-16 16:18:31,279 - INFO - Epoch 18/100 - Train Loss: 0.4806, Train Acc: 85.39% - Val Loss: 0.5260, Val Acc: 85.15%, Val AUC: 0.915
+2026-01-16 16:18:32,546 - INFO - Epoch 19/100 - Train Loss: 0.4815, Train Acc: 84.75% - Val Loss: 0.5293, Val Acc: 87.01%, Val AUC: 0.923
+2026-01-16 16:18:33,781 - INFO - Epoch 20/100 - Train Loss: 0.4729, Train Acc: 85.60% - Val Loss: 0.5218, Val Acc: 83.30%, Val AUC: 0.925
+2026-01-16 16:18:35,054 - INFO - Epoch 21/100 - Train Loss: 0.4770, Train Acc: 84.61% - Val Loss: 0.5024, Val Acc: 82.47%, Val AUC: 0.933
+2026-01-16 16:18:36,306 - INFO - Epoch 22/100 - Train Loss: 0.4769, Train Acc: 85.39% - Val Loss: 0.5254, Val Acc: 78.97%, Val AUC: 0.931
+2026-01-16 16:18:37,586 - INFO - Epoch 23/100 - Train Loss: 0.4720, Train Acc: 85.21% - Val Loss: 0.5386, Val Acc: 84.74%, Val AUC: 0.927
+2026-01-16 16:18:38,835 - INFO - Epoch 24/100 - Train Loss: 0.4683, Train Acc: 85.80% - Val Loss: 0.5244, Val Acc: 85.98%, Val AUC: 0.928
+2026-01-16 16:18:40,083 - INFO - Epoch 25/100 - Train Loss: 0.4644, Train Acc: 85.89% - Val Loss: 0.5225, Val Acc: 86.19%, Val AUC: 0.928
+2026-01-16 16:18:41,375 - INFO - Epoch 26/100 - Train Loss: 0.4636, Train Acc: 86.28% - Val Loss: 0.5258, Val Acc: 86.19%, Val AUC: 0.925
+2026-01-16 16:18:42,678 - INFO - Epoch 27/100 - Train Loss: 0.4673, Train Acc: 86.21% - Val Loss: 0.5258, Val Acc: 83.71%, Val AUC: 0.924
+2026-01-16 16:18:43,954 - INFO - Epoch 28/100 - Train Loss: 0.4667, Train Acc: 86.56% - Val Loss: 0.5210, Val Acc: 83.09%, Val AUC: 0.926
+2026-01-16 16:18:43,954 - INFO - Early stopping at epoch 28
+2026-01-16 16:18:44,153 - INFO -   Val: 88.9% | Traj: Acc=84.2%, BalAcc=84.0%, Sens=83.7%, Spec=84.3%, AUC=0.916
+2026-01-16 16:18:44,259 - INFO -        CN_AD (1142 stable): Acc=84.1%, BalAcc=83.1%, Sens=81.8%, Spec=84.5%, AUC=0.915
+2026-01-16 16:18:44,259 - INFO - 
+--- Fold 3/5 ---
+2026-01-16 16:18:44,260 - INFO - Train: 4367, Val: 485, Test: 1213
+/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:392: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+2026-01-16 16:18:45,594 - INFO - Epoch 1/100 - Train Loss: 0.6064, Train Acc: 74.35% - Val Loss: 0.6015, Val Acc: 87.63%, Val AUC: 0.901
+2026-01-16 16:18:46,867 - INFO - Epoch 2/100 - Train Loss: 0.5322, Train Acc: 81.50% - Val Loss: 0.5316, Val Acc: 74.43%, Val AUC: 0.915
+2026-01-16 16:18:48,120 - INFO - Epoch 3/100 - Train Loss: 0.5112, Train Acc: 81.59% - Val Loss: 0.5207, Val Acc: 88.25%, Val AUC: 0.917
+2026-01-16 16:18:49,388 - INFO - Epoch 4/100 - Train Loss: 0.5012, Train Acc: 83.63% - Val Loss: 0.5079, Val Acc: 79.79%, Val AUC: 0.917
+2026-01-16 16:18:50,652 - INFO - Epoch 5/100 - Train Loss: 0.5033, Train Acc: 82.69% - Val Loss: 0.5068, Val Acc: 87.01%, Val AUC: 0.918
+2026-01-16 16:18:51,918 - INFO - Epoch 6/100 - Train Loss: 0.4933, Train Acc: 84.45% - Val Loss: 0.5064, Val Acc: 78.56%, Val AUC: 0.916
+2026-01-16 16:18:53,172 - INFO - Epoch 7/100 - Train Loss: 0.4971, Train Acc: 84.27% - Val Loss: 0.5259, Val Acc: 88.25%, Val AUC: 0.915
+2026-01-16 16:18:54,430 - INFO - Epoch 8/100 - Train Loss: 0.4892, Train Acc: 83.74% - Val Loss: 0.4970, Val Acc: 84.12%, Val AUC: 0.921
+2026-01-16 16:18:55,690 - INFO - Epoch 9/100 - Train Loss: 0.4873, Train Acc: 84.52% - Val Loss: 0.5053, Val Acc: 82.68%, Val AUC: 0.924
+2026-01-16 16:18:57,005 - INFO - Epoch 10/100 - Train Loss: 0.4902, Train Acc: 84.18% - Val Loss: 0.4951, Val Acc: 82.89%, Val AUC: 0.927
+2026-01-16 16:18:58,290 - INFO - Epoch 11/100 - Train Loss: 0.4813, Train Acc: 84.47% - Val Loss: 0.4950, Val Acc: 82.47%, Val AUC: 0.927
+2026-01-16 16:18:59,553 - INFO - Epoch 12/100 - Train Loss: 0.4885, Train Acc: 84.47% - Val Loss: 0.4912, Val Acc: 87.63%, Val AUC: 0.929
+2026-01-16 16:19:00,818 - INFO - Epoch 13/100 - Train Loss: 0.4820, Train Acc: 86.35% - Val Loss: 0.4957, Val Acc: 81.86%, Val AUC: 0.924
+2026-01-16 16:19:02,137 - INFO - Epoch 14/100 - Train Loss: 0.4816, Train Acc: 85.60% - Val Loss: 0.5158, Val Acc: 83.30%, Val AUC: 0.921
+2026-01-16 16:19:03,399 - INFO - Epoch 15/100 - Train Loss: 0.4761, Train Acc: 86.01% - Val Loss: 0.5060, Val Acc: 83.51%, Val AUC: 0.925
+2026-01-16 16:19:04,668 - INFO - Epoch 16/100 - Train Loss: 0.4793, Train Acc: 84.96% - Val Loss: 0.5023, Val Acc: 85.57%, Val AUC: 0.922
+2026-01-16 16:19:05,956 - INFO - Epoch 17/100 - Train Loss: 0.4798, Train Acc: 86.10% - Val Loss: 0.5045, Val Acc: 83.30%, Val AUC: 0.915
+2026-01-16 16:19:07,239 - INFO - Epoch 18/100 - Train Loss: 0.4756, Train Acc: 84.73% - Val Loss: 0.5252, Val Acc: 88.45%, Val AUC: 0.922
+2026-01-16 16:19:08,508 - INFO - Epoch 19/100 - Train Loss: 0.4783, Train Acc: 84.96% - Val Loss: 0.4921, Val Acc: 87.22%, Val AUC: 0.922
+2026-01-16 16:19:09,805 - INFO - Epoch 20/100 - Train Loss: 0.4744, Train Acc: 85.57% - Val Loss: 0.5094, Val Acc: 85.15%, Val AUC: 0.918
+2026-01-16 16:19:11,053 - INFO - Epoch 21/100 - Train Loss: 0.4801, Train Acc: 85.41% - Val Loss: 0.4942, Val Acc: 85.36%, Val AUC: 0.930
+2026-01-16 16:19:12,340 - INFO - Epoch 22/100 - Train Loss: 0.4754, Train Acc: 85.18% - Val Loss: 0.5089, Val Acc: 87.01%, Val AUC: 0.919
+2026-01-16 16:19:13,606 - INFO - Epoch 23/100 - Train Loss: 0.4681, Train Acc: 86.97% - Val Loss: 0.4899, Val Acc: 83.09%, Val AUC: 0.927
+2026-01-16 16:19:14,871 - INFO - Epoch 24/100 - Train Loss: 0.4669, Train Acc: 85.21% - Val Loss: 0.5167, Val Acc: 81.65%, Val AUC: 0.908
+2026-01-16 16:19:16,143 - INFO - Epoch 25/100 - Train Loss: 0.4632, Train Acc: 85.87% - Val Loss: 0.5018, Val Acc: 82.47%, Val AUC: 0.922
+2026-01-16 16:19:17,417 - INFO - Epoch 26/100 - Train Loss: 0.4652, Train Acc: 85.64% - Val Loss: 0.5096, Val Acc: 79.38%, Val AUC: 0.913
+2026-01-16 16:19:18,686 - INFO - Epoch 27/100 - Train Loss: 0.4634, Train Acc: 86.08% - Val Loss: 0.5179, Val Acc: 84.74%, Val AUC: 0.913
+2026-01-16 16:19:19,941 - INFO - Epoch 28/100 - Train Loss: 0.4657, Train Acc: 87.41% - Val Loss: 0.5201, Val Acc: 79.79%, Val AUC: 0.916
+2026-01-16 16:19:21,211 - INFO - Epoch 29/100 - Train Loss: 0.4672, Train Acc: 86.76% - Val Loss: 0.4982, Val Acc: 83.71%, Val AUC: 0.920
+2026-01-16 16:19:22,480 - INFO - Epoch 30/100 - Train Loss: 0.4637, Train Acc: 86.70% - Val Loss: 0.5106, Val Acc: 81.03%, Val AUC: 0.917
+2026-01-16 16:19:23,763 - INFO - Epoch 31/100 - Train Loss: 0.4649, Train Acc: 86.26% - Val Loss: 0.4983, Val Acc: 82.27%, Val AUC: 0.919
+2026-01-16 16:19:25,031 - INFO - Epoch 32/100 - Train Loss: 0.4584, Train Acc: 86.99% - Val Loss: 0.5096, Val Acc: 81.44%, Val AUC: 0.918
+2026-01-16 16:19:26,300 - INFO - Epoch 33/100 - Train Loss: 0.4594, Train Acc: 86.67% - Val Loss: 0.4997, Val Acc: 83.09%, Val AUC: 0.920
+2026-01-16 16:19:27,582 - INFO - Epoch 34/100 - Train Loss: 0.4568, Train Acc: 87.52% - Val Loss: 0.4976, Val Acc: 84.33%, Val AUC: 0.920
+2026-01-16 16:19:28,846 - INFO - Epoch 35/100 - Train Loss: 0.4532, Train Acc: 87.75% - Val Loss: 0.5332, Val Acc: 85.36%, Val AUC: 0.910
+2026-01-16 16:19:30,091 - INFO - Epoch 36/100 - Train Loss: 0.4593, Train Acc: 87.18% - Val Loss: 0.4937, Val Acc: 85.98%, Val AUC: 0.924
+2026-01-16 16:19:31,349 - INFO - Epoch 37/100 - Train Loss: 0.4623, Train Acc: 86.56% - Val Loss: 0.5020, Val Acc: 83.71%, Val AUC: 0.920
+2026-01-16 16:19:32,677 - INFO - Epoch 38/100 - Train Loss: 0.4592, Train Acc: 87.47% - Val Loss: 0.4986, Val Acc: 86.39%, Val AUC: 0.924
+2026-01-16 16:19:32,677 - INFO - Early stopping at epoch 38
+2026-01-16 16:19:32,878 - INFO -   Val: 88.5% | Traj: Acc=85.0%, BalAcc=82.2%, Sens=77.3%, Spec=87.1%, AUC=0.912
+2026-01-16 16:19:32,985 - INFO -        CN_AD (1136 stable): Acc=85.8%, BalAcc=82.7%, Sens=78.1%, Spec=87.4%, AUC=0.919
+2026-01-16 16:19:32,986 - INFO - 
+--- Fold 4/5 ---
+2026-01-16 16:19:32,986 - INFO - Train: 4367, Val: 485, Test: 1213
+/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:392: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+2026-01-16 16:19:34,307 - INFO - Epoch 1/100 - Train Loss: 0.6100, Train Acc: 74.08% - Val Loss: 0.5357, Val Acc: 77.94%, Val AUC: 0.929
+2026-01-16 16:19:35,570 - INFO - Epoch 2/100 - Train Loss: 0.5389, Train Acc: 79.92% - Val Loss: 0.5102, Val Acc: 82.89%, Val AUC: 0.932
+2026-01-16 16:19:36,840 - INFO - Epoch 3/100 - Train Loss: 0.5219, Train Acc: 81.93% - Val Loss: 0.5135, Val Acc: 83.92%, Val AUC: 0.934
+2026-01-16 16:19:38,118 - INFO - Epoch 4/100 - Train Loss: 0.5181, Train Acc: 83.40% - Val Loss: 0.5139, Val Acc: 79.18%, Val AUC: 0.934
+2026-01-16 16:19:39,397 - INFO - Epoch 5/100 - Train Loss: 0.5229, Train Acc: 82.71% - Val Loss: 0.5216, Val Acc: 78.56%, Val AUC: 0.924
+2026-01-16 16:19:40,679 - INFO - Epoch 6/100 - Train Loss: 0.5130, Train Acc: 82.53% - Val Loss: 0.5209, Val Acc: 85.57%, Val AUC: 0.931
+2026-01-16 16:19:42,005 - INFO - Epoch 7/100 - Train Loss: 0.5073, Train Acc: 83.74% - Val Loss: 0.5149, Val Acc: 86.19%, Val AUC: 0.930
+2026-01-16 16:19:43,272 - INFO - Epoch 8/100 - Train Loss: 0.5023, Train Acc: 82.73% - Val Loss: 0.5108, Val Acc: 86.19%, Val AUC: 0.937
+2026-01-16 16:19:44,559 - INFO - Epoch 9/100 - Train Loss: 0.5008, Train Acc: 82.92% - Val Loss: 0.5123, Val Acc: 85.77%, Val AUC: 0.936
+2026-01-16 16:19:45,832 - INFO - Epoch 10/100 - Train Loss: 0.4981, Train Acc: 84.04% - Val Loss: 0.5201, Val Acc: 85.57%, Val AUC: 0.933
+2026-01-16 16:19:47,073 - INFO - Epoch 11/100 - Train Loss: 0.4969, Train Acc: 82.99% - Val Loss: 0.5160, Val Acc: 84.95%, Val AUC: 0.933
+2026-01-16 16:19:48,346 - INFO - Epoch 12/100 - Train Loss: 0.4969, Train Acc: 83.97% - Val Loss: 0.5197, Val Acc: 84.54%, Val AUC: 0.938
+2026-01-16 16:19:49,672 - INFO - Epoch 13/100 - Train Loss: 0.4965, Train Acc: 85.05% - Val Loss: 0.5124, Val Acc: 82.27%, Val AUC: 0.931
+2026-01-16 16:19:50,953 - INFO - Epoch 14/100 - Train Loss: 0.4930, Train Acc: 84.25% - Val Loss: 0.5306, Val Acc: 83.09%, Val AUC: 0.929
+2026-01-16 16:19:52,213 - INFO - Epoch 15/100 - Train Loss: 0.4975, Train Acc: 84.15% - Val Loss: 0.5232, Val Acc: 83.71%, Val AUC: 0.931
+2026-01-16 16:19:53,466 - INFO - Epoch 16/100 - Train Loss: 0.4904, Train Acc: 85.83% - Val Loss: 0.4996, Val Acc: 83.51%, Val AUC: 0.942
+2026-01-16 16:19:54,730 - INFO - Epoch 17/100 - Train Loss: 0.4910, Train Acc: 85.02% - Val Loss: 0.5287, Val Acc: 83.51%, Val AUC: 0.931
+2026-01-16 16:19:55,996 - INFO - Epoch 18/100 - Train Loss: 0.4911, Train Acc: 84.29% - Val Loss: 0.5165, Val Acc: 85.15%, Val AUC: 0.940
+2026-01-16 16:19:57,294 - INFO - Epoch 19/100 - Train Loss: 0.4974, Train Acc: 85.00% - Val Loss: 0.5151, Val Acc: 83.09%, Val AUC: 0.941
+2026-01-16 16:19:58,560 - INFO - Epoch 20/100 - Train Loss: 0.4898, Train Acc: 83.51% - Val Loss: 0.5225, Val Acc: 85.77%, Val AUC: 0.934
+2026-01-16 16:19:59,815 - INFO - Epoch 21/100 - Train Loss: 0.4897, Train Acc: 84.50% - Val Loss: 0.5181, Val Acc: 83.09%, Val AUC: 0.936
+2026-01-16 16:20:01,074 - INFO - Epoch 22/100 - Train Loss: 0.4787, Train Acc: 84.47% - Val Loss: 0.5567, Val Acc: 78.56%, Val AUC: 0.935
+2026-01-16 16:20:02,330 - INFO - Epoch 23/100 - Train Loss: 0.4838, Train Acc: 85.83% - Val Loss: 0.5206, Val Acc: 79.79%, Val AUC: 0.935
+2026-01-16 16:20:03,595 - INFO - Epoch 24/100 - Train Loss: 0.4812, Train Acc: 85.46% - Val Loss: 0.5154, Val Acc: 82.47%, Val AUC: 0.928
+2026-01-16 16:20:04,851 - INFO - Epoch 25/100 - Train Loss: 0.4879, Train Acc: 84.84% - Val Loss: 0.5097, Val Acc: 82.06%, Val AUC: 0.936
+2026-01-16 16:20:06,123 - INFO - Epoch 26/100 - Train Loss: 0.4794, Train Acc: 85.18% - Val Loss: 0.5415, Val Acc: 82.68%, Val AUC: 0.931
+2026-01-16 16:20:07,429 - INFO - Epoch 27/100 - Train Loss: 0.4836, Train Acc: 85.67% - Val Loss: 0.5175, Val Acc: 84.74%, Val AUC: 0.937
+2026-01-16 16:20:07,429 - INFO - Early stopping at epoch 27
+2026-01-16 16:20:07,636 - INFO -   Val: 86.2% | Traj: Acc=86.6%, BalAcc=86.6%, Sens=86.7%, Spec=86.5%, AUC=0.939
+2026-01-16 16:20:07,742 - INFO -        CN_AD (1134 stable): Acc=86.5%, BalAcc=86.5%, Sens=86.5%, Spec=86.5%, AUC=0.942
+2026-01-16 16:20:07,743 - INFO - 
+--- Fold 5/5 ---
+2026-01-16 16:20:07,744 - INFO - Train: 4367, Val: 485, Test: 1213
+/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:392: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+2026-01-16 16:20:09,083 - INFO - Epoch 1/100 - Train Loss: 0.5899, Train Acc: 76.16% - Val Loss: 0.5115, Val Acc: 80.21%, Val AUC: 0.916
+2026-01-16 16:20:10,352 - INFO - Epoch 2/100 - Train Loss: 0.5235, Train Acc: 83.24% - Val Loss: 0.5039, Val Acc: 81.03%, Val AUC: 0.922
+2026-01-16 16:20:11,651 - INFO - Epoch 3/100 - Train Loss: 0.5094, Train Acc: 83.81% - Val Loss: 0.5102, Val Acc: 85.98%, Val AUC: 0.922
+2026-01-16 16:20:12,926 - INFO - Epoch 4/100 - Train Loss: 0.5098, Train Acc: 83.40% - Val Loss: 0.5053, Val Acc: 79.79%, Val AUC: 0.920
+2026-01-16 16:20:14,200 - INFO - Epoch 5/100 - Train Loss: 0.5025, Train Acc: 83.15% - Val Loss: 0.5080, Val Acc: 84.54%, Val AUC: 0.925
+2026-01-16 16:20:15,475 - INFO - Epoch 6/100 - Train Loss: 0.4978, Train Acc: 84.82% - Val Loss: 0.5011, Val Acc: 78.56%, Val AUC: 0.925
+2026-01-16 16:20:16,745 - INFO - Epoch 7/100 - Train Loss: 0.4995, Train Acc: 82.67% - Val Loss: 0.5141, Val Acc: 84.95%, Val AUC: 0.922
+2026-01-16 16:20:18,010 - INFO - Epoch 8/100 - Train Loss: 0.4996, Train Acc: 84.09% - Val Loss: 0.5245, Val Acc: 80.82%, Val AUC: 0.917
+2026-01-16 16:20:19,266 - INFO - Epoch 9/100 - Train Loss: 0.4954, Train Acc: 84.82% - Val Loss: 0.4980, Val Acc: 83.71%, Val AUC: 0.921
+2026-01-16 16:20:20,554 - INFO - Epoch 10/100 - Train Loss: 0.4930, Train Acc: 84.22% - Val Loss: 0.5031, Val Acc: 83.92%, Val AUC: 0.915
+2026-01-16 16:20:21,827 - INFO - Epoch 11/100 - Train Loss: 0.4911, Train Acc: 85.14% - Val Loss: 0.5102, Val Acc: 84.12%, Val AUC: 0.919
+2026-01-16 16:20:23,104 - INFO - Epoch 12/100 - Train Loss: 0.4891, Train Acc: 84.52% - Val Loss: 0.4991, Val Acc: 83.92%, Val AUC: 0.921
+2026-01-16 16:20:24,387 - INFO - Epoch 13/100 - Train Loss: 0.4954, Train Acc: 84.91% - Val Loss: 0.5066, Val Acc: 82.89%, Val AUC: 0.923
+2026-01-16 16:20:25,667 - INFO - Epoch 14/100 - Train Loss: 0.4866, Train Acc: 84.59% - Val Loss: 0.5016, Val Acc: 85.98%, Val AUC: 0.925
+2026-01-16 16:20:26,937 - INFO - Epoch 15/100 - Train Loss: 0.4827, Train Acc: 85.18% - Val Loss: 0.5162, Val Acc: 80.82%, Val AUC: 0.927
+2026-01-16 16:20:28,199 - INFO - Epoch 16/100 - Train Loss: 0.4826, Train Acc: 85.18% - Val Loss: 0.4900, Val Acc: 83.09%, Val AUC: 0.928
+2026-01-16 16:20:29,481 - INFO - Epoch 17/100 - Train Loss: 0.4814, Train Acc: 85.32% - Val Loss: 0.4987, Val Acc: 84.54%, Val AUC: 0.923
+2026-01-16 16:20:30,729 - INFO - Epoch 18/100 - Train Loss: 0.4830, Train Acc: 84.11% - Val Loss: 0.5004, Val Acc: 86.39%, Val AUC: 0.923
+2026-01-16 16:20:31,988 - INFO - Epoch 19/100 - Train Loss: 0.4820, Train Acc: 85.25% - Val Loss: 0.4924, Val Acc: 81.44%, Val AUC: 0.931
+2026-01-16 16:20:33,267 - INFO - Epoch 20/100 - Train Loss: 0.4764, Train Acc: 84.96% - Val Loss: 0.5120, Val Acc: 84.12%, Val AUC: 0.924
+2026-01-16 16:20:34,523 - INFO - Epoch 21/100 - Train Loss: 0.4754, Train Acc: 85.53% - Val Loss: 0.5012, Val Acc: 81.03%, Val AUC: 0.916
+2026-01-16 16:20:35,794 - INFO - Epoch 22/100 - Train Loss: 0.4802, Train Acc: 85.67% - Val Loss: 0.5025, Val Acc: 85.57%, Val AUC: 0.921
+2026-01-16 16:20:37,095 - INFO - Epoch 23/100 - Train Loss: 0.4729, Train Acc: 85.44% - Val Loss: 0.5032, Val Acc: 84.54%, Val AUC: 0.918
+2026-01-16 16:20:38,363 - INFO - Epoch 24/100 - Train Loss: 0.4727, Train Acc: 86.05% - Val Loss: 0.5053, Val Acc: 77.11%, Val AUC: 0.915
+2026-01-16 16:20:39,610 - INFO - Epoch 25/100 - Train Loss: 0.4777, Train Acc: 85.12% - Val Loss: 0.4956, Val Acc: 84.74%, Val AUC: 0.924
+2026-01-16 16:20:40,878 - INFO - Epoch 26/100 - Train Loss: 0.4724, Train Acc: 85.80% - Val Loss: 0.5081, Val Acc: 85.77%, Val AUC: 0.919
+2026-01-16 16:20:42,147 - INFO - Epoch 27/100 - Train Loss: 0.4720, Train Acc: 85.28% - Val Loss: 0.4927, Val Acc: 84.95%, Val AUC: 0.934
+2026-01-16 16:20:43,444 - INFO - Epoch 28/100 - Train Loss: 0.4711, Train Acc: 85.18% - Val Loss: 0.4872, Val Acc: 81.86%, Val AUC: 0.926
+2026-01-16 16:20:44,750 - INFO - Epoch 29/100 - Train Loss: 0.4700, Train Acc: 86.01% - Val Loss: 0.5023, Val Acc: 85.57%, Val AUC: 0.926
+2026-01-16 16:20:46,003 - INFO - Epoch 30/100 - Train Loss: 0.4671, Train Acc: 85.25% - Val Loss: 0.4975, Val Acc: 81.24%, Val AUC: 0.923
+2026-01-16 16:20:47,281 - INFO - Epoch 31/100 - Train Loss: 0.4660, Train Acc: 85.46% - Val Loss: 0.4923, Val Acc: 84.33%, Val AUC: 0.929
+2026-01-16 16:20:48,561 - INFO - Epoch 32/100 - Train Loss: 0.4670, Train Acc: 85.69% - Val Loss: 0.4918, Val Acc: 83.09%, Val AUC: 0.926
+2026-01-16 16:20:49,825 - INFO - Epoch 33/100 - Train Loss: 0.4635, Train Acc: 86.51% - Val Loss: 0.4970, Val Acc: 81.03%, Val AUC: 0.931
+2026-01-16 16:20:51,100 - INFO - Epoch 34/100 - Train Loss: 0.4626, Train Acc: 85.85% - Val Loss: 0.5047, Val Acc: 83.92%, Val AUC: 0.922
+2026-01-16 16:20:52,401 - INFO - Epoch 35/100 - Train Loss: 0.4653, Train Acc: 86.24% - Val Loss: 0.5069, Val Acc: 85.57%, Val AUC: 0.928
+2026-01-16 16:20:53,687 - INFO - Epoch 36/100 - Train Loss: 0.4613, Train Acc: 86.05% - Val Loss: 0.4974, Val Acc: 82.89%, Val AUC: 0.924
+2026-01-16 16:20:54,962 - INFO - Epoch 37/100 - Train Loss: 0.4608, Train Acc: 86.03% - Val Loss: 0.5091, Val Acc: 84.95%, Val AUC: 0.930
+2026-01-16 16:20:56,226 - INFO - Epoch 38/100 - Train Loss: 0.4580, Train Acc: 86.90% - Val Loss: 0.4942, Val Acc: 83.09%, Val AUC: 0.927
+2026-01-16 16:20:56,227 - INFO - Early stopping at epoch 38
+2026-01-16 16:20:56,429 - INFO -   Val: 86.4% | Traj: Acc=83.0%, BalAcc=83.8%, Sens=85.2%, Spec=82.4%, AUC=0.920
+2026-01-16 16:20:56,537 - INFO -        CN_AD (1145 stable): Acc=83.5%, BalAcc=82.8%, Sens=81.6%, Spec=83.9%, AUC=0.913
+2026-01-16 16:20:56,537 - INFO - 
+Seed 456 Trajectory Summary:
+2026-01-16 16:20:56,538 - INFO -   Acc: 85.2±1.5%
+2026-01-16 16:20:56,538 - INFO -   BalAcc: 84.5±1.6%
+2026-01-16 16:20:56,538 - INFO -   Sens: 83.5±3.3%
+2026-01-16 16:20:56,538 - INFO -   Spec: 85.6±2.0%
+2026-01-16 16:20:56,538 - INFO -   AUC: 0.924±0.010
+2026-01-16 16:20:56,538 - INFO - Seed 456 CN_AD Summary:
+2026-01-16 16:20:56,538 - INFO -   Acc: 85.5±1.5%
+2026-01-16 16:20:56,538 - INFO -   BalAcc: 84.2±1.6%
+2026-01-16 16:20:56,538 - INFO -   Sens: 82.3±2.7%
+2026-01-16 16:20:56,538 - INFO -   Spec: 86.1±1.7%
+2026-01-16 16:20:56,539 - INFO -   AUC: 0.923±0.011
+2026-01-16 16:20:56,539 - INFO - 
+============================================================
+2026-01-16 16:20:56,539 - INFO - FINAL CROSS-VALIDATION RESULTS (Tabular Only)
+2026-01-16 16:20:56,539 - INFO - ============================================================
+2026-01-16 16:20:56,539 - INFO - 
+CN_AD_TRAJECTORY (train+test):
+2026-01-16 16:20:56,539 - INFO -   Accuracy:     84.9±0.4%
+2026-01-16 16:20:56,539 - INFO -   Balanced Acc: 84.4±0.3%
+2026-01-16 16:20:56,539 - INFO -   Sensitivity:  83.5±0.2%
+2026-01-16 16:20:56,539 - INFO -   Specificity:  85.2±0.5%
+2026-01-16 16:20:56,539 - INFO -   AUC:          0.925±0.001
+2026-01-16 16:20:56,539 - INFO - 
+CN_AD (stable AD, cross-task):
+2026-01-16 16:20:56,540 - INFO -   Accuracy:     85.2±0.4%
+2026-01-16 16:20:56,540 - INFO -   Balanced Acc: 84.3±0.1%
+2026-01-16 16:20:56,540 - INFO -   Sensitivity:  82.9±0.5%
+2026-01-16 16:20:56,540 - INFO -   Specificity:  85.6±0.6%
+2026-01-16 16:20:56,540 - INFO -   AUC:          0.924±0.001
+2026-01-16 16:20:56,540 - INFO - 
+Results saved to cv_results/cv_results.json
+wandb: updating run metadata
+wandb: uploading output.log; uploading wandb-summary.json
+wandb: 
+wandb: Run history:
+wandb:            fold_0/epoch ▁▁▁▂▂▂▂▃▃▃▅▅▆▆▆▂▂▂▃▃▄▄▅▁▁▂▂▃▃▃▃▄▄▄▄▅▅▆▇█
+wandb:               fold_0/lr █████▇▇▇▇▆▆▆▆▅▅▄▄██████▇▇████▇▇▆▆▆▅▄▃▃▂▁
+wandb:        fold_0/train_acc ▅▆▆▆▇▆▆▇█▇▁▅▅▅▅▅▅▅▆▆▅▆▆▁▅▅▆▇▆▆▇▇▆▆▇▇▇▇██
+wandb:       fold_0/train_loss █▄▄▃▃▃▂▂▂▂▂▁▁▅▄▄▄▃▃▃▃▂▇▄▄▃▃▃▃▃▃▂▂▂▂▂▂▂▂▁
+wandb:          fold_0/val_acc ▄▃▃▃▆▄▅▅▃▄▄▃█▆▅▇▁▆▇▆▆▁▃▁▃▃▄▃▅▃▄▄▅▃▂▃▄▄▄▃
+wandb:          fold_0/val_auc ▃▃▆▆▆▆▆▆▇▅▆▇▆▆▅▇▆▇▇▇█▇▇██▆▁▃▄▄▅▅▅▅▅▄▄▅▁▄
+wandb: fold_0/val_balanced_acc ▃▆▆▅▅▅▅▆▆▅▆▄▅█▇▇▇█▇▇▇▆▇▁▅▃▅▅▆▄▆▅▆▆▆▅▄▅▄▅
+wandb:         fold_0/val_loss ▆█▄▄▆▃▅▆▄▅▄▄▅▇▄▁▂▂▂▂▂▂▁▃▄▄▄▄▃▃▃▃▃▅▄▄▂▂▃▃
+wandb:  fold_0/val_sensitivity ▁▇▆▇▅▅▃▇▆▅▇▄▅▆▅▇▇▅▇▇▆▆█▆▄▆▇▅▆▇▆▂▆▄▆▅▆▆▆▅
+wandb:  fold_0/val_specificity ▅▅▇▇▆▇▆▇▆▆▆▆▆▄███▆▆▅▇▁▅▅▃▆▆▅▆▆▆▆█▇▆▆▆▇▆▆
+wandb:                    +190 ...
+wandb: 
+wandb: Run summary:
+wandb:          cn_ad_accuracy_mean 85.16272
+wandb:           cn_ad_accuracy_std 0.39039
+wandb:               cn_ad_auc_mean 0.92416
+wandb:                cn_ad_auc_std 0.0012
+wandb: cn_ad_balanced_accuracy_mean 84.25494
+wandb:  cn_ad_balanced_accuracy_std 0.07813
+wandb:       cn_ad_sensitivity_mean 82.89045
+wandb:        cn_ad_sensitivity_std 0.53129
+wandb:       cn_ad_specificity_mean 85.61943
+wandb:        cn_ad_specificity_std 0.56288
+wandb:                         +210 ...
+wandb: 
+wandb: 🚀 View run tabular_only_cv_20260116_161039 at: https://wandb.ai/tanguyvans/alzheimer-ablation/runs/sw1egqri
+wandb: ⭐️ View project at: https://wandb.ai/tanguyvans/alzheimer-ablation
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260116_161040-sw1egqri/logs
+2026-01-16 16:20:57,518 - INFO - WandB run finished
