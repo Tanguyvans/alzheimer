@@ -1,135 +1,0 @@
-nohup: les entrées sont ignorées
-[0;93m2026-01-12 21:18:58.204807024 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"[m
-INFO:__main__:Device: cuda
-INFO:__main__:Loading cn_ad_trajectory datasets (training task)...
-INFO:dataset:Filled 4 missing values in 'AGE' with 69.00
-INFO:dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
-INFO:dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
-INFO:dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
-INFO:dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
-INFO:dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
-INFO:dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
-INFO:dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
-INFO:dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
-INFO:dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
-INFO:dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
-INFO:dataset:Filled 239 missing values in 'MH4CARD' with 0.00
-INFO:dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
-INFO:dataset:Loaded 4245 samples
-INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
-INFO:dataset:  Class 0: 3323 (78.3%)
-INFO:dataset:  Class 1: 922 (21.7%)
-INFO:dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
-INFO:dataset:Filled 101 missing values in 'CATANIMSC' with 21.00
-INFO:dataset:Filled 102 missing values in 'TRAASCOR' with 30.00
-INFO:dataset:Filled 107 missing values in 'TRABSCOR' with 73.00
-INFO:dataset:Filled 168 missing values in 'DSPANFOR' with -4.00
-INFO:dataset:Filled 168 missing values in 'DSPANBAC' with -4.00
-INFO:dataset:Filled 167 missing values in 'BNTTOTAL' with -4.00
-INFO:dataset:Filled 26 missing values in 'VSWEIGHT' with 166.00
-INFO:dataset:Filled 1 missing values in 'BMI' with 27.80
-INFO:dataset:Filled 48 missing values in 'MH14ALCH' with 0.00
-INFO:dataset:Filled 48 missing values in 'MH16SMOK' with 0.00
-INFO:dataset:Filled 48 missing values in 'MH4CARD' with 0.00
-INFO:dataset:Filled 48 missing values in 'MH2NEURL' with -4.00
-INFO:dataset:Loaded 910 samples
-INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
-INFO:dataset:  Class 0: 712 (78.2%)
-INFO:dataset:  Class 1: 198 (21.8%)
-INFO:dataset:Filled 6 missing values in 'PTEDUCAT' with 16.00
-INFO:dataset:Filled 91 missing values in 'CATANIMSC' with 20.00
-INFO:dataset:Filled 92 missing values in 'TRAASCOR' with 31.00
-INFO:dataset:Filled 100 missing values in 'TRABSCOR' with 78.00
-INFO:dataset:Filled 184 missing values in 'DSPANFOR' with -4.00
-INFO:dataset:Filled 184 missing values in 'DSPANBAC' with -4.00
-INFO:dataset:Filled 179 missing values in 'BNTTOTAL' with -4.00
-INFO:dataset:Filled 33 missing values in 'VSWEIGHT' with 164.00
-INFO:dataset:Filled 2 missing values in 'BMI' with 28.20
-INFO:dataset:Filled 60 missing values in 'MH14ALCH' with 0.00
-INFO:dataset:Filled 60 missing values in 'MH16SMOK' with 0.00
-INFO:dataset:Filled 60 missing values in 'MH4CARD' with 0.00
-INFO:dataset:Filled 60 missing values in 'MH2NEURL' with -4.00
-INFO:dataset:Loaded 910 samples
-INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
-INFO:dataset:  Class 0: 712 (78.2%)
-INFO:dataset:  Class 1: 198 (21.8%)
-INFO:__main__:Loading cn_ad test set from data/combined_cn_ad/test.csv...
-INFO:dataset:Filled 1 missing values in 'AGE' with 69.00
-INFO:dataset:Filled 4 missing values in 'PTEDUCAT' with 16.00
-INFO:dataset:Filled 88 missing values in 'CATANIMSC' with 21.00
-INFO:dataset:Filled 90 missing values in 'TRAASCOR' with 30.00
-INFO:dataset:Filled 101 missing values in 'TRABSCOR' with 75.00
-INFO:dataset:Filled 162 missing values in 'DSPANFOR' with -4.00
-INFO:dataset:Filled 164 missing values in 'DSPANBAC' with -4.00
-INFO:dataset:Filled 161 missing values in 'BNTTOTAL' with -4.00
-INFO:dataset:Filled 34 missing values in 'VSWEIGHT' with 163.00
-INFO:dataset:Filled 2 missing values in 'BMI' with 27.55
-INFO:dataset:Filled 51 missing values in 'MH14ALCH' with 0.00
-INFO:dataset:Filled 51 missing values in 'MH16SMOK' with 0.00
-INFO:dataset:Filled 51 missing values in 'MH4CARD' with 0.00
-INFO:dataset:Filled 51 missing values in 'MH2NEURL' with -4.00
-INFO:dataset:Loaded 856 samples
-INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
-INFO:dataset:  Class 0: 718 (83.9%)
-INFO:dataset:  Class 1: 138 (16.1%)
-INFO:__main__:Train: 4245, Val: 910
-INFO:__main__:Test trajectory: 910, Test cn_ad: 856
-INFO:mri_vit_model:Created ViT3DClassifier with vit_base
-INFO:mri_vit_model:  Image size: 128x128x128
-INFO:mri_vit_model:  Patch size: 16
-INFO:mri_vit_model:  Num patches: 512
-INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
-INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
-INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
-INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
-INFO:mri_vit_model:Missing keys: 2
-INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
-/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/transformer.py:392: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
-  warnings.warn(
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING ON cn_ad_trajectory
-INFO:__main__:============================================================
-ViT backbone: 768-dim features
-FT-Transformer tabular encoder: 16 -> 64
-  Auxiliary losses: Enabled (MRI + Tabular classifiers)
-MultiModalFusion initialized:
-  MRI backbone: vit (768-dim)
-  Tabular features: 16 -> 64
-  Fusion method: cross_modal
-  Fusion hidden: 512
-Training:   0%|          | 0/100 [00:00<?, ?it/s]Training:   0%|          | 0/100 [03:21<?, ?it/s, train=59.5%, val=78.2%]Training:   1%|          | 1/100 [03:22<5:33:20, 202.02s/it, train=59.5%, val=78.2%]Training:   1%|          | 1/100 [06:47<5:33:20, 202.02s/it, train=80.9%, val=88.1%]Training:   2%|▏         | 2/100 [06:47<5:33:30, 204.19s/it, train=80.9%, val=88.1%]Training:   2%|▏         | 2/100 [09:52<5:33:30, 204.19s/it, train=87.2%, val=89.7%]Training:   3%|▎         | 3/100 [09:52<5:15:48, 195.35s/it, train=87.2%, val=89.7%]Training:   3%|▎         | 3/100 [12:58<5:15:48, 195.35s/it, train=87.7%, val=88.8%]Training:   4%|▍         | 4/100 [12:58<5:06:22, 191.48s/it, train=87.7%, val=88.8%]Training:   4%|▍         | 4/100 [16:02<5:06:22, 191.48s/it, train=87.9%, val=87.9%]Training:   5%|▌         | 5/100 [16:02<4:59:19, 189.05s/it, train=87.9%, val=87.9%]Training:   5%|▌         | 5/100 [19:07<4:59:19, 189.05s/it, train=88.2%, val=88.2%]Training:   6%|▌         | 6/100 [19:07<4:54:04, 187.70s/it, train=88.2%, val=88.2%]Training:   6%|▌         | 6/100 [22:13<4:54:04, 187.70s/it, train=88.5%, val=88.6%]Training:   7%|▋         | 7/100 [22:13<4:49:42, 186.91s/it, train=88.5%, val=88.6%]Training:   7%|▋         | 7/100 [25:17<4:49:42, 186.91s/it, train=88.9%, val=88.8%]Training:   8%|▊         | 8/100 [25:17<4:45:19, 186.08s/it, train=88.9%, val=88.8%]Training:   8%|▊         | 8/100 [28:23<4:45:19, 186.08s/it, train=88.7%, val=91.0%]Training:   9%|▉         | 9/100 [28:23<4:42:12, 186.07s/it, train=88.7%, val=91.0%]Training:   9%|▉         | 9/100 [31:28<4:42:12, 186.07s/it, train=89.7%, val=92.0%]Training:  10%|█         | 10/100 [31:29<4:38:51, 185.90s/it, train=89.7%, val=92.0%]Training:  10%|█         | 10/100 [34:32<4:38:51, 185.90s/it, train=89.6%, val=92.3%]Training:  11%|█         | 11/100 [34:32<4:34:33, 185.10s/it, train=89.6%, val=92.3%]Training:  11%|█         | 11/100 [37:37<4:34:33, 185.10s/it, train=90.5%, val=90.0%]Training:  12%|█▏        | 12/100 [37:37<4:31:42, 185.25s/it, train=90.5%, val=90.0%]Training:  12%|█▏        | 12/100 [40:43<4:31:42, 185.25s/it, train=90.9%, val=92.1%]Training:  13%|█▎        | 13/100 [40:43<4:28:37, 185.26s/it, train=90.9%, val=92.1%]Training:  13%|█▎        | 13/100 [43:46<4:28:37, 185.26s/it, train=91.3%, val=91.3%]Training:  14%|█▍        | 14/100 [43:46<4:24:44, 184.71s/it, train=91.3%, val=91.3%]Training:  14%|█▍        | 14/100 [46:51<4:24:44, 184.71s/it, train=90.7%, val=92.7%]Training:  15%|█▌        | 15/100 [46:51<4:21:51, 184.84s/it, train=90.7%, val=92.7%]Training:  15%|█▌        | 15/100 [49:57<4:21:51, 184.84s/it, train=91.4%, val=93.4%]Training:  16%|█▌        | 16/100 [49:57<4:19:01, 185.02s/it, train=91.4%, val=93.4%]Training:  16%|█▌        | 16/100 [53:02<4:19:01, 185.02s/it, train=91.8%, val=92.2%]Training:  17%|█▋        | 17/100 [53:02<4:16:05, 185.12s/it, train=91.8%, val=92.2%]Training:  17%|█▋        | 17/100 [56:07<4:16:05, 185.12s/it, train=92.4%, val=90.0%]Training:  18%|█▊        | 18/100 [56:07<4:13:02, 185.15s/it, train=92.4%, val=90.0%]Training:  18%|█▊        | 18/100 [59:11<4:13:02, 185.15s/it, train=92.7%, val=93.1%]Training:  19%|█▉        | 19/100 [59:11<4:09:21, 184.71s/it, train=92.7%, val=93.1%]Training:  19%|█▉        | 19/100 [1:02:17<4:09:21, 184.71s/it, train=93.1%, val=93.2%]Training:  20%|██        | 20/100 [1:02:17<4:06:41, 185.02s/it, train=93.1%, val=93.2%]Training:  20%|██        | 20/100 [1:05:22<4:06:41, 185.02s/it, train=93.2%, val=93.2%]Training:  21%|██        | 21/100 [1:05:22<4:03:39, 185.06s/it, train=93.2%, val=93.2%]Training:  21%|██        | 21/100 [1:08:27<4:03:39, 185.06s/it, train=93.0%, val=93.3%]Training:  22%|██▏       | 22/100 [1:08:27<4:00:37, 185.10s/it, train=93.0%, val=93.3%]Training:  22%|██▏       | 22/100 [1:11:30<4:00:37, 185.10s/it, train=93.8%, val=92.9%]Training:  23%|██▎       | 23/100 [1:11:30<3:56:46, 184.51s/it, train=93.8%, val=92.9%]Training:  23%|██▎       | 23/100 [1:14:33<3:56:46, 184.51s/it, train=93.7%, val=91.4%]Training:  24%|██▍       | 24/100 [1:14:33<3:53:12, 184.11s/it, train=93.7%, val=91.4%]Training:  24%|██▍       | 24/100 [1:17:37<3:53:12, 184.11s/it, train=93.4%, val=92.7%]Training:  25%|██▌       | 25/100 [1:17:37<3:50:05, 184.08s/it, train=93.4%, val=92.7%]Training:  25%|██▌       | 25/100 [1:20:43<3:50:05, 184.08s/it, train=93.7%, val=93.0%]Training:  26%|██▌       | 26/100 [1:20:43<3:47:25, 184.40s/it, train=93.7%, val=93.0%]Training:  26%|██▌       | 26/100 [1:23:46<3:47:25, 184.40s/it, train=93.7%, val=93.5%]Training:  27%|██▋       | 27/100 [1:23:46<3:43:57, 184.08s/it, train=93.7%, val=93.5%]Training:  27%|██▋       | 27/100 [1:26:48<3:43:57, 184.08s/it, train=94.1%, val=93.4%]Training:  28%|██▊       | 28/100 [1:26:48<3:40:20, 183.62s/it, train=94.1%, val=93.4%]Training:  28%|██▊       | 28/100 [1:29:52<3:40:20, 183.62s/it, train=94.4%, val=93.1%]Training:  29%|██▉       | 29/100 [1:29:52<3:37:20, 183.67s/it, train=94.4%, val=93.1%]Training:  29%|██▉       | 29/100 [1:32:57<3:37:20, 183.67s/it, train=94.4%, val=93.2%]Training:  30%|███       | 30/100 [1:32:57<3:34:36, 183.95s/it, train=94.4%, val=93.2%]Training:  30%|███       | 30/100 [1:36:03<3:34:36, 183.95s/it, train=94.5%, val=93.6%]Training:  31%|███       | 31/100 [1:36:03<3:32:18, 184.62s/it, train=94.5%, val=93.6%]Training:  31%|███       | 31/100 [1:39:12<3:32:18, 184.62s/it, train=95.1%, val=93.2%]Training:  32%|███▏      | 32/100 [1:39:12<3:30:40, 185.89s/it, train=95.1%, val=93.2%]Training:  32%|███▏      | 32/100 [1:42:17<3:30:40, 185.89s/it, train=95.3%, val=93.2%]Training:  33%|███▎      | 33/100 [1:42:17<3:27:19, 185.66s/it, train=95.3%, val=93.2%]Training:  33%|███▎      | 33/100 [1:45:21<3:27:19, 185.66s/it, train=95.7%, val=93.2%]Training:  34%|███▍      | 34/100 [1:45:21<3:23:45, 185.24s/it, train=95.7%, val=93.2%]Training:  34%|███▍      | 34/100 [1:48:26<3:23:45, 185.24s/it, train=95.7%, val=93.5%]Training:  35%|███▌      | 35/100 [1:48:26<3:20:31, 185.09s/it, train=95.7%, val=93.5%]Training:  35%|███▌      | 35/100 [1:51:32<3:20:31, 185.09s/it, train=95.4%, val=92.6%]Training:  36%|███▌      | 36/100 [1:51:32<3:17:34, 185.22s/it, train=95.4%, val=92.6%]Training:  36%|███▌      | 36/100 [1:54:37<3:17:34, 185.22s/it, train=95.6%, val=92.6%]Training:  37%|███▋      | 37/100 [1:54:37<3:14:31, 185.27s/it, train=95.6%, val=92.6%]Training:  37%|███▋      | 37/100 [1:57:42<3:14:31, 185.27s/it, train=95.7%, val=92.5%]Training:  38%|███▊      | 38/100 [1:57:42<3:11:30, 185.33s/it, train=95.7%, val=92.5%]Training:  38%|███▊      | 38/100 [2:00:46<3:11:30, 185.33s/it, train=96.1%, val=92.7%]Training:  39%|███▉      | 39/100 [2:00:46<3:07:50, 184.77s/it, train=96.1%, val=92.7%]Training:  39%|███▉      | 39/100 [2:03:51<3:07:50, 184.77s/it, train=96.2%, val=93.0%]Training:  40%|████      | 40/100 [2:03:51<3:04:52, 184.88s/it, train=96.2%, val=93.0%]Training:  40%|████      | 40/100 [2:06:56<3:04:52, 184.88s/it, train=97.0%, val=92.7%]Training:  41%|████      | 41/100 [2:06:56<3:01:42, 184.79s/it, train=97.0%, val=92.7%]Training:  41%|████      | 41/100 [2:10:01<3:01:42, 184.79s/it, train=96.7%, val=93.0%]Training:  42%|████▏     | 42/100 [2:10:01<2:58:51, 185.03s/it, train=96.7%, val=93.0%]Training:  42%|████▏     | 42/100 [2:13:07<2:58:51, 185.03s/it, train=96.7%, val=92.6%]Training:  43%|████▎     | 43/100 [2:13:07<2:55:55, 185.19s/it, train=96.7%, val=92.6%]Training:  43%|████▎     | 43/100 [2:16:12<2:55:55, 185.19s/it, train=97.1%, val=92.9%]Training:  44%|████▍     | 44/100 [2:16:12<2:52:54, 185.27s/it, train=97.1%, val=92.9%]Training:  44%|████▍     | 44/100 [2:19:15<2:52:54, 185.27s/it, train=97.4%, val=93.0%]Training:  45%|████▌     | 45/100 [2:19:15<2:49:13, 184.61s/it, train=97.4%, val=93.0%]Training:  45%|████▌     | 45/100 [2:22:19<2:49:13, 184.61s/it, train=97.5%, val=92.0%]INFO:__main__:Early stopping at epoch 45
-Training:  45%|████▌     | 45/100 [2:22:19<2:53:57, 189.77s/it, train=97.5%, val=92.0%]
-INFO:__main__:
-============================================================
-INFO:__main__:EVALUATION
-INFO:__main__:============================================================
-INFO:__main__:
---- cn_ad_trajectory (in-domain) ---
-INFO:__main__:Accuracy: 93.30%
-INFO:__main__:Balanced: 87.88%
-INFO:__main__:Sensitivity: 78.28%
-INFO:__main__:Specificity: 97.47%
-INFO:__main__:
-Subgroups:
-INFO:__main__:  AD: 97.1% (34 samples)
-INFO:__main__:  AD_trajectory: 72.0% (125 samples)
-INFO:__main__:  CN: 97.5% (712 samples)
-INFO:__main__:  MCI_to_AD: 82.1% (39 samples)
-INFO:__main__:
---- cn_ad (cross-task: stable AD only) ---
-INFO:__main__:Accuracy: 96.14%
-INFO:__main__:Balanced: 92.14%
-INFO:__main__:Sensitivity (AD): 86.23%
-INFO:__main__:Specificity (CN): 98.05%
-INFO:__main__:
-============================================================
-INFO:__main__:SUMMARY
-INFO:__main__:============================================================
-INFO:__main__:Test Set                  Acc        Balanced   Sens       Spec      
-INFO:__main__:------------------------------------------------------------
-INFO:__main__:cn_ad_trajectory          93.3%     87.9%     78.3%     97.5%
-INFO:__main__:cn_ad (stable AD)         96.1%     92.1%     86.2%     98.1%
-INFO:__main__:============================================================
-INFO:__main__:
-Results saved to cross_task_results

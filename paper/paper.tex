@@ -131,15 +131,18 @@ NACC & 4,132 & 3,581 & 551 & 68.1\% \\
 
 \subsection{Data Splitting Strategy}
 
-To prevent data leakage, we employed strict subject-level splitting:
+To prevent data leakage, we employed strict subject-level splitting with 5-fold stratified cross-validation:
 \begin{itemize}
     \item Each subject appears in exactly one split (train/val/test)
     \item Only the first visit per subject is used (no longitudinal leakage)
-    \item Splits are stratified by diagnosis and cohort
-    \item 5-fold cross-validation
+    \item All 6,065 subjects are pooled and split via stratified 5-fold CV
+    \item Each fold: 80\% train+val / 20\% test (rotating test sets)
+    \item Within each fold: train is split 90/10 into train/val
+    \item Final splits per fold: 72\% train / 8\% val / 20\% test (4,367 / 485 / 1,213 subjects)
+    \item Experiments repeated with 3 random seeds (42, 123, 456)
 \end{itemize}
 
-This approach follows recommendations from Wen et al.\ \cite{wen2020} and addresses methodological concerns raised by recent systematic reviews \cite{yagis2021}.
+This full cross-validation approach ensures every subject serves as a test sample exactly once per seed, providing robust performance estimates. The methodology follows recommendations from Wen et al.\ \cite{wen2020} and addresses concerns raised by recent systematic reviews \cite{yagis2021}.
 
 \subsection{MRI Preprocessing}
 
@@ -205,7 +208,7 @@ Models were trained for 100 epochs with early stopping (patience=20, min\_epochs
     \item Test-time augmentation (8 augmentations)
 \end{itemize}
 
-Experiments used 5-fold cross-validation to assess stability.
+Experiments used 5-fold cross-validation repeated with 3 random seeds (42, 123, 456) to assess stability, yielding 15 total training runs per model configuration.
 
 \section{Results}
 

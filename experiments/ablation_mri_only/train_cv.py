@@ -425,11 +425,21 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
     logger.info(f"Total samples: {len(all_df)}")
     logger.info(f"Label distribution:\n{all_df['label'].value_counts()}")
 
-    # Load CN_AD test set for cross-task evaluation if provided
-    cn_ad_test_df = None
-    if cn_ad_test_csv and Path(cn_ad_test_csv).exists():
-        cn_ad_test_df = pd.read_csv(cn_ad_test_csv)
-        logger.info(f"Loaded CN_AD test set: {len(cn_ad_test_df)} samples")
+    # Load CN_AD data to get stable subject_ids for filtering test fold
+    stable_subject_ids = None
+    if cn_ad_test_csv:
+        cn_ad_dir = Path(cn_ad_test_csv)
+        if cn_ad_dir.is_dir():
+            # Load all cn_ad CSVs to get stable subject_ids
+            cn_ad_parts = []
+            for csv_name in ['train.csv', 'val.csv', 'test.csv']:
+                csv_path = cn_ad_dir / csv_name
+                if csv_path.exists():
+                    cn_ad_parts.append(pd.read_csv(csv_path))
+            if cn_ad_parts:
+                cn_ad_full = pd.concat(cn_ad_parts, ignore_index=True)
+                stable_subject_ids = set(cn_ad_full['subject_id'].values)
+                logger.info(f"Loaded {len(stable_subject_ids)} stable subject_ids for CN_AD filtering")
 
     all_results = []
 
@@ -497,27 +507,31 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
                        f"Sens={results['test_sensitivity']:.1f}%, Spec={results['test_specificity']:.1f}%, "
                        f"AUC={results['test_auc']:.3f}")
 
-            # Cross-task evaluation on CN_AD test set
-            if cn_ad_test_df is not None:
-                cn_ad_test_fold_csv = fold_dir / "cn_ad_test.csv"
-                cn_ad_test_df.to_csv(cn_ad_test_fold_csv, index=False)
-                cn_ad_test_dataset = MRIDataset(str(cn_ad_test_fold_csv),
-                                                target_size=config['model'].get('image_size', 128))
-                cn_ad_loader = DataLoader(cn_ad_test_dataset, batch_size=config['training']['batch_size'],
-                                          shuffle=False, num_workers=config['hardware']['num_workers'])
-                criterion = nn.CrossEntropyLoss()
-                cn_ad_metrics = trainer.evaluate(results['model'], cn_ad_loader, criterion)
+            # Cross-task evaluation: filter test fold to stable subjects only
+            if stable_subject_ids is not None:
+                # Filter test fold to only stable subjects (removes MCI converters)
+                cn_ad_test_fold_df = test_fold_df[test_fold_df['subject_id'].isin(stable_subject_ids)]
 
-                results['cn_ad_accuracy'] = cn_ad_metrics['accuracy']
-                results['cn_ad_balanced_accuracy'] = cn_ad_metrics['balanced_accuracy']
-                results['cn_ad_sensitivity'] = cn_ad_metrics['sensitivity']
-                results['cn_ad_specificity'] = cn_ad_metrics['specificity']
-                results['cn_ad_auc'] = cn_ad_metrics['auc']
+                if len(cn_ad_test_fold_df) > 0:
+                    cn_ad_test_fold_csv = fold_dir / "cn_ad_test.csv"
+                    cn_ad_test_fold_df.to_csv(cn_ad_test_fold_csv, index=False)
+                    cn_ad_test_dataset = MRIDataset(str(cn_ad_test_fold_csv),
+                                                    target_size=config['model'].get('image_size', 128))
+                    cn_ad_loader = DataLoader(cn_ad_test_dataset, batch_size=config['training']['batch_size'],
+                                              shuffle=False, num_workers=config['hardware']['num_workers'])
+                    criterion = nn.CrossEntropyLoss()
+                    cn_ad_metrics = trainer.evaluate(results['model'], cn_ad_loader, criterion)
 
-                logger.info(f"       CN_AD: Acc={cn_ad_metrics['accuracy']:.1f}%, "
-                           f"BalAcc={cn_ad_metrics['balanced_accuracy']:.1f}%, "
-                           f"Sens={cn_ad_metrics['sensitivity']:.1f}%, Spec={cn_ad_metrics['specificity']:.1f}%, "
-                           f"AUC={cn_ad_metrics['auc']:.3f}")
+                    results['cn_ad_accuracy'] = cn_ad_metrics['accuracy']
+                    results['cn_ad_balanced_accuracy'] = cn_ad_metrics['balanced_accuracy']
+                    results['cn_ad_sensitivity'] = cn_ad_metrics['sensitivity']
+                    results['cn_ad_specificity'] = cn_ad_metrics['specificity']
+                    results['cn_ad_auc'] = cn_ad_metrics['auc']
+
+                    logger.info(f"       CN_AD ({len(cn_ad_test_fold_df)} stable): Acc={cn_ad_metrics['accuracy']:.1f}%, "
+                               f"BalAcc={cn_ad_metrics['balanced_accuracy']:.1f}%, "
+                               f"Sens={cn_ad_metrics['sensitivity']:.1f}%, Spec={cn_ad_metrics['specificity']:.1f}%, "
+                               f"AUC={cn_ad_metrics['auc']:.3f}")
 
             # Log fold test metrics to WandB
             if use_wandb:
@@ -528,7 +542,7 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
                     f"seed_{seed}/fold_{fold}/test_specificity": results['test_specificity'],
                     f"seed_{seed}/fold_{fold}/test_auc": results['test_auc'],
                 })
-                if cn_ad_test_df is not None:
+                if stable_subject_ids is not None:
                     wandb.log({
                         f"seed_{seed}/fold_{fold}/cn_ad_acc": results['cn_ad_accuracy'],
                         f"seed_{seed}/fold_{fold}/cn_ad_balanced_acc": results['cn_ad_balanced_accuracy'],
@@ -571,7 +585,7 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
             'fold_results': seed_results
         }
 
-        if cn_ad_test_df is not None:
+        if stable_subject_ids is not None:
             cn_ad_accs = [r['cn_ad_accuracy'] for r in seed_results]
             cn_ad_bal_accs = [r['cn_ad_balanced_accuracy'] for r in seed_results]
             cn_ad_sens = [r['cn_ad_sensitivity'] for r in seed_results]
@@ -619,7 +633,7 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
     logger.info(f"  Specificity:  {np.mean(all_traj_spec):.1f}±{np.std(all_traj_spec):.1f}%")
     logger.info(f"  AUC:          {np.mean(all_traj_aucs):.3f}±{np.std(all_traj_aucs):.3f}")
 
-    if cn_ad_test_df is not None:
+    if stable_subject_ids is not None:
         all_cnad_accs = [r['cn_ad_accuracy_mean'] for r in all_results]
         all_cnad_bal_accs = [r['cn_ad_balanced_accuracy_mean'] for r in all_results]
         all_cnad_sens = [r['cn_ad_sensitivity_mean'] for r in all_results]
@@ -658,7 +672,7 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
             'traj_auc_std': float(np.std(all_traj_aucs)),
         }
 
-        if cn_ad_test_df is not None:
+        if stable_subject_ids is not None:
             summary.update({
                 'cn_ad_accuracy': float(np.mean(all_cnad_accs)),
                 'cn_ad_accuracy_std': float(np.std(all_cnad_accs)),
@@ -693,7 +707,7 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
             'traj_auc_mean': float(np.mean(all_traj_aucs)),
             'traj_auc_std': float(np.std(all_traj_aucs)),
         })
-        if cn_ad_test_df is not None:
+        if stable_subject_ids is not None:
             wandb.summary.update({
                 'cn_ad_accuracy_mean': float(np.mean(all_cnad_accs)),
                 'cn_ad_accuracy_std': float(np.std(all_cnad_accs)),
@@ -719,8 +733,8 @@ def main():
     parser.add_argument('--seeds', type=int, nargs='+', default=[42, 123, 456],
                         help='Random seeds')
     parser.add_argument('--output-dir', type=str, default='cv_results', help='Output directory')
-    parser.add_argument('--cn-ad-test', type=str, default='../multimodal_fusion/data/combined_cn_ad/test.csv',
-                        help='Path to CN_AD test CSV for cross-task evaluation')
+    parser.add_argument('--cn-ad-test', type=str, default='../multimodal_fusion/data/combined_cn_ad',
+                        help='Path to CN_AD data directory for cross-task evaluation (filters test fold to stable subjects)')
     parser.add_argument('--no-wandb', action='store_true', help='Disable WandB logging')
     args = parser.parse_args()
 

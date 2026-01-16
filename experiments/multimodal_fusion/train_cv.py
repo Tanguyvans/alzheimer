@@ -418,11 +418,21 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
         logger.warning(f"Could not load trajectory file: {e}. Subgroup analysis disabled.")
         all_df['trajectory'] = all_df.get('DX', 'Unknown')
 
-    # Load CN_AD test set for cross-task evaluation if provided
-    cn_ad_test_df = None
-    if cn_ad_test_csv and Path(cn_ad_test_csv).exists():
-        cn_ad_test_df = pd.read_csv(cn_ad_test_csv)
-        logger.info(f"Loaded CN_AD test set: {len(cn_ad_test_df)} samples for cross-task evaluation")
+    # Load CN_AD data to get stable subject_ids for filtering test fold
+    stable_subject_ids = None
+    if cn_ad_test_csv:
+        cn_ad_dir = Path(cn_ad_test_csv)
+        if cn_ad_dir.is_dir():
+            # Load all cn_ad CSVs to get stable subject_ids
+            cn_ad_parts = []
+            for csv_name in ['train.csv', 'val.csv', 'test.csv']:
+                csv_path = cn_ad_dir / csv_name
+                if csv_path.exists():
+                    cn_ad_parts.append(pd.read_csv(csv_path))
+            if cn_ad_parts:
+                cn_ad_full = pd.concat(cn_ad_parts, ignore_index=True)
+                stable_subject_ids = set(cn_ad_full['subject_id'].values)
+                logger.info(f"Loaded {len(stable_subject_ids)} stable subject_ids for CN_AD filtering")
 
     # Get labels for stratification
     all_labels = all_df['label'].values
@@ -497,47 +507,51 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
             for traj, metrics in sorted(subgroup_accs.items()):
                 logger.info(f"    {traj}: {metrics['accuracy']:.1f}% ({metrics['n_samples']} samples)")
 
-            # Cross-task evaluation on CN_AD test set
+            # Cross-task evaluation: filter test fold to stable subjects only
             cn_ad_metrics = None
-            if cn_ad_test_df is not None:
-                # Get scaler from train dataset
-                scaler = train_loader.dataset.get_scaler() if hasattr(train_loader.dataset, 'get_scaler') else None
+            if stable_subject_ids is not None:
+                # Filter test fold to only stable subjects (removes MCI converters)
+                cn_ad_test_fold_df = test_df_fold[test_df_fold['subject_id'].isin(stable_subject_ids)]
 
-                # Create CN_AD test dataset
-                cn_ad_csv = temp_dir / 'cn_ad_test.csv'
-                cn_ad_test_df.to_csv(cn_ad_csv, index=False)
+                if len(cn_ad_test_fold_df) > 0:
+                    # Get scaler from train dataset
+                    scaler = train_loader.dataset.get_scaler() if hasattr(train_loader.dataset, 'get_scaler') else None
 
-                tabular_features = config['data']['tabular_features']
-                if 'backbone' in config['model']:
-                    image_size = config['model']['backbone'].get('image_size', 128)
-                else:
-                    image_size = config['model']['vit']['image_size']
-                preproc = config.get('preprocessing', {})
+                    # Create CN_AD test dataset from filtered test fold
+                    cn_ad_csv = temp_dir / 'cn_ad_test.csv'
+                    cn_ad_test_fold_df.to_csv(cn_ad_csv, index=False)
 
-                cn_ad_dataset = MultiModalDataset(
-                    str(cn_ad_csv),
-                    tabular_features=tabular_features,
-                    target_shape=(image_size, image_size, image_size),
-                    augment=False,
-                    normalize_tabular=True,
-                    scaler=scaler,
-                    use_paper_preprocessing=preproc.get('use_paper_preprocessing', True),
-                    target_spacing=preproc.get('target_spacing', 1.75)
-                )
+                    tabular_features = config['data']['tabular_features']
+                    if 'backbone' in config['model']:
+                        image_size = config['model']['backbone'].get('image_size', 128)
+                    else:
+                        image_size = config['model']['vit']['image_size']
+                    preproc = config.get('preprocessing', {})
 
-                cn_ad_loader = DataLoader(
-                    cn_ad_dataset,
-                    batch_size=config['training']['batch_size'],
-                    shuffle=False,
-                    num_workers=config['hardware']['num_workers'],
-                    pin_memory=True
-                )
+                    cn_ad_dataset = MultiModalDataset(
+                        str(cn_ad_csv),
+                        tabular_features=tabular_features,
+                        target_shape=(image_size, image_size, image_size),
+                        augment=False,
+                        normalize_tabular=True,
+                        scaler=scaler,
+                        use_paper_preprocessing=preproc.get('use_paper_preprocessing', True),
+                        target_spacing=preproc.get('target_spacing', 1.75)
+                    )
 
-                cn_ad_metrics = trainer.validate(model, cn_ad_loader, criterion)
-                logger.info(f"  CN_AD: Acc={cn_ad_metrics['accuracy']:.1f}%, "
-                           f"BalAcc={cn_ad_metrics['balanced_accuracy']:.1f}%, "
-                           f"Sens={cn_ad_metrics['sensitivity']:.1f}%, Spec={cn_ad_metrics['specificity']:.1f}%, "
-                           f"AUC={cn_ad_metrics['auc']:.3f}")
+                    cn_ad_loader = DataLoader(
+                        cn_ad_dataset,
+                        batch_size=config['training']['batch_size'],
+                        shuffle=False,
+                        num_workers=config['hardware']['num_workers'],
+                        pin_memory=True
+                    )
+
+                    cn_ad_metrics = trainer.validate(model, cn_ad_loader, criterion)
+                    logger.info(f"  CN_AD ({len(cn_ad_test_fold_df)} stable): Acc={cn_ad_metrics['accuracy']:.1f}%, "
+                               f"BalAcc={cn_ad_metrics['balanced_accuracy']:.1f}%, "
+                               f"Sens={cn_ad_metrics['sensitivity']:.1f}%, Spec={cn_ad_metrics['specificity']:.1f}%, "
+                               f"AUC={cn_ad_metrics['auc']:.3f}")
 
             fold_result = {
                 'seed': seed,
@@ -580,29 +594,45 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
                         f'test/seed_{seed}_fold_{fold}_cn_ad_auc': cn_ad_metrics['auc']
                     })
 
-            logger.info(f"Fold {fold+1} - Val: {best_val_acc:.2f}%, Traj: {test_metrics['accuracy']:.2f}%, "
-                       f"Balanced: {test_metrics['balanced_accuracy']:.2f}%, AUC: {test_metrics['auc']:.3f}")
+            logger.info(f"  Val: {best_val_acc:.1f}% | "
+                       f"Traj: Acc={test_metrics['accuracy']:.1f}%, BalAcc={test_metrics['balanced_accuracy']:.1f}%, "
+                       f"Sens={test_metrics['sensitivity']:.1f}%, Spec={test_metrics['specificity']:.1f}%, "
+                       f"AUC={test_metrics['auc']:.3f}")
 
         # Seed summary
-        seed_accs = [r['traj_accuracy'] for r in fold_results]
-        logger.info(f"\nSeed {seed} Traj Summary: {np.mean(seed_accs):.2f}% +/- {np.std(seed_accs):.2f}%")
-        if cn_ad_test_df is not None:
+        test_accs = [r['traj_accuracy'] for r in fold_results]
+        balanced_accs = [r['traj_balanced_accuracy'] for r in fold_results]
+        sensitivities = [r['traj_sensitivity'] for r in fold_results]
+        specificities = [r['traj_specificity'] for r in fold_results]
+        aucs = [r['traj_auc'] for r in fold_results]
+
+        logger.info(f"\nSeed {seed} Trajectory Summary:")
+        logger.info(f"  Acc: {np.mean(test_accs):.1f}±{np.std(test_accs):.1f}%")
+        logger.info(f"  BalAcc: {np.mean(balanced_accs):.1f}±{np.std(balanced_accs):.1f}%")
+        logger.info(f"  Sens: {np.mean(sensitivities):.1f}±{np.std(sensitivities):.1f}%")
+        logger.info(f"  Spec: {np.mean(specificities):.1f}±{np.std(specificities):.1f}%")
+        logger.info(f"  AUC: {np.mean(aucs):.3f}±{np.std(aucs):.3f}")
+
+        if stable_subject_ids is not None:
             cn_ad_accs = [r['cn_ad_accuracy'] for r in fold_results]
-            logger.info(f"Seed {seed} CN_AD Summary: {np.mean(cn_ad_accs):.2f}% +/- {np.std(cn_ad_accs):.2f}%")
+            cn_ad_bal_accs = [r['cn_ad_balanced_accuracy'] for r in fold_results]
+            cn_ad_sens = [r['cn_ad_sensitivity'] for r in fold_results]
+            cn_ad_spec = [r['cn_ad_specificity'] for r in fold_results]
+            cn_ad_aucs = [r['cn_ad_auc'] for r in fold_results]
+
+            logger.info(f"Seed {seed} CN_AD Summary:")
+            logger.info(f"  Acc: {np.mean(cn_ad_accs):.1f}±{np.std(cn_ad_accs):.1f}%")
+            logger.info(f"  BalAcc: {np.mean(cn_ad_bal_accs):.1f}±{np.std(cn_ad_bal_accs):.1f}%")
+            logger.info(f"  Sens: {np.mean(cn_ad_sens):.1f}±{np.std(cn_ad_sens):.1f}%")
+            logger.info(f"  Spec: {np.mean(cn_ad_spec):.1f}±{np.std(cn_ad_spec):.1f}%")
+            logger.info(f"  AUC: {np.mean(cn_ad_aucs):.3f}±{np.std(cn_ad_aucs):.3f}")
 
     # Final summary
-    logger.info("\n" + "="*60)
-    logger.info("CROSS-VALIDATION RESULTS")
-    logger.info("="*60)
+    logger.info(f"\n{'='*60}")
+    logger.info("FINAL CROSS-VALIDATION RESULTS (Multi-Modal)")
+    logger.info(f"{'='*60}")
 
     results_df = pd.DataFrame(all_results)
-
-    # Per-seed summary
-    for seed in seeds:
-        seed_results = results_df[results_df['seed'] == seed]
-        mean_acc = seed_results['traj_accuracy'].mean()
-        std_acc = seed_results['traj_accuracy'].std()
-        logger.info(f"Seed {seed}: {mean_acc:.2f}% +/- {std_acc:.2f}%")
 
     # Overall trajectory summary
     traj_acc_mean = results_df['traj_accuracy'].mean()
@@ -616,13 +646,12 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
     traj_auc_mean = results_df['traj_auc'].mean()
     traj_auc_std = results_df['traj_auc'].std()
 
-    logger.info(f"\n{'='*40}")
-    logger.info("TRAJECTORY (train+test):")
-    logger.info(f"  Accuracy:     {traj_acc_mean:.2f}% +/- {traj_acc_std:.2f}%")
-    logger.info(f"  Balanced:     {traj_bal_mean:.2f}% +/- {traj_bal_std:.2f}%")
-    logger.info(f"  Sensitivity:  {traj_sens_mean:.2f}% +/- {traj_sens_std:.2f}%")
-    logger.info(f"  Specificity:  {traj_spec_mean:.2f}% +/- {traj_spec_std:.2f}%")
-    logger.info(f"  AUC:          {traj_auc_mean:.3f} +/- {traj_auc_std:.3f}")
+    logger.info(f"\nCN_AD_TRAJECTORY (train+test):")
+    logger.info(f"  Accuracy:     {traj_acc_mean:.1f}±{traj_acc_std:.1f}%")
+    logger.info(f"  Balanced Acc: {traj_bal_mean:.1f}±{traj_bal_std:.1f}%")
+    logger.info(f"  Sensitivity:  {traj_sens_mean:.1f}±{traj_sens_std:.1f}%")
+    logger.info(f"  Specificity:  {traj_spec_mean:.1f}±{traj_spec_std:.1f}%")
+    logger.info(f"  AUC:          {traj_auc_mean:.3f}±{traj_auc_std:.3f}")
 
     # CN_AD summary if available
     cn_ad_acc_mean, cn_ad_acc_std = None, None
@@ -643,14 +672,12 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
         cn_ad_auc_mean = results_df['cn_ad_auc'].mean()
         cn_ad_auc_std = results_df['cn_ad_auc'].std()
 
-        logger.info("\nCN_AD (stable AD, cross-task):")
-        logger.info(f"  Accuracy:     {cn_ad_acc_mean:.2f}% +/- {cn_ad_acc_std:.2f}%")
-        logger.info(f"  Balanced:     {cn_ad_bal_mean:.2f}% +/- {cn_ad_bal_std:.2f}%")
-        logger.info(f"  Sensitivity:  {cn_ad_sens_mean:.2f}% +/- {cn_ad_sens_std:.2f}%")
-        logger.info(f"  Specificity:  {cn_ad_spec_mean:.2f}% +/- {cn_ad_spec_std:.2f}%")
-        logger.info(f"  AUC:          {cn_ad_auc_mean:.3f} +/- {cn_ad_auc_std:.3f}")
-
-    logger.info(f"{'='*40}")
+        logger.info(f"\nCN_AD (stable AD, cross-task):")
+        logger.info(f"  Accuracy:     {cn_ad_acc_mean:.1f}±{cn_ad_acc_std:.1f}%")
+        logger.info(f"  Balanced Acc: {cn_ad_bal_mean:.1f}±{cn_ad_bal_std:.1f}%")
+        logger.info(f"  Sensitivity:  {cn_ad_sens_mean:.1f}±{cn_ad_sens_std:.1f}%")
+        logger.info(f"  Specificity:  {cn_ad_spec_mean:.1f}±{cn_ad_spec_std:.1f}%")
+        logger.info(f"  AUC:          {cn_ad_auc_mean:.3f}±{cn_ad_auc_std:.3f}")
 
     # Log final summary to WandB
     if use_wandb:
@@ -760,8 +787,8 @@ def main():
     parser.add_argument('--n-folds', type=int, default=5, help='Number of CV folds')
     parser.add_argument('--seeds', type=int, nargs='+', default=[42, 123, 456], help='Random seeds')
     parser.add_argument('--output-dir', type=str, default='cv_results', help='Output directory')
-    parser.add_argument('--cn-ad-test', type=str, default='data/combined_cn_ad/test.csv',
-                        help='Path to CN_AD test CSV for cross-task evaluation')
+    parser.add_argument('--cn-ad-test', type=str, default='data/combined_cn_ad',
+                        help='Path to CN_AD data directory for cross-task evaluation (filters test fold to stable subjects)')
     parser.add_argument('--no-wandb', action='store_true', help='Disable WandB logging')
     args = parser.parse_args()
 

@@ -1,321 +1,0 @@
-nohup: les entrées sont ignorées
-[0;93m2026-01-12 13:17:51.738498946 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"[m
-INFO:__main__:Loading data...
-INFO:__main__:Total samples: 5706
-INFO:__main__:Label distribution:
-label
-0    4782
-1     924
-Name: count, dtype: int64
-INFO:__main__:Trajectory distribution:
-trajectory
-CN    4782
-AD     924
-Name: count, dtype: int64
-INFO:__main__:
-============================================================
-INFO:__main__:SEED: 42
-INFO:__main__:============================================================
-INFO:__main__:
---- Fold 1/5 ---
-INFO:__main__:Train: 4108, Val: 456, Test: 1142
-INFO:dataset:Filled 1 missing values in 'AGE' with 69.00
-INFO:dataset:Filled 9 missing values in 'PTEDUCAT' with 16.00
-INFO:dataset:Filled 454 missing values in 'CATANIMSC' with 21.00
-INFO:dataset:Filled 459 missing values in 'TRAASCOR' with 30.00
-INFO:dataset:Filled 495 missing values in 'TRABSCOR' with 75.00
-INFO:dataset:Filled 773 missing values in 'DSPANFOR' with -4.00
-INFO:dataset:Filled 777 missing values in 'DSPANBAC' with -4.00
-INFO:dataset:Filled 775 missing values in 'BNTTOTAL' with -4.00
-INFO:dataset:Filled 138 missing values in 'VSWEIGHT' with 166.00
-INFO:dataset:Filled 1 missing values in 'BMI' with 28.02
-INFO:dataset:Filled 224 missing values in 'MH14ALCH' with 0.00
-INFO:dataset:Filled 222 missing values in 'MH16SMOK' with 0.00
-INFO:dataset:Filled 222 missing values in 'MH4CARD' with 0.00
-INFO:dataset:Filled 222 missing values in 'MH2NEURL' with -4.00
-INFO:dataset:Loaded 4108 samples
-INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
-INFO:dataset:  Class 0: 3426 (83.4%)
-INFO:dataset:  Class 1: 682 (16.6%)
-INFO:dataset:Filled 1 missing values in 'AGE' with 69.00
-INFO:dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
-INFO:dataset:Filled 48 missing values in 'CATANIMSC' with 21.00
-INFO:dataset:Filled 49 missing values in 'TRAASCOR' with 30.00
-INFO:dataset:Filled 57 missing values in 'TRABSCOR' with 75.00
-INFO:dataset:Filled 85 missing values in 'DSPANFOR' with -4.00
-INFO:dataset:Filled 85 missing values in 'DSPANBAC' with -4.00
-INFO:dataset:Filled 85 missing values in 'BNTTOTAL' with -4.00
-INFO:dataset:Filled 16 missing values in 'VSWEIGHT' with 169.00
-INFO:dataset:Filled 20 missing values in 'MH14ALCH' with 0.00
-INFO:dataset:Filled 20 missing values in 'MH16SMOK' with 0.00
-INFO:dataset:Filled 20 missing values in 'MH4CARD' with 0.00
-INFO:dataset:Filled 20 missing values in 'MH2NEURL' with -4.00
-INFO:dataset:Loaded 456 samples
-INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
-INFO:dataset:  Class 0: 399 (87.5%)
-INFO:dataset:  Class 1: 57 (12.5%)
-INFO:dataset:Filled 2 missing values in 'AGE' with 69.00
-INFO:dataset:Filled 4 missing values in 'PTEDUCAT' with 16.00
-INFO:dataset:Filled 114 missing values in 'CATANIMSC' with 20.00
-INFO:dataset:Filled 117 missing values in 'TRAASCOR' with 31.00
-INFO:dataset:Filled 133 missing values in 'TRABSCOR' with 78.00
-INFO:dataset:Filled 216 missing values in 'DSPANFOR' with -4.00
-INFO:dataset:Filled 216 missing values in 'DSPANBAC' with -4.00
-INFO:dataset:Filled 217 missing values in 'BNTTOTAL' with -4.00
-INFO:dataset:Filled 46 missing values in 'VSWEIGHT' with 169.60
-INFO:dataset:Filled 2 missing values in 'BMI' with 28.50
-INFO:dataset:Filled 68 missing values in 'MH14ALCH' with 0.00
-INFO:dataset:Filled 68 missing values in 'MH16SMOK' with 0.00
-INFO:dataset:Filled 68 missing values in 'MH4CARD' with 0.00
-INFO:dataset:Filled 68 missing values in 'MH2NEURL' with -4.00
-INFO:dataset:Loaded 1142 samples
-INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
-INFO:dataset:  Class 0: 957 (83.8%)
-INFO:dataset:  Class 1: 185 (16.2%)
-INFO:mri_vit_model:Created ViT3DClassifier with vit_base
-INFO:mri_vit_model:  Image size: 128x128x128
-INFO:mri_vit_model:  Patch size: 16
-INFO:mri_vit_model:  Num patches: 512
-INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
-INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
-INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
-INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
-INFO:mri_vit_model:Missing keys: 2
-INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
-ViT backbone: 768-dim features
-MLP tabular encoder: 16 -> 32
-MultiModalFusion initialized:
-  MRI backbone: vit (768-dim)
-  Tabular features: 16 -> 32
-  Fusion method: gated
-  Fusion hidden: 512
-Fold 1 Seed 42:   0%|          | 0/100 [00:00<?, ?it/s]Fold 1 Seed 42:   0%|          | 0/100 [03:05<?, ?it/s, train_acc=80.3%, val_acc=87.5%]Fold 1 Seed 42:   1%|          | 1/100 [03:05<5:05:44, 185.30s/it, train_acc=80.3%, val_acc=87.5%]Fold 1 Seed 42:   1%|          | 1/100 [06:12<5:05:44, 185.30s/it, train_acc=83.4%, val_acc=87.5%]Fold 1 Seed 42:   2%|▏         | 2/100 [06:12<5:04:48, 186.62s/it, train_acc=83.4%, val_acc=87.5%]Fold 1 Seed 42:   2%|▏         | 2/100 [09:20<5:04:48, 186.62s/it, train_acc=83.4%, val_acc=87.5%]Fold 1 Seed 42:   3%|▎         | 3/100 [09:20<5:02:34, 187.16s/it, train_acc=83.4%, val_acc=87.5%]Fold 1 Seed 42:   3%|▎         | 3/100 [12:29<5:02:34, 187.16s/it, train_acc=83.9%, val_acc=70.4%]Fold 1 Seed 42:   4%|▍         | 4/100 [12:29<5:00:43, 187.95s/it, train_acc=83.9%, val_acc=70.4%]Fold 1 Seed 42:   4%|▍         | 4/100 [15:36<5:00:43, 187.95s/it, train_acc=84.9%, val_acc=92.3%]Fold 1 Seed 42:   5%|▌         | 5/100 [15:36<4:56:56, 187.54s/it, train_acc=84.9%, val_acc=92.3%]Fold 1 Seed 42:   5%|▌         | 5/100 [18:21<4:56:56, 187.54s/it, train_acc=85.3%, val_acc=92.3%]Fold 1 Seed 42:   6%|▌         | 6/100 [18:21<4:41:44, 179.83s/it, train_acc=85.3%, val_acc=92.3%]Fold 1 Seed 42:   6%|▌         | 6/100 [21:03<4:41:44, 179.83s/it, train_acc=88.1%, val_acc=92.8%]Fold 1 Seed 42:   7%|▋         | 7/100 [21:03<4:29:52, 174.11s/it, train_acc=88.1%, val_acc=92.8%]Fold 1 Seed 42:   7%|▋         | 7/100 [23:48<4:29:52, 174.11s/it, train_acc=88.0%, val_acc=93.4%]Fold 1 Seed 42:   8%|▊         | 8/100 [23:48<4:22:18, 171.07s/it, train_acc=88.0%, val_acc=93.4%]Fold 1 Seed 42:   8%|▊         | 8/100 [26:30<4:22:18, 171.07s/it, train_acc=88.3%, val_acc=86.6%]Fold 1 Seed 42:   9%|▉         | 9/100 [26:30<4:15:00, 168.14s/it, train_acc=88.3%, val_acc=86.6%]Fold 1 Seed 42:   9%|▉         | 9/100 [29:12<4:15:00, 168.14s/it, train_acc=89.0%, val_acc=93.2%]Fold 1 Seed 42:  10%|█         | 10/100 [29:12<4:09:22, 166.25s/it, train_acc=89.0%, val_acc=93.2%]Fold 1 Seed 42:  10%|█         | 10/100 [31:55<4:09:22, 166.25s/it, train_acc=90.1%, val_acc=93.2%]Fold 1 Seed 42:  11%|█         | 11/100 [31:55<4:05:15, 165.34s/it, train_acc=90.1%, val_acc=93.2%]Fold 1 Seed 42:  11%|█         | 11/100 [34:39<4:05:15, 165.34s/it, train_acc=90.8%, val_acc=91.4%]Fold 1 Seed 42:  12%|█▏        | 12/100 [34:39<4:02:04, 165.05s/it, train_acc=90.8%, val_acc=91.4%]Fold 1 Seed 42:  12%|█▏        | 12/100 [37:21<4:02:04, 165.05s/it, train_acc=90.8%, val_acc=93.9%]Fold 1 Seed 42:  13%|█▎        | 13/100 [37:21<3:57:55, 164.09s/it, train_acc=90.8%, val_acc=93.9%]Fold 1 Seed 42:  13%|█▎        | 13/100 [40:06<3:57:55, 164.09s/it, train_acc=91.8%, val_acc=90.4%]Fold 1 Seed 42:  14%|█▍        | 14/100 [40:06<3:55:19, 164.17s/it, train_acc=91.8%, val_acc=90.4%]Fold 1 Seed 42:  14%|█▍        | 14/100 [42:49<3:55:19, 164.17s/it, train_acc=91.6%, val_acc=94.3%]Fold 1 Seed 42:  15%|█▌        | 15/100 [42:49<3:52:26, 164.08s/it, train_acc=91.6%, val_acc=94.3%]Fold 1 Seed 42:  15%|█▌        | 15/100 [45:36<3:52:26, 164.08s/it, train_acc=91.7%, val_acc=94.5%]Fold 1 Seed 42:  16%|█▌        | 16/100 [45:37<3:51:00, 165.00s/it, train_acc=91.7%, val_acc=94.5%]Fold 1 Seed 42:  16%|█▌        | 16/100 [48:24<3:51:00, 165.00s/it, train_acc=92.8%, val_acc=95.0%]Fold 1 Seed 42:  17%|█▋        | 17/100 [48:24<3:49:19, 165.77s/it, train_acc=92.8%, val_acc=95.0%]Fold 1 Seed 42:  17%|█▋        | 17/100 [51:08<3:49:19, 165.77s/it, train_acc=92.7%, val_acc=95.2%]Fold 1 Seed 42:  18%|█▊        | 18/100 [51:08<3:45:55, 165.31s/it, train_acc=92.7%, val_acc=95.2%]Fold 1 Seed 42:  18%|█▊        | 18/100 [53:58<3:45:55, 165.31s/it, train_acc=93.3%, val_acc=94.5%]Fold 1 Seed 42:  19%|█▉        | 19/100 [53:58<3:44:58, 166.65s/it, train_acc=93.3%, val_acc=94.5%]Fold 1 Seed 42:  19%|█▉        | 19/100 [56:47<3:44:58, 166.65s/it, train_acc=93.0%, val_acc=94.1%]Fold 1 Seed 42:  20%|██        | 20/100 [56:47<3:43:15, 167.45s/it, train_acc=93.0%, val_acc=94.1%]Fold 1 Seed 42:  20%|██        | 20/100 [59:38<3:43:15, 167.45s/it, train_acc=93.5%, val_acc=95.0%]Fold 1 Seed 42:  21%|██        | 21/100 [59:38<3:41:44, 168.41s/it, train_acc=93.5%, val_acc=95.0%]Fold 1 Seed 42:  21%|██        | 21/100 [1:02:27<3:41:44, 168.41s/it, train_acc=93.9%, val_acc=93.6%]Fold 1 Seed 42:  22%|██▏       | 22/100 [1:02:27<3:39:16, 168.67s/it, train_acc=93.9%, val_acc=93.6%]Fold 1 Seed 42:  22%|██▏       | 22/100 [1:05:16<3:39:16, 168.67s/it, train_acc=93.9%, val_acc=92.3%]Fold 1 Seed 42:  23%|██▎       | 23/100 [1:05:16<3:36:19, 168.57s/it, train_acc=93.9%, val_acc=92.3%]Fold 1 Seed 42:  23%|██▎       | 23/100 [1:08:04<3:36:19, 168.57s/it, train_acc=94.5%, val_acc=93.0%]Fold 1 Seed 42:  24%|██▍       | 24/100 [1:08:04<3:33:15, 168.36s/it, train_acc=94.5%, val_acc=93.0%]Fold 1 Seed 42:  24%|██▍       | 24/100 [1:10:53<3:33:15, 168.36s/it, train_acc=94.7%, val_acc=94.7%]Fold 1 Seed 42:  25%|██▌       | 25/100 [1:10:53<3:30:56, 168.75s/it, train_acc=94.7%, val_acc=94.7%]Fold 1 Seed 42:  25%|██▌       | 25/100 [1:13:41<3:30:56, 168.75s/it, train_acc=94.4%, val_acc=93.9%]Fold 1 Seed 42:  26%|██▌       | 26/100 [1:13:41<3:27:49, 168.51s/it, train_acc=94.4%, val_acc=93.9%]Fold 1 Seed 42:  26%|██▌       | 26/100 [1:16:30<3:27:49, 168.51s/it, train_acc=95.3%, val_acc=95.4%]Fold 1 Seed 42:  27%|██▋       | 27/100 [1:16:30<3:25:12, 168.66s/it, train_acc=95.3%, val_acc=95.4%]Fold 1 Seed 42:  27%|██▋       | 27/100 [1:19:13<3:25:12, 168.66s/it, train_acc=95.4%, val_acc=94.7%]Fold 1 Seed 42:  28%|██▊       | 28/100 [1:19:13<3:20:13, 166.86s/it, train_acc=95.4%, val_acc=94.7%]Fold 1 Seed 42:  28%|██▊       | 28/100 [1:21:57<3:20:13, 166.86s/it, train_acc=95.9%, val_acc=94.5%]Fold 1 Seed 42:  29%|██▉       | 29/100 [1:21:57<3:16:24, 165.98s/it, train_acc=95.9%, val_acc=94.5%]Fold 1 Seed 42:  29%|██▉       | 29/100 [1:24:40<3:16:24, 165.98s/it, train_acc=95.7%, val_acc=94.7%]Fold 1 Seed 42:  30%|███       | 30/100 [1:24:40<3:12:43, 165.19s/it, train_acc=95.7%, val_acc=94.7%]Fold 1 Seed 42:  30%|███       | 30/100 [1:27:23<3:12:43, 165.19s/it, train_acc=96.0%, val_acc=94.7%]Fold 1 Seed 42:  31%|███       | 31/100 [1:27:23<3:09:04, 164.41s/it, train_acc=96.0%, val_acc=94.7%]Fold 1 Seed 42:  31%|███       | 31/100 [1:30:06<3:09:04, 164.41s/it, train_acc=96.4%, val_acc=95.0%]Fold 1 Seed 42:  32%|███▏      | 32/100 [1:30:06<3:05:51, 163.99s/it, train_acc=96.4%, val_acc=95.0%]Fold 1 Seed 42:  32%|███▏      | 32/100 [1:32:49<3:05:51, 163.99s/it, train_acc=96.7%, val_acc=90.6%]Fold 1 Seed 42:  33%|███▎      | 33/100 [1:32:49<3:02:53, 163.78s/it, train_acc=96.7%, val_acc=90.6%]Fold 1 Seed 42:  33%|███▎      | 33/100 [1:35:33<3:02:53, 163.78s/it, train_acc=96.5%, val_acc=94.1%]Fold 1 Seed 42:  34%|███▍      | 34/100 [1:35:33<3:00:21, 163.97s/it, train_acc=96.5%, val_acc=94.1%]Fold 1 Seed 42:  34%|███▍      | 34/100 [1:38:16<3:00:21, 163.97s/it, train_acc=97.2%, val_acc=94.5%]Fold 1 Seed 42:  35%|███▌      | 35/100 [1:38:16<2:57:05, 163.47s/it, train_acc=97.2%, val_acc=94.5%]Fold 1 Seed 42:  35%|███▌      | 35/100 [1:40:57<2:57:05, 163.47s/it, train_acc=97.2%, val_acc=93.0%]Fold 1 Seed 42:  36%|███▌      | 36/100 [1:40:57<2:53:37, 162.78s/it, train_acc=97.2%, val_acc=93.0%]Fold 1 Seed 42:  36%|███▌      | 36/100 [1:43:41<2:53:37, 162.78s/it, train_acc=97.1%, val_acc=93.9%]Fold 1 Seed 42:  37%|███▋      | 37/100 [1:43:41<2:51:12, 163.06s/it, train_acc=97.1%, val_acc=93.9%]Fold 1 Seed 42:  37%|███▋      | 37/100 [1:46:23<2:51:12, 163.06s/it, train_acc=97.9%, val_acc=93.9%]Fold 1 Seed 42:  38%|███▊      | 38/100 [1:46:23<2:48:23, 162.96s/it, train_acc=97.9%, val_acc=93.9%]Fold 1 Seed 42:  38%|███▊      | 38/100 [1:49:07<2:48:23, 162.96s/it, train_acc=97.7%, val_acc=95.0%]Fold 1 Seed 42:  39%|███▉      | 39/100 [1:49:07<2:45:47, 163.08s/it, train_acc=97.7%, val_acc=95.0%]Fold 1 Seed 42:  39%|███▉      | 39/100 [1:51:51<2:45:47, 163.08s/it, train_acc=97.4%, val_acc=91.2%]Fold 1 Seed 42:  40%|████      | 40/100 [1:51:51<2:43:27, 163.46s/it, train_acc=97.4%, val_acc=91.2%]Fold 1 Seed 42:  40%|████      | 40/100 [1:54:34<2:43:27, 163.46s/it, train_acc=98.1%, val_acc=93.4%]Fold 1 Seed 42:  41%|████      | 41/100 [1:54:34<2:40:35, 163.31s/it, train_acc=98.1%, val_acc=93.4%]Fold 1 Seed 42:  41%|████      | 41/100 [1:57:16<2:40:35, 163.31s/it, train_acc=98.2%, val_acc=93.4%]Fold 1 Seed 42:  42%|████▏     | 42/100 [1:57:16<2:37:30, 162.94s/it, train_acc=98.2%, val_acc=93.4%]Fold 1 Seed 42:  42%|████▏     | 42/100 [2:00:00<2:37:30, 162.94s/it, train_acc=98.5%, val_acc=91.4%]Fold 1 Seed 42:  43%|████▎     | 43/100 [2:00:00<2:34:56, 163.10s/it, train_acc=98.5%, val_acc=91.4%]Fold 1 Seed 42:  43%|████▎     | 43/100 [2:02:42<2:34:56, 163.10s/it, train_acc=98.3%, val_acc=93.0%]Fold 1 Seed 42:  44%|████▍     | 44/100 [2:02:42<2:31:57, 162.81s/it, train_acc=98.3%, val_acc=93.0%]Fold 1 Seed 42:  44%|████▍     | 44/100 [2:05:24<2:31:57, 162.81s/it, train_acc=98.5%, val_acc=93.0%]Fold 1 Seed 42:  45%|████▌     | 45/100 [2:05:24<2:29:10, 162.74s/it, train_acc=98.5%, val_acc=93.0%]Fold 1 Seed 42:  45%|████▌     | 45/100 [2:08:07<2:29:10, 162.74s/it, train_acc=98.5%, val_acc=92.1%]Fold 1 Seed 42:  46%|████▌     | 46/100 [2:08:07<2:26:35, 162.88s/it, train_acc=98.5%, val_acc=92.1%]Fold 1 Seed 42:  46%|████▌     | 46/100 [2:10:50<2:26:35, 162.88s/it, train_acc=98.8%, val_acc=91.4%]Fold 1 Seed 42:  47%|████▋     | 47/100 [2:10:50<2:23:50, 162.84s/it, train_acc=98.8%, val_acc=91.4%]Fold 1 Seed 42:  47%|████▋     | 47/100 [2:13:34<2:23:50, 162.84s/it, train_acc=98.9%, val_acc=93.0%]Fold 1 Seed 42:  48%|████▊     | 48/100 [2:13:34<2:21:27, 163.23s/it, train_acc=98.9%, val_acc=93.0%]Fold 1 Seed 42:  48%|████▊     | 48/100 [2:16:18<2:21:27, 163.23s/it, train_acc=99.0%, val_acc=91.0%]Fold 1 Seed 42:  49%|████▉     | 49/100 [2:16:18<2:18:57, 163.48s/it, train_acc=99.0%, val_acc=91.0%]Fold 1 Seed 42:  49%|████▉     | 49/100 [2:19:02<2:18:57, 163.48s/it, train_acc=99.2%, val_acc=89.3%]Fold 1 Seed 42:  50%|█████     | 50/100 [2:19:02<2:16:22, 163.65s/it, train_acc=99.2%, val_acc=89.3%]Fold 1 Seed 42:  50%|█████     | 50/100 [2:21:45<2:16:22, 163.65s/it, train_acc=99.2%, val_acc=93.9%]Fold 1 Seed 42:  51%|█████     | 51/100 [2:21:45<2:13:20, 163.28s/it, train_acc=99.2%, val_acc=93.9%]Fold 1 Seed 42:  51%|█████     | 51/100 [2:24:28<2:13:20, 163.28s/it, train_acc=99.1%, val_acc=93.0%]Fold 1 Seed 42:  51%|█████     | 51/100 [2:24:28<2:18:48, 169.97s/it, train_acc=99.1%, val_acc=93.0%]
-INFO:__main__:  Subgroup Analysis:
-INFO:__main__:    AD: 68.6% (185 samples)
-INFO:__main__:    CN: 95.6% (957 samples)
-INFO:__main__:Fold 1 - Val: 95.39%, Test: 91.24%, Balanced: 82.13%
-INFO:__main__:
---- Fold 2/5 ---
-INFO:__main__:Train: 4109, Val: 456, Test: 1141
-INFO:dataset:Filled 3 missing values in 'AGE' with 69.00
-INFO:dataset:Filled 12 missing values in 'PTEDUCAT' with 16.00
-INFO:dataset:Filled 444 missing values in 'CATANIMSC' with 21.00
-INFO:dataset:Filled 451 missing values in 'TRAASCOR' with 30.00
-INFO:dataset:Filled 492 missing values in 'TRABSCOR' with 75.00
-INFO:dataset:Filled 778 missing values in 'DSPANFOR' with -4.00
-INFO:dataset:Filled 781 missing values in 'DSPANBAC' with -4.00
-INFO:dataset:Filled 781 missing values in 'BNTTOTAL' with -4.00
-INFO:dataset:Filled 147 missing values in 'VSWEIGHT' with 167.00
-INFO:dataset:Filled 1 missing values in 'BMI' with 28.10
-INFO:dataset:Filled 225 missing values in 'MH14ALCH' with 0.00
-INFO:dataset:Filled 224 missing values in 'MH16SMOK' with 0.00
-INFO:dataset:Filled 224 missing values in 'MH4CARD' with 0.00
-INFO:dataset:Filled 224 missing values in 'MH2NEURL' with -4.00
-INFO:dataset:Loaded 4109 samples
-INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
-INFO:dataset:  Class 0: 3452 (84.0%)
-INFO:dataset:  Class 1: 657 (16.0%)
-INFO:dataset:Filled 1 missing values in 'PTEDUCAT' with 16.00
-INFO:dataset:Filled 48 missing values in 'CATANIMSC' with 20.00
-INFO:dataset:Filled 49 missing values in 'TRAASCOR' with 30.00
-INFO:dataset:Filled 58 missing values in 'TRABSCOR' with 75.00
-INFO:dataset:Filled 88 missing values in 'DSPANFOR' with -4.00
-INFO:dataset:Filled 89 missing values in 'DSPANBAC' with -4.00
-INFO:dataset:Filled 87 missing values in 'BNTTOTAL' with -4.00
-INFO:dataset:Filled 13 missing values in 'VSWEIGHT' with 168.00
-INFO:dataset:Filled 1 missing values in 'BMI' with 28.57
-INFO:dataset:Filled 29 missing values in 'MH14ALCH' with 0.00
-INFO:dataset:Filled 28 missing values in 'MH16SMOK' with 0.00
-INFO:dataset:Filled 28 missing values in 'MH4CARD' with 0.00
-INFO:dataset:Filled 28 missing values in 'MH2NEURL' with -4.00
-INFO:dataset:Loaded 456 samples
-INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
-INFO:dataset:  Class 0: 374 (82.0%)
-INFO:dataset:  Class 1: 82 (18.0%)
-INFO:dataset:Filled 1 missing values in 'AGE' with 69.00
-INFO:dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
-INFO:dataset:Filled 124 missing values in 'CATANIMSC' with 20.00
-INFO:dataset:Filled 125 missing values in 'TRAASCOR' with 30.00
-INFO:dataset:Filled 135 missing values in 'TRABSCOR' with 77.00
-INFO:dataset:Filled 208 missing values in 'DSPANFOR' with -4.00
-INFO:dataset:Filled 208 missing values in 'DSPANBAC' with -4.00
-INFO:dataset:Filled 209 missing values in 'BNTTOTAL' with -4.00
-INFO:dataset:Filled 40 missing values in 'VSWEIGHT' with 167.00
-INFO:dataset:Filled 1 missing values in 'BMI' with 28.19
-INFO:dataset:Filled 58 missing values in 'MH14ALCH' with 0.00
-INFO:dataset:Filled 58 missing values in 'MH16SMOK' with 0.00
-INFO:dataset:Filled 58 missing values in 'MH4CARD' with 0.00
-INFO:dataset:Filled 58 missing values in 'MH2NEURL' with -4.00
-INFO:dataset:Loaded 1141 samples
-INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
-INFO:dataset:  Class 0: 956 (83.8%)
-INFO:dataset:  Class 1: 185 (16.2%)
-INFO:mri_vit_model:Created ViT3DClassifier with vit_base
-INFO:mri_vit_model:  Image size: 128x128x128
-INFO:mri_vit_model:  Patch size: 16
-INFO:mri_vit_model:  Num patches: 512
-INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
-INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
-INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
-INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
-INFO:mri_vit_model:Missing keys: 2
-INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
-ViT backbone: 768-dim features
-MLP tabular encoder: 16 -> 32
-MultiModalFusion initialized:
-  MRI backbone: vit (768-dim)
-  Tabular features: 16 -> 32
-  Fusion method: gated
-  Fusion hidden: 512
-Fold 2 Seed 42:   0%|          | 0/100 [00:00<?, ?it/s]Fold 2 Seed 42:   0%|          | 0/100 [02:45<?, ?it/s, train_acc=80.2%, val_acc=82.0%]Fold 2 Seed 42:   1%|          | 1/100 [02:45<4:32:41, 165.27s/it, train_acc=80.2%, val_acc=82.0%]Fold 2 Seed 42:   1%|          | 1/100 [05:27<4:32:41, 165.27s/it, train_acc=84.0%, val_acc=82.0%]Fold 2 Seed 42:   2%|▏         | 2/100 [05:27<4:27:21, 163.69s/it, train_acc=84.0%, val_acc=82.0%]Fold 2 Seed 42:   2%|▏         | 2/100 [08:08<4:27:21, 163.69s/it, train_acc=84.0%, val_acc=82.0%]Fold 2 Seed 42:   3%|▎         | 3/100 [08:08<4:22:45, 162.53s/it, train_acc=84.0%, val_acc=82.0%]Fold 2 Seed 42:   3%|▎         | 3/100 [10:49<4:22:45, 162.53s/it, train_acc=84.5%, val_acc=87.7%]Fold 2 Seed 42:   4%|▍         | 4/100 [10:50<4:19:09, 161.97s/it, train_acc=84.5%, val_acc=87.7%]Fold 2 Seed 42:   4%|▍         | 4/100 [13:34<4:19:09, 161.97s/it, train_acc=85.5%, val_acc=85.5%]Fold 2 Seed 42:   5%|▌         | 5/100 [13:34<4:17:50, 162.85s/it, train_acc=85.5%, val_acc=85.5%]Fold 2 Seed 42:   5%|▌         | 5/100 [16:17<4:17:50, 162.85s/it, train_acc=85.7%, val_acc=84.4%]Fold 2 Seed 42:   6%|▌         | 6/100 [16:17<4:15:22, 163.01s/it, train_acc=85.7%, val_acc=84.4%]Fold 2 Seed 42:   6%|▌         | 6/100 [19:01<4:15:22, 163.01s/it, train_acc=88.0%, val_acc=88.4%]Fold 2 Seed 42:   7%|▋         | 7/100 [19:01<4:12:51, 163.13s/it, train_acc=88.0%, val_acc=88.4%]Fold 2 Seed 42:   7%|▋         | 7/100 [21:44<4:12:51, 163.13s/it, train_acc=87.5%, val_acc=90.4%]Fold 2 Seed 42:   8%|▊         | 8/100 [21:44<4:10:14, 163.20s/it, train_acc=87.5%, val_acc=90.4%]Fold 2 Seed 42:   8%|▊         | 8/100 [24:26<4:10:14, 163.20s/it, train_acc=88.5%, val_acc=89.7%]Fold 2 Seed 42:   9%|▉         | 9/100 [24:26<4:07:01, 162.88s/it, train_acc=88.5%, val_acc=89.7%]Fold 2 Seed 42:   9%|▉         | 9/100 [27:09<4:07:01, 162.88s/it, train_acc=88.9%, val_acc=91.2%]Fold 2 Seed 42:  10%|█         | 10/100 [27:09<4:04:27, 162.97s/it, train_acc=88.9%, val_acc=91.2%]Fold 2 Seed 42:  10%|█         | 10/100 [29:52<4:04:27, 162.97s/it, train_acc=90.0%, val_acc=87.7%]Fold 2 Seed 42:  11%|█         | 11/100 [29:52<4:01:28, 162.79s/it, train_acc=90.0%, val_acc=87.7%]Fold 2 Seed 42:  11%|█         | 11/100 [32:35<4:01:28, 162.79s/it, train_acc=90.1%, val_acc=92.1%]Fold 2 Seed 42:  12%|█▏        | 12/100 [32:36<3:59:11, 163.09s/it, train_acc=90.1%, val_acc=92.1%]Fold 2 Seed 42:  12%|█▏        | 12/100 [35:17<3:59:11, 163.09s/it, train_acc=90.6%, val_acc=87.9%]Fold 2 Seed 42:  13%|█▎        | 13/100 [35:17<3:55:57, 162.73s/it, train_acc=90.6%, val_acc=87.9%]Fold 2 Seed 42:  13%|█▎        | 13/100 [38:01<3:55:57, 162.73s/it, train_acc=90.4%, val_acc=90.1%]Fold 2 Seed 42:  14%|█▍        | 14/100 [38:01<3:53:43, 163.06s/it, train_acc=90.4%, val_acc=90.1%]Fold 2 Seed 42:  14%|█▍        | 14/100 [40:46<3:53:43, 163.06s/it, train_acc=91.1%, val_acc=91.9%]Fold 2 Seed 42:  15%|█▌        | 15/100 [40:46<3:51:34, 163.46s/it, train_acc=91.1%, val_acc=91.9%]Fold 2 Seed 42:  15%|█▌        | 15/100 [43:30<3:51:34, 163.46s/it, train_acc=91.5%, val_acc=93.0%]Fold 2 Seed 42:  16%|█▌        | 16/100 [43:30<3:49:13, 163.74s/it, train_acc=91.5%, val_acc=93.0%]Fold 2 Seed 42:  16%|█▌        | 16/100 [46:15<3:49:13, 163.74s/it, train_acc=92.0%, val_acc=93.0%]Fold 2 Seed 42:  17%|█▋        | 17/100 [46:15<3:47:03, 164.14s/it, train_acc=92.0%, val_acc=93.0%]Fold 2 Seed 42:  17%|█▋        | 17/100 [48:59<3:47:03, 164.14s/it, train_acc=92.0%, val_acc=91.4%]Fold 2 Seed 42:  18%|█▊        | 18/100 [48:59<3:44:05, 163.97s/it, train_acc=92.0%, val_acc=91.4%]Fold 2 Seed 42:  18%|█▊        | 18/100 [51:40<3:44:05, 163.97s/it, train_acc=93.2%, val_acc=92.1%]Fold 2 Seed 42:  19%|█▉        | 19/100 [51:40<3:40:19, 163.21s/it, train_acc=93.2%, val_acc=92.1%]Fold 2 Seed 42:  19%|█▉        | 19/100 [54:23<3:40:19, 163.21s/it, train_acc=92.6%, val_acc=92.1%]Fold 2 Seed 42:  20%|██        | 20/100 [54:23<3:37:37, 163.22s/it, train_acc=92.6%, val_acc=92.1%]Fold 2 Seed 42:  20%|██        | 20/100 [57:06<3:37:37, 163.22s/it, train_acc=93.5%, val_acc=92.3%]Fold 2 Seed 42:  21%|██        | 21/100 [57:06<3:34:49, 163.16s/it, train_acc=93.5%, val_acc=92.3%]Fold 2 Seed 42:  21%|██        | 21/100 [59:49<3:34:49, 163.16s/it, train_acc=93.6%, val_acc=92.3%]Fold 2 Seed 42:  22%|██▏       | 22/100 [59:49<3:31:58, 163.06s/it, train_acc=93.6%, val_acc=92.3%]Fold 2 Seed 42:  22%|██▏       | 22/100 [1:02:32<3:31:58, 163.06s/it, train_acc=93.2%, val_acc=90.4%]Fold 2 Seed 42:  23%|██▎       | 23/100 [1:02:32<3:28:57, 162.83s/it, train_acc=93.2%, val_acc=90.4%]Fold 2 Seed 42:  23%|██▎       | 23/100 [1:05:14<3:28:57, 162.83s/it, train_acc=93.8%, val_acc=91.4%]Fold 2 Seed 42:  24%|██▍       | 24/100 [1:05:14<3:26:02, 162.67s/it, train_acc=93.8%, val_acc=91.4%]Fold 2 Seed 42:  24%|██▍       | 24/100 [1:07:58<3:26:02, 162.67s/it, train_acc=93.8%, val_acc=92.3%]Fold 2 Seed 42:  25%|██▌       | 25/100 [1:07:58<3:23:49, 163.07s/it, train_acc=93.8%, val_acc=92.3%]Fold 2 Seed 42:  25%|██▌       | 25/100 [1:10:42<3:23:49, 163.07s/it, train_acc=94.2%, val_acc=91.4%]Fold 2 Seed 42:  26%|██▌       | 26/100 [1:10:42<3:21:26, 163.33s/it, train_acc=94.2%, val_acc=91.4%]Fold 2 Seed 42:  26%|██▌       | 26/100 [1:13:26<3:21:26, 163.33s/it, train_acc=94.4%, val_acc=90.4%]Fold 2 Seed 42:  27%|██▋       | 27/100 [1:13:26<3:18:53, 163.47s/it, train_acc=94.4%, val_acc=90.4%]Fold 2 Seed 42:  27%|██▋       | 27/100 [1:16:07<3:18:53, 163.47s/it, train_acc=94.9%, val_acc=91.4%]Fold 2 Seed 42:  28%|██▊       | 28/100 [1:16:07<3:15:33, 162.97s/it, train_acc=94.9%, val_acc=91.4%]Fold 2 Seed 42:  28%|██▊       | 28/100 [1:18:49<3:15:33, 162.97s/it, train_acc=95.3%, val_acc=91.0%]Fold 2 Seed 42:  29%|██▉       | 29/100 [1:18:49<3:12:27, 162.64s/it, train_acc=95.3%, val_acc=91.0%]Fold 2 Seed 42:  29%|██▉       | 29/100 [1:21:31<3:12:27, 162.64s/it, train_acc=95.2%, val_acc=88.6%]Fold 2 Seed 42:  30%|███       | 30/100 [1:21:31<3:09:28, 162.41s/it, train_acc=95.2%, val_acc=88.6%]Fold 2 Seed 42:  30%|███       | 30/100 [1:24:16<3:09:28, 162.41s/it, train_acc=95.3%, val_acc=90.6%]Fold 2 Seed 42:  31%|███       | 31/100 [1:24:16<3:07:30, 163.05s/it, train_acc=95.3%, val_acc=90.6%]Fold 2 Seed 42:  31%|███       | 31/100 [1:26:59<3:07:30, 163.05s/it, train_acc=95.6%, val_acc=92.1%]Fold 2 Seed 42:  32%|███▏      | 32/100 [1:26:59<3:04:53, 163.14s/it, train_acc=95.6%, val_acc=92.1%]Fold 2 Seed 42:  32%|███▏      | 32/100 [1:29:42<3:04:53, 163.14s/it, train_acc=95.8%, val_acc=91.9%]Fold 2 Seed 42:  33%|███▎      | 33/100 [1:29:42<3:02:07, 163.10s/it, train_acc=95.8%, val_acc=91.9%]Fold 2 Seed 42:  33%|███▎      | 33/100 [1:32:26<3:02:07, 163.10s/it, train_acc=96.1%, val_acc=92.3%]Fold 2 Seed 42:  34%|███▍      | 34/100 [1:32:26<2:59:39, 163.33s/it, train_acc=96.1%, val_acc=92.3%]Fold 2 Seed 42:  34%|███▍      | 34/100 [1:35:08<2:59:39, 163.33s/it, train_acc=96.6%, val_acc=91.9%]Fold 2 Seed 42:  35%|███▌      | 35/100 [1:35:08<2:56:37, 163.03s/it, train_acc=96.6%, val_acc=91.9%]Fold 2 Seed 42:  35%|███▌      | 35/100 [1:37:54<2:56:37, 163.03s/it, train_acc=96.8%, val_acc=89.3%]Fold 2 Seed 42:  36%|███▌      | 36/100 [1:37:54<2:54:54, 163.97s/it, train_acc=96.8%, val_acc=89.3%]Fold 2 Seed 42:  36%|███▌      | 36/100 [1:40:37<2:54:54, 163.97s/it, train_acc=96.9%, val_acc=89.0%]Fold 2 Seed 42:  37%|███▋      | 37/100 [1:40:37<2:51:50, 163.66s/it, train_acc=96.9%, val_acc=89.0%]Fold 2 Seed 42:  37%|███▋      | 37/100 [1:43:21<2:51:50, 163.66s/it, train_acc=97.2%, val_acc=91.4%]Fold 2 Seed 42:  38%|███▊      | 38/100 [1:43:21<2:49:11, 163.74s/it, train_acc=97.2%, val_acc=91.4%]Fold 2 Seed 42:  38%|███▊      | 38/100 [1:46:05<2:49:11, 163.74s/it, train_acc=97.6%, val_acc=90.4%]Fold 2 Seed 42:  39%|███▉      | 39/100 [1:46:05<2:46:23, 163.67s/it, train_acc=97.6%, val_acc=90.4%]Fold 2 Seed 42:  39%|███▉      | 39/100 [1:48:47<2:46:23, 163.67s/it, train_acc=97.4%, val_acc=90.8%]Fold 2 Seed 42:  40%|████      | 40/100 [1:48:47<2:43:15, 163.25s/it, train_acc=97.4%, val_acc=90.8%]Fold 2 Seed 42:  40%|████      | 40/100 [1:51:31<2:43:15, 163.25s/it, train_acc=97.7%, val_acc=88.8%]Fold 2 Seed 42:  40%|████      | 40/100 [1:51:31<2:47:17, 167.28s/it, train_acc=97.7%, val_acc=88.8%]
-INFO:__main__:  Subgroup Analysis:
-INFO:__main__:    AD: 68.6% (185 samples)
-INFO:__main__:    CN: 96.4% (956 samples)
-INFO:__main__:Fold 2 - Val: 92.98%, Test: 91.94%, Balanced: 82.55%
-INFO:__main__:
---- Fold 3/5 ---
-INFO:__main__:Train: 4109, Val: 456, Test: 1141
-INFO:dataset:Filled 3 missing values in 'AGE' with 69.00
-INFO:dataset:Filled 12 missing values in 'PTEDUCAT' with 16.00
-INFO:dataset:Filled 438 missing values in 'CATANIMSC' with 21.00
-INFO:dataset:Filled 447 missing values in 'TRAASCOR' with 30.00
-INFO:dataset:Filled 490 missing values in 'TRABSCOR' with 75.00
-INFO:dataset:Filled 759 missing values in 'DSPANFOR' with -4.00
-INFO:dataset:Filled 761 missing values in 'DSPANBAC' with -4.00
-INFO:dataset:Filled 761 missing values in 'BNTTOTAL' with -4.00
-INFO:dataset:Filled 148 missing values in 'VSWEIGHT' with 167.00
-INFO:dataset:Filled 3 missing values in 'BMI' with 28.07
-INFO:dataset:Filled 218 missing values in 'MH14ALCH' with 0.00
-INFO:dataset:Filled 217 missing values in 'MH16SMOK' with 0.00
-INFO:dataset:Filled 217 missing values in 'MH4CARD' with 0.00
-INFO:dataset:Filled 217 missing values in 'MH2NEURL' with -4.00
-INFO:dataset:Loaded 4109 samples
-INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
-INFO:dataset:  Class 0: 3460 (84.2%)
-INFO:dataset:  Class 1: 649 (15.8%)
-INFO:dataset:Filled 60 missing values in 'CATANIMSC' with 20.00
-INFO:dataset:Filled 60 missing values in 'TRAASCOR' with 30.00
-INFO:dataset:Filled 68 missing values in 'TRABSCOR' with 80.00
-INFO:dataset:Filled 105 missing values in 'DSPANFOR' with -4.00
-INFO:dataset:Filled 105 missing values in 'DSPANBAC' with -4.00
-INFO:dataset:Filled 107 missing values in 'BNTTOTAL' with -4.00
-INFO:dataset:Filled 15 missing values in 'VSWEIGHT' with 165.00
-INFO:dataset:Filled 29 missing values in 'MH14ALCH' with 0.00
-INFO:dataset:Filled 29 missing values in 'MH16SMOK' with 0.00
-INFO:dataset:Filled 29 missing values in 'MH4CARD' with 0.00
-INFO:dataset:Filled 29 missing values in 'MH2NEURL' with -4.00
-INFO:dataset:Loaded 456 samples
-INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
-INFO:dataset:  Class 0: 366 (80.3%)
-INFO:dataset:  Class 1: 90 (19.7%)
-INFO:dataset:Filled 1 missing values in 'AGE' with 69.00
-INFO:dataset:Filled 4 missing values in 'PTEDUCAT' with 16.00
-INFO:dataset:Filled 118 missing values in 'CATANIMSC' with 21.00
-INFO:dataset:Filled 118 missing values in 'TRAASCOR' with 30.00
-INFO:dataset:Filled 127 missing values in 'TRABSCOR' with 72.50
-INFO:dataset:Filled 210 missing values in 'DSPANFOR' with -4.00
-INFO:dataset:Filled 212 missing values in 'DSPANBAC' with -4.00
-INFO:dataset:Filled 209 missing values in 'BNTTOTAL' with -4.00
-INFO:dataset:Filled 37 missing values in 'VSWEIGHT' with 167.00
-INFO:dataset:Filled 65 missing values in 'MH14ALCH' with 0.00
-INFO:dataset:Filled 64 missing values in 'MH16SMOK' with 0.00
-INFO:dataset:Filled 64 missing values in 'MH4CARD' with 0.00
-INFO:dataset:Filled 64 missing values in 'MH2NEURL' with -4.00
-INFO:dataset:Loaded 1141 samples
-INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
-INFO:dataset:  Class 0: 956 (83.8%)
-INFO:dataset:  Class 1: 185 (16.2%)
-INFO:mri_vit_model:Created ViT3DClassifier with vit_base
-INFO:mri_vit_model:  Image size: 128x128x128
-INFO:mri_vit_model:  Patch size: 16
-INFO:mri_vit_model:  Num patches: 512
-INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
-INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
-INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
-INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
-INFO:mri_vit_model:Missing keys: 2
-INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
-ViT backbone: 768-dim features
-MLP tabular encoder: 16 -> 32
-MultiModalFusion initialized:
-  MRI backbone: vit (768-dim)
-  Tabular features: 16 -> 32
-  Fusion method: gated
-  Fusion hidden: 512
-Fold 3 Seed 42:   0%|          | 0/100 [00:00<?, ?it/s]Fold 3 Seed 42:   0%|          | 0/100 [02:42<?, ?it/s, train_acc=81.7%, val_acc=80.3%]Fold 3 Seed 42:   1%|          | 1/100 [02:42<4:28:05, 162.48s/it, train_acc=81.7%, val_acc=80.3%]Fold 3 Seed 42:   1%|          | 1/100 [05:25<4:28:05, 162.48s/it, train_acc=84.2%, val_acc=80.3%]Fold 3 Seed 42:   2%|▏         | 2/100 [05:25<4:26:13, 162.99s/it, train_acc=84.2%, val_acc=80.3%]Fold 3 Seed 42:   2%|▏         | 2/100 [08:08<4:26:13, 162.99s/it, train_acc=84.0%, val_acc=80.3%]Fold 3 Seed 42:   3%|▎         | 3/100 [08:08<4:23:21, 162.90s/it, train_acc=84.0%, val_acc=80.3%]Fold 3 Seed 42:   3%|▎         | 3/100 [10:50<4:23:21, 162.90s/it, train_acc=84.2%, val_acc=80.3%]Fold 3 Seed 42:   4%|▍         | 4/100 [10:50<4:20:10, 162.61s/it, train_acc=84.2%, val_acc=80.3%]Fold 3 Seed 42:   4%|▍         | 4/100 [13:33<4:20:10, 162.61s/it, train_acc=84.2%, val_acc=80.3%]Fold 3 Seed 42:   5%|▌         | 5/100 [13:33<4:17:41, 162.75s/it, train_acc=84.2%, val_acc=80.3%]Fold 3 Seed 42:   5%|▌         | 5/100 [16:15<4:17:41, 162.75s/it, train_acc=84.2%, val_acc=80.9%]Fold 3 Seed 42:   6%|▌         | 6/100 [16:16<4:14:43, 162.60s/it, train_acc=84.2%, val_acc=80.9%]Fold 3 Seed 42:   6%|▌         | 6/100 [18:59<4:14:43, 162.60s/it, train_acc=85.0%, val_acc=83.3%]Fold 3 Seed 42:   7%|▋         | 7/100 [18:59<4:12:33, 162.94s/it, train_acc=85.0%, val_acc=83.3%]Fold 3 Seed 42:   7%|▋         | 7/100 [21:42<4:12:33, 162.94s/it, train_acc=85.6%, val_acc=85.7%]Fold 3 Seed 42:   8%|▊         | 8/100 [21:42<4:09:40, 162.83s/it, train_acc=85.6%, val_acc=85.7%]Fold 3 Seed 42:   8%|▊         | 8/100 [24:26<4:09:40, 162.83s/it, train_acc=87.8%, val_acc=89.3%]Fold 3 Seed 42:   9%|▉         | 9/100 [24:26<4:07:38, 163.28s/it, train_acc=87.8%, val_acc=89.3%]Fold 3 Seed 42:   9%|▉         | 9/100 [27:09<4:07:38, 163.28s/it, train_acc=88.5%, val_acc=88.8%]Fold 3 Seed 42:  10%|█         | 10/100 [27:09<4:04:52, 163.25s/it, train_acc=88.5%, val_acc=88.8%]Fold 3 Seed 42:  10%|█         | 10/100 [29:53<4:04:52, 163.25s/it, train_acc=89.5%, val_acc=90.1%]Fold 3 Seed 42:  11%|█         | 11/100 [29:53<4:02:30, 163.49s/it, train_acc=89.5%, val_acc=90.1%]Fold 3 Seed 42:  11%|█         | 11/100 [32:43<4:02:30, 163.49s/it, train_acc=90.0%, val_acc=89.7%]Fold 3 Seed 42:  12%|█▏        | 12/100 [32:43<4:02:21, 165.24s/it, train_acc=90.0%, val_acc=89.7%]Fold 3 Seed 42:  12%|█▏        | 12/100 [35:31<4:02:21, 165.24s/it, train_acc=90.7%, val_acc=90.4%]Fold 3 Seed 42:  13%|█▎        | 13/100 [35:32<4:01:15, 166.39s/it, train_acc=90.7%, val_acc=90.4%]Fold 3 Seed 42:  13%|█▎        | 13/100 [38:20<4:01:15, 166.39s/it, train_acc=90.3%, val_acc=88.4%]Fold 3 Seed 42:  14%|█▍        | 14/100 [38:21<3:59:34, 167.15s/it, train_acc=90.3%, val_acc=88.4%]Fold 3 Seed 42:  14%|█▍        | 14/100 [41:09<3:59:34, 167.15s/it, train_acc=90.8%, val_acc=90.6%]Fold 3 Seed 42:  15%|█▌        | 15/100 [41:09<3:57:24, 167.59s/it, train_acc=90.8%, val_acc=90.6%]Fold 3 Seed 42:  15%|█▌        | 15/100 [43:53<3:57:24, 167.59s/it, train_acc=91.0%, val_acc=89.5%]Fold 3 Seed 42:  16%|█▌        | 16/100 [43:53<3:52:55, 166.38s/it, train_acc=91.0%, val_acc=89.5%]Fold 3 Seed 42:  16%|█▌        | 16/100 [46:36<3:52:55, 166.38s/it, train_acc=91.9%, val_acc=90.4%]Fold 3 Seed 42:  17%|█▋        | 17/100 [46:36<3:48:49, 165.42s/it, train_acc=91.9%, val_acc=90.4%]Fold 3 Seed 42:  17%|█▋        | 17/100 [49:19<3:48:49, 165.42s/it, train_acc=91.9%, val_acc=91.2%]Fold 3 Seed 42:  18%|█▊        | 18/100 [49:19<3:45:20, 164.88s/it, train_acc=91.9%, val_acc=91.2%]Fold 3 Seed 42:  18%|█▊        | 18/100 [52:04<3:45:20, 164.88s/it, train_acc=92.0%, val_acc=91.2%]Fold 3 Seed 42:  19%|█▉        | 19/100 [52:04<3:42:19, 164.68s/it, train_acc=92.0%, val_acc=91.2%]Fold 3 Seed 42:  19%|█▉        | 19/100 [54:48<3:42:19, 164.68s/it, train_acc=92.6%, val_acc=90.1%]Fold 3 Seed 42:  20%|██        | 20/100 [54:48<3:39:13, 164.42s/it, train_acc=92.6%, val_acc=90.1%]Fold 3 Seed 42:  20%|██        | 20/100 [57:31<3:39:13, 164.42s/it, train_acc=92.6%, val_acc=91.2%]Fold 3 Seed 42:  21%|██        | 21/100 [57:31<3:35:55, 164.00s/it, train_acc=92.6%, val_acc=91.2%]Fold 3 Seed 42:  21%|██        | 21/100 [1:00:15<3:35:55, 164.00s/it, train_acc=93.1%, val_acc=91.0%]Fold 3 Seed 42:  22%|██▏       | 22/100 [1:00:15<3:33:32, 164.26s/it, train_acc=93.1%, val_acc=91.0%]Fold 3 Seed 42:  22%|██▏       | 22/100 [1:02:58<3:33:32, 164.26s/it, train_acc=92.6%, val_acc=91.9%]Fold 3 Seed 42:  23%|██▎       | 23/100 [1:02:58<3:30:06, 163.72s/it, train_acc=92.6%, val_acc=91.9%]Fold 3 Seed 42:  23%|██▎       | 23/100 [1:05:46<3:30:06, 163.72s/it, train_acc=93.4%, val_acc=91.7%]Fold 3 Seed 42:  24%|██▍       | 24/100 [1:05:46<3:29:13, 165.18s/it, train_acc=93.4%, val_acc=91.7%]Fold 3 Seed 42:  24%|██▍       | 24/100 [1:08:34<3:29:13, 165.18s/it, train_acc=93.8%, val_acc=90.1%]Fold 3 Seed 42:  25%|██▌       | 25/100 [1:08:34<3:27:29, 165.99s/it, train_acc=93.8%, val_acc=90.1%]Fold 3 Seed 42:  25%|██▌       | 25/100 [1:11:22<3:27:29, 165.99s/it, train_acc=94.1%, val_acc=92.1%]Fold 3 Seed 42:  26%|██▌       | 26/100 [1:11:22<3:25:24, 166.55s/it, train_acc=94.1%, val_acc=92.1%]Fold 3 Seed 42:  26%|██▌       | 26/100 [1:14:10<3:25:24, 166.55s/it, train_acc=93.7%, val_acc=90.1%]Fold 3 Seed 42:  27%|██▋       | 27/100 [1:14:10<3:23:14, 167.05s/it, train_acc=93.7%, val_acc=90.1%]Fold 3 Seed 42:  27%|██▋       | 27/100 [1:16:59<3:23:14, 167.05s/it, train_acc=94.4%, val_acc=90.6%]Fold 3 Seed 42:  28%|██▊       | 28/100 [1:16:59<3:21:11, 167.65s/it, train_acc=94.4%, val_acc=90.6%]Fold 3 Seed 42:  28%|██▊       | 28/100 [1:19:48<3:21:11, 167.65s/it, train_acc=94.4%, val_acc=91.0%]Fold 3 Seed 42:  29%|██▉       | 29/100 [1:19:48<3:18:37, 167.86s/it, train_acc=94.4%, val_acc=91.0%]Fold 3 Seed 42:  29%|██▉       | 29/100 [1:22:35<3:18:37, 167.86s/it, train_acc=94.6%, val_acc=90.8%]Fold 3 Seed 42:  30%|███       | 30/100 [1:22:35<3:15:39, 167.71s/it, train_acc=94.6%, val_acc=90.8%]Fold 3 Seed 42:  30%|███       | 30/100 [1:25:24<3:15:39, 167.71s/it, train_acc=94.5%, val_acc=92.1%]Fold 3 Seed 42:  31%|███       | 31/100 [1:25:24<3:13:08, 167.95s/it, train_acc=94.5%, val_acc=92.1%]Fold 3 Seed 42:  31%|███       | 31/100 [1:28:12<3:13:08, 167.95s/it, train_acc=94.8%, val_acc=91.7%]Fold 3 Seed 42:  32%|███▏      | 32/100 [1:28:12<3:10:35, 168.17s/it, train_acc=94.8%, val_acc=91.7%]Fold 3 Seed 42:  32%|███▏      | 32/100 [1:31:00<3:10:35, 168.17s/it, train_acc=95.2%, val_acc=91.2%]Fold 3 Seed 42:  33%|███▎      | 33/100 [1:31:00<3:07:41, 168.07s/it, train_acc=95.2%, val_acc=91.2%]Fold 3 Seed 42:  33%|███▎      | 33/100 [1:33:48<3:07:41, 168.07s/it, train_acc=95.3%, val_acc=91.2%]Fold 3 Seed 42:  34%|███▍      | 34/100 [1:33:48<3:04:53, 168.09s/it, train_acc=95.3%, val_acc=91.2%]Fold 3 Seed 42:  34%|███▍      | 34/100 [1:36:37<3:04:53, 168.09s/it, train_acc=95.6%, val_acc=91.0%]Fold 3 Seed 42:  35%|███▌      | 35/100 [1:36:37<3:02:26, 168.41s/it, train_acc=95.6%, val_acc=91.0%]Fold 3 Seed 42:  35%|███▌      | 35/100 [1:39:28<3:02:26, 168.41s/it, train_acc=96.2%, val_acc=91.9%]Fold 3 Seed 42:  36%|███▌      | 36/100 [1:39:28<3:00:16, 169.01s/it, train_acc=96.2%, val_acc=91.9%]Fold 3 Seed 42:  36%|███▌      | 36/100 [1:42:17<3:00:16, 169.01s/it, train_acc=96.3%, val_acc=90.6%]Fold 3 Seed 42:  37%|███▋      | 37/100 [1:42:17<2:57:36, 169.15s/it, train_acc=96.3%, val_acc=90.6%]Fold 3 Seed 42:  37%|███▋      | 37/100 [1:45:07<2:57:36, 169.15s/it, train_acc=96.5%, val_acc=89.5%]Fold 3 Seed 42:  38%|███▊      | 38/100 [1:45:07<2:54:57, 169.31s/it, train_acc=96.5%, val_acc=89.5%]Fold 3 Seed 42:  38%|███▊      | 38/100 [1:47:55<2:54:57, 169.31s/it, train_acc=96.6%, val_acc=89.5%]Fold 3 Seed 42:  39%|███▉      | 39/100 [1:47:55<2:51:47, 168.98s/it, train_acc=96.6%, val_acc=89.5%]Fold 3 Seed 42:  39%|███▉      | 39/100 [1:50:45<2:51:47, 168.98s/it, train_acc=97.0%, val_acc=89.7%]Fold 3 Seed 42:  40%|████      | 40/100 [1:50:45<2:49:12, 169.20s/it, train_acc=97.0%, val_acc=89.7%]Fold 3 Seed 42:  40%|████      | 40/100 [1:53:34<2:49:12, 169.20s/it, train_acc=97.0%, val_acc=90.8%]Fold 3 Seed 42:  41%|████      | 41/100 [1:53:34<2:46:18, 169.12s/it, train_acc=97.0%, val_acc=90.8%]Fold 3 Seed 42:  41%|████      | 41/100 [1:56:22<2:46:18, 169.12s/it, train_acc=97.5%, val_acc=89.5%]Fold 3 Seed 42:  42%|████▏     | 42/100 [1:56:22<2:43:06, 168.73s/it, train_acc=97.5%, val_acc=89.5%]Fold 3 Seed 42:  42%|████▏     | 42/100 [1:59:10<2:43:06, 168.73s/it, train_acc=97.5%, val_acc=90.4%]Fold 3 Seed 42:  43%|████▎     | 43/100 [1:59:10<2:40:16, 168.71s/it, train_acc=97.5%, val_acc=90.4%]Fold 3 Seed 42:  43%|████▎     | 43/100 [2:02:00<2:40:16, 168.71s/it, train_acc=97.4%, val_acc=91.4%]Fold 3 Seed 42:  44%|████▍     | 44/100 [2:02:00<2:37:49, 169.09s/it, train_acc=97.4%, val_acc=91.4%]Fold 3 Seed 42:  44%|████▍     | 44/100 [2:04:50<2:37:49, 169.09s/it, train_acc=97.9%, val_acc=90.6%]Fold 3 Seed 42:  45%|████▌     | 45/100 [2:04:50<2:35:01, 169.13s/it, train_acc=97.9%, val_acc=90.6%]Fold 3 Seed 42:  45%|████▌     | 45/100 [2:07:39<2:35:01, 169.13s/it, train_acc=98.1%, val_acc=91.2%]Fold 3 Seed 42:  46%|████▌     | 46/100 [2:07:39<2:32:13, 169.14s/it, train_acc=98.1%, val_acc=91.2%]Fold 3 Seed 42:  46%|████▌     | 46/100 [2:10:28<2:32:13, 169.14s/it, train_acc=97.7%, val_acc=89.7%]Fold 3 Seed 42:  47%|████▋     | 47/100 [2:10:28<2:29:33, 169.32s/it, train_acc=97.7%, val_acc=89.7%]Fold 3 Seed 42:  47%|████▋     | 47/100 [2:13:17<2:29:33, 169.32s/it, train_acc=98.5%, val_acc=89.3%]Fold 3 Seed 42:  48%|████▊     | 48/100 [2:13:17<2:26:36, 169.17s/it, train_acc=98.5%, val_acc=89.3%]Fold 3 Seed 42:  48%|████▊     | 48/100 [2:16:07<2:26:36, 169.17s/it, train_acc=98.6%, val_acc=89.0%]Fold 3 Seed 42:  49%|████▉     | 49/100 [2:16:07<2:23:57, 169.36s/it, train_acc=98.6%, val_acc=89.0%]Fold 3 Seed 42:  49%|████▉     | 49/100 [2:18:55<2:23:57, 169.36s/it, train_acc=98.4%, val_acc=89.7%]Fold 3 Seed 42:  50%|█████     | 50/100 [2:18:55<2:20:46, 168.93s/it, train_acc=98.4%, val_acc=89.7%]Fold 3 Seed 42:  50%|█████     | 50/100 [2:21:43<2:20:46, 168.93s/it, train_acc=98.5%, val_acc=90.8%]Fold 3 Seed 42:  50%|█████     | 50/100 [2:21:43<2:21:43, 170.08s/it, train_acc=98.5%, val_acc=90.8%]
-INFO:__main__:  Subgroup Analysis:
-INFO:__main__:    AD: 61.6% (185 samples)
-INFO:__main__:    CN: 96.4% (956 samples)
-INFO:__main__:Fold 3 - Val: 92.11%, Test: 90.80%, Balanced: 79.03%
-INFO:__main__:
---- Fold 4/5 ---
-INFO:__main__:Train: 4109, Val: 456, Test: 1141
-INFO:dataset:Filled 3 missing values in 'AGE' with 69.00
-INFO:dataset:Filled 13 missing values in 'PTEDUCAT' with 16.00
-INFO:dataset:Filled 429 missing values in 'CATANIMSC' with 21.00
-INFO:dataset:Filled 434 missing values in 'TRAASCOR' with 30.00
-INFO:dataset:Filled 479 missing values in 'TRABSCOR' with 76.00
-INFO:dataset:Filled 758 missing values in 'DSPANFOR' with -4.00
-INFO:dataset:Filled 760 missing values in 'DSPANBAC' with -4.00
-INFO:dataset:Filled 759 missing values in 'BNTTOTAL' with -4.00
-INFO:dataset:Filled 146 missing values in 'VSWEIGHT' with 167.00
-INFO:dataset:Filled 3 missing values in 'BMI' with 28.19
-INFO:dataset:Filled 225 missing values in 'MH14ALCH' with 0.00
-INFO:dataset:Filled 224 missing values in 'MH16SMOK' with 0.00
-INFO:dataset:Filled 224 missing values in 'MH4CARD' with 0.00
-INFO:dataset:Filled 224 missing values in 'MH2NEURL' with -4.00
-INFO:dataset:Loaded 4109 samples
-INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
-INFO:dataset:  Class 0: 3452 (84.0%)
-INFO:dataset:  Class 1: 657 (16.0%)
-INFO:dataset:Filled 1 missing values in 'AGE' with 68.70
-INFO:dataset:Filled 2 missing values in 'PTEDUCAT' with 16.00
-INFO:dataset:Filled 48 missing values in 'CATANIMSC' with 20.00
-INFO:dataset:Filled 49 missing values in 'TRAASCOR' with 31.00
-INFO:dataset:Filled 51 missing values in 'TRABSCOR' with 75.00
-INFO:dataset:Filled 85 missing values in 'DSPANFOR' with -4.00
-INFO:dataset:Filled 85 missing values in 'DSPANBAC' with -4.00
-INFO:dataset:Filled 86 missing values in 'BNTTOTAL' with -4.00
-INFO:dataset:Filled 17 missing values in 'VSWEIGHT' with 170.00
-INFO:dataset:Filled 25 missing values in 'MH14ALCH' with 0.00
-INFO:dataset:Filled 24 missing values in 'MH16SMOK' with 0.00
-INFO:dataset:Filled 24 missing values in 'MH4CARD' with 0.00
-INFO:dataset:Filled 24 missing values in 'MH2NEURL' with -4.00
-INFO:dataset:Loaded 456 samples
-INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
-INFO:dataset:  Class 0: 374 (82.0%)
-INFO:dataset:  Class 1: 82 (18.0%)
-INFO:dataset:Filled 1 missing values in 'PTEDUCAT' with 16.00
-INFO:dataset:Filled 139 missing values in 'CATANIMSC' with 21.00
-INFO:dataset:Filled 142 missing values in 'TRAASCOR' with 31.00
-INFO:dataset:Filled 155 missing values in 'TRABSCOR' with 74.00
-INFO:dataset:Filled 231 missing values in 'DSPANFOR' with -4.00
-INFO:dataset:Filled 233 missing values in 'DSPANBAC' with -4.00
-INFO:dataset:Filled 232 missing values in 'BNTTOTAL' with -4.00
-INFO:dataset:Filled 37 missing values in 'VSWEIGHT' with 165.00
-INFO:dataset:Filled 62 missing values in 'MH14ALCH' with 0.00
-INFO:dataset:Filled 62 missing values in 'MH16SMOK' with 0.00
-INFO:dataset:Filled 62 missing values in 'MH4CARD' with 0.00
-INFO:dataset:Filled 62 missing values in 'MH2NEURL' with -4.00
-INFO:dataset:Loaded 1141 samples
-INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
-INFO:dataset:  Class 0: 956 (83.8%)
-INFO:dataset:  Class 1: 185 (16.2%)
-INFO:mri_vit_model:Created ViT3DClassifier with vit_base
-INFO:mri_vit_model:  Image size: 128x128x128
-INFO:mri_vit_model:  Patch size: 16
-INFO:mri_vit_model:  Num patches: 512
-INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
-INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
-INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
-INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
-INFO:mri_vit_model:Missing keys: 2
-INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
-ViT backbone: 768-dim features
-MLP tabular encoder: 16 -> 32
-MultiModalFusion initialized:
-  MRI backbone: vit (768-dim)
-  Tabular features: 16 -> 32
-  Fusion method: gated
-  Fusion hidden: 512
-Fold 4 Seed 42:   0%|          | 0/100 [00:00<?, ?it/s]Fold 4 Seed 42:   0%|          | 0/100 [02:44<?, ?it/s, train_acc=80.6%, val_acc=82.0%]Fold 4 Seed 42:   1%|          | 1/100 [02:44<4:31:35, 164.60s/it, train_acc=80.6%, val_acc=82.0%]Fold 4 Seed 42:   1%|          | 1/100 [05:26<4:31:35, 164.60s/it, train_acc=84.0%, val_acc=82.0%]Fold 4 Seed 42:   2%|▏         | 2/100 [05:26<4:26:37, 163.24s/it, train_acc=84.0%, val_acc=82.0%]Fold 4 Seed 42:   2%|▏         | 2/100 [08:10<4:26:37, 163.24s/it, train_acc=84.0%, val_acc=82.0%]Fold 4 Seed 42:   3%|▎         | 3/100 [08:10<4:23:56, 163.26s/it, train_acc=84.0%, val_acc=82.0%]Fold 4 Seed 42:   3%|▎         | 3/100 [10:52<4:23:56, 163.26s/it, train_acc=83.3%, val_acc=85.7%]Fold 4 Seed 42:   4%|▍         | 4/100 [10:52<4:20:42, 162.94s/it, train_acc=83.3%, val_acc=85.7%]Fold 4 Seed 42:   4%|▍         | 4/100 [13:36<4:20:42, 162.94s/it, train_acc=84.9%, val_acc=84.4%]Fold 4 Seed 42:   5%|▌         | 5/100 [13:36<4:18:17, 163.13s/it, train_acc=84.9%, val_acc=84.4%]Fold 4 Seed 42:   5%|▌         | 5/100 [16:18<4:18:17, 163.13s/it, train_acc=85.0%, val_acc=84.2%]Fold 4 Seed 42:   6%|▌         | 6/100 [16:18<4:15:02, 162.79s/it, train_acc=85.0%, val_acc=84.2%]Fold 4 Seed 42:   6%|▌         | 6/100 [19:01<4:15:02, 162.79s/it, train_acc=86.7%, val_acc=85.7%]Fold 4 Seed 42:   7%|▋         | 7/100 [19:01<4:12:33, 162.94s/it, train_acc=86.7%, val_acc=85.7%]Fold 4 Seed 42:   7%|▋         | 7/100 [21:43<4:12:33, 162.94s/it, train_acc=86.9%, val_acc=90.6%]Fold 4 Seed 42:   8%|▊         | 8/100 [21:43<4:09:27, 162.69s/it, train_acc=86.9%, val_acc=90.6%]Fold 4 Seed 42:   8%|▊         | 8/100 [24:28<4:09:27, 162.69s/it, train_acc=88.0%, val_acc=89.5%]Fold 4 Seed 42:   9%|▉         | 9/100 [24:28<4:07:34, 163.23s/it, train_acc=88.0%, val_acc=89.5%]Fold 4 Seed 42:   9%|▉         | 9/100 [27:13<4:07:34, 163.23s/it, train_acc=88.6%, val_acc=90.8%]Fold 4 Seed 42:  10%|█         | 10/100 [27:13<4:05:53, 163.93s/it, train_acc=88.6%, val_acc=90.8%]Fold 4 Seed 42:  10%|█         | 10/100 [30:02<4:05:53, 163.93s/it, train_acc=89.3%, val_acc=92.1%]Fold 4 Seed 42:  11%|█         | 11/100 [30:02<4:05:30, 165.52s/it, train_acc=89.3%, val_acc=92.1%]Fold 4 Seed 42:  11%|█         | 11/100 [32:46<4:05:30, 165.52s/it, train_acc=89.8%, val_acc=92.3%]Fold 4 Seed 42:  12%|█▏        | 12/100 [32:46<4:02:01, 165.02s/it, train_acc=89.8%, val_acc=92.3%]Fold 4 Seed 42:  12%|█▏        | 12/100 [35:37<4:02:01, 165.02s/it, train_acc=89.9%, val_acc=90.1%]Fold 4 Seed 42:  13%|█▎        | 13/100 [35:37<4:01:49, 166.78s/it, train_acc=89.9%, val_acc=90.1%]Fold 4 Seed 42:  13%|█▎        | 13/100 [38:25<4:01:49, 166.78s/it, train_acc=90.4%, val_acc=92.3%]Fold 4 Seed 42:  14%|█▍        | 14/100 [38:25<3:59:50, 167.33s/it, train_acc=90.4%, val_acc=92.3%]Fold 4 Seed 42:  14%|█▍        | 14/100 [41:14<3:59:50, 167.33s/it, train_acc=91.5%, val_acc=92.3%]Fold 4 Seed 42:  15%|█▌        | 15/100 [41:14<3:57:44, 167.82s/it, train_acc=91.5%, val_acc=92.3%]
