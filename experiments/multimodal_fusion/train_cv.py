@@ -260,7 +260,7 @@ class MultiModalCVTrainer:
         if best_model_state is not None:
             model.load_state_dict(best_model_state)
 
-        return self.best_val_acc
+        return model, self.best_val_acc
 
 
 class MultiModalSubset(Subset):
@@ -378,8 +378,9 @@ def create_fold_datasets(
     return train_loader, val_loader, test_loader, train_labels
 
 
-def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_dir: Path, use_wandb: bool = False):
-    """Run K-fold cross-validation with multiple seeds"""
+def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_dir: Path,
+                         cn_ad_test_csv: Optional[str] = None, use_wandb: bool = False):
+    """Run K-fold cross-validation with multiple seeds and cross-task evaluation"""
 
     # Initialize WandB
     if use_wandb and WANDB_AVAILABLE:
@@ -416,6 +417,12 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
     except Exception as e:
         logger.warning(f"Could not load trajectory file: {e}. Subgroup analysis disabled.")
         all_df['trajectory'] = all_df.get('DX', 'Unknown')
+
+    # Load CN_AD test set for cross-task evaluation if provided
+    cn_ad_test_df = None
+    if cn_ad_test_csv and Path(cn_ad_test_csv).exists():
+        cn_ad_test_df = pd.read_csv(cn_ad_test_csv)
+        logger.info(f"Loaded CN_AD test set: {len(cn_ad_test_df)} samples for cross-task evaluation")
 
     # Get labels for stratification
     all_labels = all_df['label'].values
@@ -468,9 +475,9 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
             criterion = trainer.build_criterion(train_labels)
 
             # Train
-            best_val_acc = trainer.train(model, train_loader, val_loader, optimizer, scheduler, criterion)
+            model, best_val_acc = trainer.train(model, train_loader, val_loader, optimizer, scheduler, criterion)
 
-            # Test
+            # Test on trajectory test set
             test_metrics = trainer.validate(model, test_loader, criterion)
 
             # Subgroup analysis: compute accuracy per trajectory (CN / AD / MCI_to_AD)
@@ -490,36 +497,98 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
             for traj, metrics in sorted(subgroup_accs.items()):
                 logger.info(f"    {traj}: {metrics['accuracy']:.1f}% ({metrics['n_samples']} samples)")
 
+            # Cross-task evaluation on CN_AD test set
+            cn_ad_metrics = None
+            if cn_ad_test_df is not None:
+                # Get scaler from train dataset
+                scaler = train_loader.dataset.get_scaler() if hasattr(train_loader.dataset, 'get_scaler') else None
+
+                # Create CN_AD test dataset
+                cn_ad_csv = temp_dir / 'cn_ad_test.csv'
+                cn_ad_test_df.to_csv(cn_ad_csv, index=False)
+
+                tabular_features = config['data']['tabular_features']
+                if 'backbone' in config['model']:
+                    image_size = config['model']['backbone'].get('image_size', 128)
+                else:
+                    image_size = config['model']['vit']['image_size']
+                preproc = config.get('preprocessing', {})
+
+                cn_ad_dataset = MultiModalDataset(
+                    str(cn_ad_csv),
+                    tabular_features=tabular_features,
+                    target_shape=(image_size, image_size, image_size),
+                    augment=False,
+                    normalize_tabular=True,
+                    scaler=scaler,
+                    use_paper_preprocessing=preproc.get('use_paper_preprocessing', True),
+                    target_spacing=preproc.get('target_spacing', 1.75)
+                )
+
+                cn_ad_loader = DataLoader(
+                    cn_ad_dataset,
+                    batch_size=config['training']['batch_size'],
+                    shuffle=False,
+                    num_workers=config['hardware']['num_workers'],
+                    pin_memory=True
+                )
+
+                cn_ad_metrics = trainer.validate(model, cn_ad_loader, criterion)
+                logger.info(f"  CN_AD: Acc={cn_ad_metrics['accuracy']:.1f}%, "
+                           f"BalAcc={cn_ad_metrics['balanced_accuracy']:.1f}%, "
+                           f"Sens={cn_ad_metrics['sensitivity']:.1f}%, Spec={cn_ad_metrics['specificity']:.1f}%, "
+                           f"AUC={cn_ad_metrics['auc']:.3f}")
+
             fold_result = {
                 'seed': seed,
                 'fold': fold,
                 'val_accuracy': best_val_acc,
-                'test_accuracy': test_metrics['accuracy'],
-                'test_balanced_accuracy': test_metrics['balanced_accuracy'],
-                'test_sensitivity': test_metrics['sensitivity'],
-                'test_specificity': test_metrics['specificity'],
-                'test_auc': test_metrics['auc'],
+                'traj_accuracy': test_metrics['accuracy'],
+                'traj_balanced_accuracy': test_metrics['balanced_accuracy'],
+                'traj_sensitivity': test_metrics['sensitivity'],
+                'traj_specificity': test_metrics['specificity'],
+                'traj_auc': test_metrics['auc'],
                 'subgroup_accuracy': subgroup_accs
             }
+
+            # Add CN_AD metrics if available
+            if cn_ad_metrics is not None:
+                fold_result['cn_ad_accuracy'] = cn_ad_metrics['accuracy']
+                fold_result['cn_ad_balanced_accuracy'] = cn_ad_metrics['balanced_accuracy']
+                fold_result['cn_ad_sensitivity'] = cn_ad_metrics['sensitivity']
+                fold_result['cn_ad_specificity'] = cn_ad_metrics['specificity']
+                fold_result['cn_ad_auc'] = cn_ad_metrics['auc']
+
             fold_results.append(fold_result)
             all_results.append(fold_result)
 
             # Log fold test metrics to WandB
             if use_wandb:
                 wandb.log({
-                    f'test/seed_{seed}_fold_{fold}_accuracy': test_metrics['accuracy'],
-                    f'test/seed_{seed}_fold_{fold}_balanced_accuracy': test_metrics['balanced_accuracy'],
-                    f'test/seed_{seed}_fold_{fold}_sensitivity': test_metrics['sensitivity'],
-                    f'test/seed_{seed}_fold_{fold}_specificity': test_metrics['specificity'],
-                    f'test/seed_{seed}_fold_{fold}_auc': test_metrics['auc']
+                    f'test/seed_{seed}_fold_{fold}_traj_accuracy': test_metrics['accuracy'],
+                    f'test/seed_{seed}_fold_{fold}_traj_balanced_accuracy': test_metrics['balanced_accuracy'],
+                    f'test/seed_{seed}_fold_{fold}_traj_sensitivity': test_metrics['sensitivity'],
+                    f'test/seed_{seed}_fold_{fold}_traj_specificity': test_metrics['specificity'],
+                    f'test/seed_{seed}_fold_{fold}_traj_auc': test_metrics['auc']
                 })
+                if cn_ad_metrics is not None:
+                    wandb.log({
+                        f'test/seed_{seed}_fold_{fold}_cn_ad_accuracy': cn_ad_metrics['accuracy'],
+                        f'test/seed_{seed}_fold_{fold}_cn_ad_balanced_accuracy': cn_ad_metrics['balanced_accuracy'],
+                        f'test/seed_{seed}_fold_{fold}_cn_ad_sensitivity': cn_ad_metrics['sensitivity'],
+                        f'test/seed_{seed}_fold_{fold}_cn_ad_specificity': cn_ad_metrics['specificity'],
+                        f'test/seed_{seed}_fold_{fold}_cn_ad_auc': cn_ad_metrics['auc']
+                    })
 
-            logger.info(f"Fold {fold+1} - Val: {best_val_acc:.2f}%, Test: {test_metrics['accuracy']:.2f}%, "
+            logger.info(f"Fold {fold+1} - Val: {best_val_acc:.2f}%, Traj: {test_metrics['accuracy']:.2f}%, "
                        f"Balanced: {test_metrics['balanced_accuracy']:.2f}%, AUC: {test_metrics['auc']:.3f}")
 
         # Seed summary
-        seed_accs = [r['test_accuracy'] for r in fold_results]
-        logger.info(f"\nSeed {seed} Summary: {np.mean(seed_accs):.2f}% +/- {np.std(seed_accs):.2f}%")
+        seed_accs = [r['traj_accuracy'] for r in fold_results]
+        logger.info(f"\nSeed {seed} Traj Summary: {np.mean(seed_accs):.2f}% +/- {np.std(seed_accs):.2f}%")
+        if cn_ad_test_df is not None:
+            cn_ad_accs = [r['cn_ad_accuracy'] for r in fold_results]
+            logger.info(f"Seed {seed} CN_AD Summary: {np.mean(cn_ad_accs):.2f}% +/- {np.std(cn_ad_accs):.2f}%")
 
     # Final summary
     logger.info("\n" + "="*60)
@@ -531,44 +600,85 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
     # Per-seed summary
     for seed in seeds:
         seed_results = results_df[results_df['seed'] == seed]
-        mean_acc = seed_results['test_accuracy'].mean()
-        std_acc = seed_results['test_accuracy'].std()
+        mean_acc = seed_results['traj_accuracy'].mean()
+        std_acc = seed_results['traj_accuracy'].std()
         logger.info(f"Seed {seed}: {mean_acc:.2f}% +/- {std_acc:.2f}%")
 
-    # Overall summary
-    overall_mean = results_df['test_accuracy'].mean()
-    overall_std = results_df['test_accuracy'].std()
-    balanced_mean = results_df['test_balanced_accuracy'].mean()
-    balanced_std = results_df['test_balanced_accuracy'].std()
-    sensitivity_mean = results_df['test_sensitivity'].mean()
-    sensitivity_std = results_df['test_sensitivity'].std()
-    specificity_mean = results_df['test_specificity'].mean()
-    specificity_std = results_df['test_specificity'].std()
-    auc_mean = results_df['test_auc'].mean()
-    auc_std = results_df['test_auc'].std()
+    # Overall trajectory summary
+    traj_acc_mean = results_df['traj_accuracy'].mean()
+    traj_acc_std = results_df['traj_accuracy'].std()
+    traj_bal_mean = results_df['traj_balanced_accuracy'].mean()
+    traj_bal_std = results_df['traj_balanced_accuracy'].std()
+    traj_sens_mean = results_df['traj_sensitivity'].mean()
+    traj_sens_std = results_df['traj_sensitivity'].std()
+    traj_spec_mean = results_df['traj_specificity'].mean()
+    traj_spec_std = results_df['traj_specificity'].std()
+    traj_auc_mean = results_df['traj_auc'].mean()
+    traj_auc_std = results_df['traj_auc'].std()
 
     logger.info(f"\n{'='*40}")
-    logger.info(f"OVERALL: {overall_mean:.2f}% +/- {overall_std:.2f}%")
-    logger.info(f"BALANCED: {balanced_mean:.2f}% +/- {balanced_std:.2f}%")
-    logger.info(f"SENSITIVITY: {sensitivity_mean:.2f}% +/- {sensitivity_std:.2f}%")
-    logger.info(f"SPECIFICITY: {specificity_mean:.2f}% +/- {specificity_std:.2f}%")
-    logger.info(f"AUC: {auc_mean:.3f} +/- {auc_std:.3f}")
+    logger.info("TRAJECTORY (train+test):")
+    logger.info(f"  Accuracy:     {traj_acc_mean:.2f}% +/- {traj_acc_std:.2f}%")
+    logger.info(f"  Balanced:     {traj_bal_mean:.2f}% +/- {traj_bal_std:.2f}%")
+    logger.info(f"  Sensitivity:  {traj_sens_mean:.2f}% +/- {traj_sens_std:.2f}%")
+    logger.info(f"  Specificity:  {traj_spec_mean:.2f}% +/- {traj_spec_std:.2f}%")
+    logger.info(f"  AUC:          {traj_auc_mean:.3f} +/- {traj_auc_std:.3f}")
+
+    # CN_AD summary if available
+    cn_ad_acc_mean, cn_ad_acc_std = None, None
+    cn_ad_bal_mean, cn_ad_bal_std = None, None
+    cn_ad_sens_mean, cn_ad_sens_std = None, None
+    cn_ad_spec_mean, cn_ad_spec_std = None, None
+    cn_ad_auc_mean, cn_ad_auc_std = None, None
+
+    if 'cn_ad_accuracy' in results_df.columns:
+        cn_ad_acc_mean = results_df['cn_ad_accuracy'].mean()
+        cn_ad_acc_std = results_df['cn_ad_accuracy'].std()
+        cn_ad_bal_mean = results_df['cn_ad_balanced_accuracy'].mean()
+        cn_ad_bal_std = results_df['cn_ad_balanced_accuracy'].std()
+        cn_ad_sens_mean = results_df['cn_ad_sensitivity'].mean()
+        cn_ad_sens_std = results_df['cn_ad_sensitivity'].std()
+        cn_ad_spec_mean = results_df['cn_ad_specificity'].mean()
+        cn_ad_spec_std = results_df['cn_ad_specificity'].std()
+        cn_ad_auc_mean = results_df['cn_ad_auc'].mean()
+        cn_ad_auc_std = results_df['cn_ad_auc'].std()
+
+        logger.info("\nCN_AD (stable AD, cross-task):")
+        logger.info(f"  Accuracy:     {cn_ad_acc_mean:.2f}% +/- {cn_ad_acc_std:.2f}%")
+        logger.info(f"  Balanced:     {cn_ad_bal_mean:.2f}% +/- {cn_ad_bal_std:.2f}%")
+        logger.info(f"  Sensitivity:  {cn_ad_sens_mean:.2f}% +/- {cn_ad_sens_std:.2f}%")
+        logger.info(f"  Specificity:  {cn_ad_spec_mean:.2f}% +/- {cn_ad_spec_std:.2f}%")
+        logger.info(f"  AUC:          {cn_ad_auc_mean:.3f} +/- {cn_ad_auc_std:.3f}")
+
     logger.info(f"{'='*40}")
 
     # Log final summary to WandB
     if use_wandb:
         wandb.log({
-            'final/accuracy_mean': overall_mean,
-            'final/accuracy_std': overall_std,
-            'final/balanced_accuracy_mean': balanced_mean,
-            'final/balanced_accuracy_std': balanced_std,
-            'final/sensitivity_mean': sensitivity_mean,
-            'final/sensitivity_std': sensitivity_std,
-            'final/specificity_mean': specificity_mean,
-            'final/specificity_std': specificity_std,
-            'final/auc_mean': auc_mean,
-            'final/auc_std': auc_std
+            'final/traj_accuracy_mean': traj_acc_mean,
+            'final/traj_accuracy_std': traj_acc_std,
+            'final/traj_balanced_accuracy_mean': traj_bal_mean,
+            'final/traj_balanced_accuracy_std': traj_bal_std,
+            'final/traj_sensitivity_mean': traj_sens_mean,
+            'final/traj_sensitivity_std': traj_sens_std,
+            'final/traj_specificity_mean': traj_spec_mean,
+            'final/traj_specificity_std': traj_spec_std,
+            'final/traj_auc_mean': traj_auc_mean,
+            'final/traj_auc_std': traj_auc_std
         })
+        if cn_ad_acc_mean is not None:
+            wandb.log({
+                'final/cn_ad_accuracy_mean': cn_ad_acc_mean,
+                'final/cn_ad_accuracy_std': cn_ad_acc_std,
+                'final/cn_ad_balanced_accuracy_mean': cn_ad_bal_mean,
+                'final/cn_ad_balanced_accuracy_std': cn_ad_bal_std,
+                'final/cn_ad_sensitivity_mean': cn_ad_sens_mean,
+                'final/cn_ad_sensitivity_std': cn_ad_sens_std,
+                'final/cn_ad_specificity_mean': cn_ad_spec_mean,
+                'final/cn_ad_specificity_std': cn_ad_spec_std,
+                'final/cn_ad_auc_mean': cn_ad_auc_mean,
+                'final/cn_ad_auc_std': cn_ad_auc_std
+            })
         wandb.finish()
 
     # Subgroup summary across all folds
@@ -604,19 +714,34 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
     summary = {
         'n_folds': n_folds,
         'seeds': seeds,
-        'overall_accuracy_mean': float(overall_mean),
-        'overall_accuracy_std': float(overall_std),
-        'balanced_accuracy_mean': float(balanced_mean),
-        'balanced_accuracy_std': float(balanced_std),
-        'sensitivity_mean': float(sensitivity_mean),
-        'sensitivity_std': float(sensitivity_std),
-        'specificity_mean': float(specificity_mean),
-        'specificity_std': float(specificity_std),
-        'auc_mean': float(auc_mean),
-        'auc_std': float(auc_std),
+        'traj_accuracy': float(traj_acc_mean),
+        'traj_accuracy_std': float(traj_acc_std),
+        'traj_balanced_accuracy': float(traj_bal_mean),
+        'traj_balanced_accuracy_std': float(traj_bal_std),
+        'traj_sensitivity': float(traj_sens_mean),
+        'traj_sensitivity_std': float(traj_sens_std),
+        'traj_specificity': float(traj_spec_mean),
+        'traj_specificity_std': float(traj_spec_std),
+        'traj_auc': float(traj_auc_mean),
+        'traj_auc_std': float(traj_auc_std),
         'subgroup_summary': subgroup_summary,
         'per_fold_results': all_results
     }
+
+    # Add CN_AD metrics if available
+    if cn_ad_acc_mean is not None:
+        summary.update({
+            'cn_ad_accuracy': float(cn_ad_acc_mean),
+            'cn_ad_accuracy_std': float(cn_ad_acc_std),
+            'cn_ad_balanced_accuracy': float(cn_ad_bal_mean),
+            'cn_ad_balanced_accuracy_std': float(cn_ad_bal_std),
+            'cn_ad_sensitivity': float(cn_ad_sens_mean),
+            'cn_ad_sensitivity_std': float(cn_ad_sens_std),
+            'cn_ad_specificity': float(cn_ad_spec_mean),
+            'cn_ad_specificity_std': float(cn_ad_spec_std),
+            'cn_ad_auc': float(cn_ad_auc_mean),
+            'cn_ad_auc_std': float(cn_ad_auc_std),
+        })
 
     with open(output_dir / 'cv_summary.json', 'w') as f:
         json.dump(summary, f, indent=2)
@@ -635,6 +760,8 @@ def main():
     parser.add_argument('--n-folds', type=int, default=5, help='Number of CV folds')
     parser.add_argument('--seeds', type=int, nargs='+', default=[42, 123, 456], help='Random seeds')
     parser.add_argument('--output-dir', type=str, default='cv_results', help='Output directory')
+    parser.add_argument('--cn-ad-test', type=str, default='data/combined_cn_ad/test.csv',
+                        help='Path to CN_AD test CSV for cross-task evaluation')
     parser.add_argument('--no-wandb', action='store_true', help='Disable WandB logging')
     args = parser.parse_args()
 
@@ -650,7 +777,8 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Run cross-validation
-    summary = run_cross_validation(config, args.n_folds, args.seeds, output_dir, use_wandb=use_wandb)
+    summary = run_cross_validation(config, args.n_folds, args.seeds, output_dir,
+                                   cn_ad_test_csv=args.cn_ad_test, use_wandb=use_wandb)
 
     logger.info(f"\nResults saved to {output_dir}")
 
