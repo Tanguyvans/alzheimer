@@ -73,6 +73,7 @@ callbacks:
   early_stopping:
     enabled: true
     patience: 20
+    min_epochs: 40
     monitor: "val_accuracy"
   checkpoint:
     save_best: true
