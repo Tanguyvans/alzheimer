@@ -410,7 +410,7 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
 
     data_dir = Path(config['data']['data_dir'])
 
-    # Load full dataset
+    # Load full dataset - combine ALL data for proper CV (consistent with multimodal)
     train_csv = data_dir / "train.csv"
     val_csv = data_dir / "val.csv"
     test_csv = data_dir / "test.csv"
@@ -419,9 +419,11 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
     val_df = pd.read_csv(val_csv)
     test_df = pd.read_csv(test_csv)
 
-    full_train_df = pd.concat([train_df, val_df], ignore_index=True)
+    # Combine ALL data for full cross-validation
+    all_df = pd.concat([train_df, val_df, test_df], ignore_index=True)
 
-    logger.info(f"Dataset loaded: {len(full_train_df)} train+val, {len(test_df)} test samples")
+    logger.info(f"Total samples: {len(all_df)}")
+    logger.info(f"Label distribution:\n{all_df['label'].value_counts()}")
 
     # Load CN_AD test set for cross-task evaluation if provided
     cn_ad_test_df = None
@@ -439,24 +441,36 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
         set_seed(seed)
 
         # Get labels for stratification
-        if 'label' in full_train_df.columns:
-            labels = full_train_df['label'].values
+        if 'label' in all_df.columns:
+            labels = all_df['label'].values
         else:
             dx_map = {'CN': 0, 'AD': 1, 'MCI': 1, 'Dementia': 1}
-            labels = full_train_df['DX'].map(dx_map).values
+            labels = all_df['DX'].map(dx_map).values
 
+        all_indices = np.arange(len(all_df))
         skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=seed)
 
         seed_results = []
 
-        for fold, (train_idx, val_idx) in enumerate(skf.split(full_train_df, labels)):
+        for fold, (train_idx, test_idx) in enumerate(skf.split(all_indices, labels)):
             logger.info(f"\n--- Fold {fold+1}/{n_folds} ---")
+
+            # Split train into train/val (90/10) like multimodal
+            set_seed(seed + fold)
+            n_train = len(train_idx)
+            val_size = int(0.1 * n_train)
+            perm = np.random.permutation(n_train)
+            val_idx_local = train_idx[perm[:val_size]]
+            train_idx_final = train_idx[perm[val_size:]]
+
+            logger.info(f"Train: {len(train_idx_final)}, Val: {len(val_idx_local)}, Test: {len(test_idx)}")
 
             fold_dir = output_dir / f"seed_{seed}" / f"fold_{fold}"
             fold_dir.mkdir(parents=True, exist_ok=True)
 
-            train_fold_df = full_train_df.iloc[train_idx]
-            val_fold_df = full_train_df.iloc[val_idx]
+            train_fold_df = all_df.iloc[train_idx_final]
+            val_fold_df = all_df.iloc[val_idx_local]
+            test_fold_df = all_df.iloc[test_idx]
 
             train_fold_csv = fold_dir / "train.csv"
             val_fold_csv = fold_dir / "val.csv"
@@ -464,7 +478,7 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
 
             train_fold_df.to_csv(train_fold_csv, index=False)
             val_fold_df.to_csv(val_fold_csv, index=False)
-            test_df.to_csv(test_fold_csv, index=False)
+            test_fold_df.to_csv(test_fold_csv, index=False)
 
             # Create datasets
             train_dataset = MRIDataset(str(train_fold_csv),
