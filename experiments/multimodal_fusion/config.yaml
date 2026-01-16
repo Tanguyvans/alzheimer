@@ -117,5 +117,5 @@ callbacks:
 
 wandb:
   enabled: true
-  project: "alzheimer-multimodal"
-  name: "cross_task_cv_100ep"
+  project: "alzheimer-ablation"
+  name: "multimodal_fusion_cv"
