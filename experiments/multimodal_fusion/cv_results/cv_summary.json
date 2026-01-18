@@ -1,0 +1,547 @@
+{
+  "n_folds": 5,
+  "seeds": [
+    42,
+    123,
+    456
+  ],
+  "traj_accuracy": 92.4264907941742,
+  "traj_accuracy_std": 0.9788573792663093,
+  "traj_balanced_accuracy": 87.50842236829789,
+  "traj_balanced_accuracy_std": 2.4500069872539476,
+  "traj_sensitivity": 78.80890655605485,
+  "traj_sensitivity_std": 5.45053965170397,
+  "traj_specificity": 96.2079381805409,
+  "traj_specificity_std": 1.0781256326195199,
+  "traj_auc": 0.9585590659831712,
+  "traj_auc_std": 0.010768064661212046,
+  "subgroup_summary": {
+    "AD": {
+      "accuracy_mean": 93.63241423351782,
+      "accuracy_std": 4.720141459883976,
+      "avg_samples_per_fold": 44.0
+    },
+    "AD_trajectory": {
+      "accuracy_mean": 74.58156144023403,
+      "accuracy_std": 5.969106140146134,
+      "avg_samples_per_fold": 167.8
+    },
+    "CN": {
+      "accuracy_mean": 96.2079381805409,
+      "accuracy_std": 1.041568314800884,
+      "avg_samples_per_fold": 949.4
+    },
+    "MCI_to_AD": {
+      "accuracy_mean": 80.22043996219222,
+      "accuracy_std": 8.624095442260243,
+      "avg_samples_per_fold": 51.8
+    }
+  },
+  "per_fold_results": [
+    {
+      "seed": 42,
+      "fold": 0,
+      "val_accuracy": 92.57731958762886,
+      "traj_accuracy": 92.82769991755977,
+      "traj_balanced_accuracy": 87.85951570942565,
+      "traj_sensitivity": 79.08745247148289,
+      "traj_specificity": 96.63157894736842,
+      "traj_auc": 0.9619331598959375,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 96.63157894736842,
+          "n_samples": 950
+        },
+        "AD_trajectory": {
+          "accuracy": 73.75,
+          "n_samples": 160
+        },
+        "MCI_to_AD": {
+          "accuracy": 80.32786885245902,
+          "n_samples": 61
+        },
+        "AD": {
+          "accuracy": 97.61904761904762,
+          "n_samples": 42
+        }
+      },
+      "cn_ad_accuracy": 94.070796460177,
+      "cn_ad_balanced_accuracy": 88.59356725146199,
+      "cn_ad_sensitivity": 80.55555555555556,
+      "cn_ad_specificity": 96.63157894736842,
+      "cn_ad_auc": 0.9619883040935673
+    },
+    {
+      "seed": 42,
+      "fold": 1,
+      "val_accuracy": 92.98969072164948,
+      "traj_accuracy": 93.56966199505358,
+      "traj_balanced_accuracy": 88.60816489893936,
+      "traj_sensitivity": 79.84790874524715,
+      "traj_specificity": 97.36842105263158,
+      "traj_auc": 0.9677286371823095,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 97.36842105263158,
+          "n_samples": 950
+        },
+        "AD_trajectory": {
+          "accuracy": 77.58620689655173,
+          "n_samples": 174
+        },
+        "MCI_to_AD": {
+          "accuracy": 84.31372549019608,
+          "n_samples": 51
+        },
+        "AD": {
+          "accuracy": 84.21052631578947,
+          "n_samples": 38
+        }
+      },
+      "cn_ad_accuracy": 94.08181026979983,
+      "cn_ad_balanced_accuracy": 87.88019042581328,
+      "cn_ad_sensitivity": 78.39195979899498,
+      "cn_ad_specificity": 97.36842105263158,
+      "cn_ad_auc": 0.9661623909018777
+    },
+    {
+      "seed": 42,
+      "fold": 2,
+      "val_accuracy": 93.19587628865979,
+      "traj_accuracy": 91.34377576257214,
+      "traj_balanced_accuracy": 84.62496407701887,
+      "traj_sensitivity": 72.72727272727273,
+      "traj_specificity": 96.52265542676501,
+      "traj_auc": 0.9466024842737172,
+      "subgroup_accuracy": {
+        "AD": {
+          "accuracy": 89.58333333333334,
+          "n_samples": 48
+        },
+        "CN": {
+          "accuracy": 96.52265542676501,
+          "n_samples": 949
+        },
+        "AD_trajectory": {
+          "accuracy": 70.41420118343196,
+          "n_samples": 169
+        },
+        "MCI_to_AD": {
+          "accuracy": 63.829787234042556,
+          "n_samples": 47
+        }
+      },
+      "cn_ad_accuracy": 92.6829268292683,
+      "cn_ad_balanced_accuracy": 85.44725736162371,
+      "cn_ad_sensitivity": 74.37185929648241,
+      "cn_ad_specificity": 96.52265542676501,
+      "cn_ad_auc": 0.9409216789956103
+    },
+    {
+      "seed": 42,
+      "fold": 3,
+      "val_accuracy": 93.4020618556701,
+      "traj_accuracy": 91.83841714756801,
+      "traj_balanced_accuracy": 85.62462081297697,
+      "traj_sensitivity": 74.62121212121212,
+      "traj_specificity": 96.62802950474183,
+      "traj_auc": 0.9540584985790465,
+      "subgroup_accuracy": {
+        "AD_trajectory": {
+          "accuracy": 69.31818181818183,
+          "n_samples": 176
+        },
+        "CN": {
+          "accuracy": 96.62802950474183,
+          "n_samples": 949
+        },
+        "AD": {
+          "accuracy": 97.2972972972973,
+          "n_samples": 37
+        },
+        "MCI_to_AD": {
+          "accuracy": 76.47058823529412,
+          "n_samples": 51
+        }
+      },
+      "cn_ad_accuracy": 93.15188762071993,
+      "cn_ad_balanced_accuracy": 86.20875159447618,
+      "cn_ad_sensitivity": 75.78947368421052,
+      "cn_ad_specificity": 96.62802950474183,
+      "cn_ad_auc": 0.9531029892962121
+    },
+    {
+      "seed": 42,
+      "fold": 4,
+      "val_accuracy": 91.95876288659794,
+      "traj_accuracy": 92.0032976092333,
+      "traj_balanced_accuracy": 90.65144330555289,
+      "traj_sensitivity": 88.25757575757575,
+      "traj_specificity": 93.04531085353003,
+      "traj_auc": 0.9638335408883354,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 93.04531085353003,
+          "n_samples": 949
+        },
+        "MCI_to_AD": {
+          "accuracy": 91.83673469387756,
+          "n_samples": 49
+        },
+        "AD_trajectory": {
+          "accuracy": 83.125,
+          "n_samples": 160
+        },
+        "AD": {
+          "accuracy": 100.0,
+          "n_samples": 55
+        }
+      },
+      "cn_ad_accuracy": 92.19298245614036,
+      "cn_ad_balanced_accuracy": 90.50171301838805,
+      "cn_ad_sensitivity": 87.95811518324608,
+      "cn_ad_specificity": 93.04531085353003,
+      "cn_ad_auc": 0.9669257802371192
+    },
+    {
+      "seed": 123,
+      "fold": 0,
+      "val_accuracy": 92.37113402061856,
+      "traj_accuracy": 94.14674361088211,
+      "traj_balanced_accuracy": 90.4888933360016,
+      "traj_sensitivity": 84.03041825095058,
+      "traj_specificity": 96.94736842105263,
+      "traj_auc": 0.967000200120072,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 96.94736842105263,
+          "n_samples": 950
+        },
+        "AD_trajectory": {
+          "accuracy": 81.54761904761905,
+          "n_samples": 168
+        },
+        "AD": {
+          "accuracy": 95.23809523809523,
+          "n_samples": 42
+        },
+        "MCI_to_AD": {
+          "accuracy": 83.01886792452831,
+          "n_samples": 53
+        }
+      },
+      "cn_ad_accuracy": 95.0920245398773,
+      "cn_ad_balanced_accuracy": 91.40562138330118,
+      "cn_ad_sensitivity": 85.86387434554973,
+      "cn_ad_specificity": 96.94736842105263,
+      "cn_ad_auc": 0.965511160099201
+    },
+    {
+      "seed": 123,
+      "fold": 1,
+      "val_accuracy": 93.6082474226804,
+      "traj_accuracy": 93.239901071723,
+      "traj_balanced_accuracy": 89.22253352011207,
+      "traj_sensitivity": 82.12927756653993,
+      "traj_specificity": 96.3157894736842,
+      "traj_auc": 0.9636742045227136,
+      "subgroup_accuracy": {
+        "AD": {
+          "accuracy": 92.0,
+          "n_samples": 50
+        },
+        "CN": {
+          "accuracy": 96.3157894736842,
+          "n_samples": 950
+        },
+        "MCI_to_AD": {
+          "accuracy": 84.44444444444444,
+          "n_samples": 45
+        },
+        "AD_trajectory": {
+          "accuracy": 78.57142857142857,
+          "n_samples": 168
+        }
+      },
+      "cn_ad_accuracy": 93.73368146214099,
+      "cn_ad_balanced_accuracy": 88.8614123247818,
+      "cn_ad_sensitivity": 81.4070351758794,
+      "cn_ad_specificity": 96.3157894736842,
+      "cn_ad_auc": 0.9628881248346998
+    },
+    {
+      "seed": 123,
+      "fold": 2,
+      "val_accuracy": 94.43298969072166,
+      "traj_accuracy": 92.1681780708986,
+      "traj_balanced_accuracy": 88.15938627582463,
+      "traj_sensitivity": 81.06060606060606,
+      "traj_specificity": 95.2581664910432,
+      "traj_auc": 0.958377239199157,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 95.25816649104321,
+          "n_samples": 949
+        },
+        "MCI_to_AD": {
+          "accuracy": 74.07407407407408,
+          "n_samples": 54
+        },
+        "AD_trajectory": {
+          "accuracy": 79.51807228915662,
+          "n_samples": 166
+        },
+        "AD": {
+          "accuracy": 95.45454545454545,
+          "n_samples": 44
+        }
+      },
+      "cn_ad_accuracy": 93.23374340949033,
+      "cn_ad_balanced_accuracy": 89.16347477991313,
+      "cn_ad_sensitivity": 83.06878306878306,
+      "cn_ad_specificity": 95.2581664910432,
+      "cn_ad_auc": 0.9646411427233346
+    },
+    {
+      "seed": 123,
+      "fold": 3,
+      "val_accuracy": 92.16494845360825,
+      "traj_accuracy": 92.08573784006595,
+      "traj_balanced_accuracy": 86.60292333237538,
+      "traj_sensitivity": 76.89393939393939,
+      "traj_specificity": 96.31190727081137,
+      "traj_auc": 0.9524060414471374,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 96.31190727081137,
+          "n_samples": 949
+        },
+        "MCI_to_AD": {
+          "accuracy": 74.50980392156863,
+          "n_samples": 51
+        },
+        "AD_trajectory": {
+          "accuracy": 73.98843930635837,
+          "n_samples": 173
+        },
+        "AD": {
+          "accuracy": 92.5,
+          "n_samples": 40
+        }
+      },
+      "cn_ad_accuracy": 93.11246730601569,
+      "cn_ad_balanced_accuracy": 86.84500431075773,
+      "cn_ad_sensitivity": 77.27272727272727,
+      "cn_ad_specificity": 96.4172813487882,
+      "cn_ad_auc": 0.9493459356473054
+    },
+    {
+      "seed": 123,
+      "fold": 4,
+      "val_accuracy": 94.43298969072166,
+      "traj_accuracy": 92.41549876339654,
+      "traj_balanced_accuracy": 85.85672318549031,
+      "traj_sensitivity": 74.24242424242425,
+      "traj_specificity": 97.47102212855637,
+      "traj_auc": 0.9613388894210813,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 97.47102212855637,
+          "n_samples": 949
+        },
+        "AD_trajectory": {
+          "accuracy": 69.51219512195121,
+          "n_samples": 164
+        },
+        "MCI_to_AD": {
+          "accuracy": 78.57142857142857,
+          "n_samples": 56
+        },
+        "AD": {
+          "accuracy": 86.36363636363636,
+          "n_samples": 44
+        }
+      },
+      "cn_ad_accuracy": 93.54553492484527,
+      "cn_ad_balanced_accuracy": 85.27397260273972,
+      "cn_ad_sensitivity": 73.07692307692308,
+      "cn_ad_specificity": 97.47102212855637,
+      "cn_ad_auc": 0.9528248358596093
+    },
+    {
+      "seed": 456,
+      "fold": 0,
+      "val_accuracy": 92.37113402061856,
+      "traj_accuracy": 92.99258037922506,
+      "traj_balanced_accuracy": 88.92715629377626,
+      "traj_sensitivity": 81.74904942965779,
+      "traj_specificity": 96.10526315789474,
+      "traj_auc": 0.9711747048228937,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 96.10526315789474,
+          "n_samples": 950
+        },
+        "AD_trajectory": {
+          "accuracy": 72.83236994219652,
+          "n_samples": 173
+        },
+        "MCI_to_AD": {
+          "accuracy": 100.0,
+          "n_samples": 48
+        },
+        "AD": {
+          "accuracy": 97.61904761904762,
+          "n_samples": 42
+        }
+      },
+      "cn_ad_accuracy": 92.86335944299391,
+      "cn_ad_balanced_accuracy": 86.74609891563078,
+      "cn_ad_sensitivity": 77.38693467336684,
+      "cn_ad_specificity": 96.10526315789474,
+      "cn_ad_auc": 0.9644326897646125
+    },
+    {
+      "seed": 456,
+      "fold": 1,
+      "val_accuracy": 94.22680412371135,
+      "traj_accuracy": 92.25061830173125,
+      "traj_balanced_accuracy": 86.5287172303382,
+      "traj_sensitivity": 76.42585551330798,
+      "traj_specificity": 96.63157894736842,
+      "traj_auc": 0.9583029817890736,
+      "subgroup_accuracy": {
+        "AD": {
+          "accuracy": 93.93939393939394,
+          "n_samples": 33
+        },
+        "CN": {
+          "accuracy": 96.63157894736842,
+          "n_samples": 950
+        },
+        "AD_trajectory": {
+          "accuracy": 75.14124293785311,
+          "n_samples": 177
+        },
+        "MCI_to_AD": {
+          "accuracy": 69.81132075471697,
+          "n_samples": 53
+        }
+      },
+      "cn_ad_accuracy": 93.6077057793345,
+      "cn_ad_balanced_accuracy": 87.63870614035088,
+      "cn_ad_sensitivity": 78.64583333333333,
+      "cn_ad_specificity": 96.63157894736842,
+      "cn_ad_auc": 0.9552576754385965
+    },
+    {
+      "seed": 456,
+      "fold": 2,
+      "val_accuracy": 94.02061855670104,
+      "traj_accuracy": 92.49793899422919,
+      "traj_balanced_accuracy": 87.68659992975061,
+      "traj_sensitivity": 79.16666666666667,
+      "traj_specificity": 96.20653319283456,
+      "traj_auc": 0.9454868761375611,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 96.20653319283457,
+          "n_samples": 949
+        },
+        "AD_trajectory": {
+          "accuracy": 74.56647398843931,
+          "n_samples": 173
+        },
+        "MCI_to_AD": {
+          "accuracy": 80.35714285714286,
+          "n_samples": 56
+        },
+        "AD": {
+          "accuracy": 100.0,
+          "n_samples": 35
+        }
+      },
+      "cn_ad_accuracy": 93.48591549295774,
+      "cn_ad_balanced_accuracy": 87.94283878893066,
+      "cn_ad_sensitivity": 79.67914438502673,
+      "cn_ad_specificity": 96.20653319283456,
+      "cn_ad_auc": 0.9413793297757842
+    },
+    {
+      "seed": 456,
+      "fold": 3,
+      "val_accuracy": 93.6082474226804,
+      "traj_accuracy": 92.99258037922506,
+      "traj_balanced_accuracy": 90.19003257016955,
+      "traj_sensitivity": 85.22727272727273,
+      "traj_specificity": 95.15279241306638,
+      "traj_auc": 0.9733211993485966,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 95.1527924130664,
+          "n_samples": 949
+        },
+        "AD_trajectory": {
+          "accuracy": 80.27210884353741,
+          "n_samples": 147
+        },
+        "MCI_to_AD": {
+          "accuracy": 87.27272727272727,
+          "n_samples": 55
+        },
+        "AD": {
+          "accuracy": 95.16129032258065,
+          "n_samples": 62
+        }
+      },
+      "cn_ad_accuracy": 93.7389770723104,
+      "cn_ad_balanced_accuracy": 90.81963944977645,
+      "cn_ad_sensitivity": 86.48648648648648,
+      "cn_ad_specificity": 95.15279241306638,
+      "cn_ad_auc": 0.9724831259077835
+    },
+    {
+      "seed": 456,
+      "fold": 4,
+      "val_accuracy": 89.89690721649484,
+      "traj_accuracy": 90.0247320692498,
+      "traj_balanced_accuracy": 81.59466104671584,
+      "traj_sensitivity": 66.66666666666667,
+      "traj_specificity": 96.52265542676501,
+      "traj_auc": 0.9331473321199348,
+      "subgroup_accuracy": {
+        "AD_trajectory": {
+          "accuracy": 58.57988165680473,
+          "n_samples": 169
+        },
+        "CN": {
+          "accuracy": 96.52265542676501,
+          "n_samples": 949
+        },
+        "MCI_to_AD": {
+          "accuracy": 74.46808510638297,
+          "n_samples": 47
+        },
+        "AD": {
+          "accuracy": 87.5,
+          "n_samples": 48
+        }
+      },
+      "cn_ad_accuracy": 91.17903930131004,
+      "cn_ad_balanced_accuracy": 80.71197393604439,
+      "cn_ad_sensitivity": 64.79591836734694,
+      "cn_ad_specificity": 96.62802950474183,
+      "cn_ad_auc": 0.9249747317261995
+    }
+  ],
+  "cn_ad_accuracy": 93.31819015782544,
+  "cn_ad_accuracy_std": 0.8999583572839354,
+  "cn_ad_balanced_accuracy": 87.60268148559933,
+  "cn_ad_balanced_accuracy_std": 2.662079497850789,
+  "cn_ad_sensitivity": 78.98337491359416,
+  "cn_ad_sensitivity_std": 5.87537400301594,
+  "cn_ad_specificity": 96.22198805760448,
+  "cn_ad_specificity_std": 1.081680309790314,
+  "cn_ad_auc": 0.9561893263534343,
+  "cn_ad_auc_std": 0.012762499323353866
+}
