@@ -51,7 +51,7 @@ said.mahmoudi@umons.ac.be}
 \maketitle
 
 \begin{abstract}
-Deep learning for Alzheimer's disease (AD) classification from MRI has shown promise, yet recent reviews reveal that fewer than 20\% of studies employ external validation, with data leakage inflating reported accuracies to 95-99\%. Studies with rigorous subject-level splitting achieve 66-90\%, establishing 80-85\% as the credible benchmark. We present an end-to-end multimodal framework combining Vision Transformer (ViT) with masked autoencoder pretraining for 3D MRI analysis and Feature Tokenizer Transformer (FT-Transformer) for clinical tabular data, integrated through bidirectional cross-attention. We validate on 6,065 subjects from three independent cohorts (ADNI, OASIS, NACC) using strict subject-level splitting and 5-fold cross-validation. Our approach achieves 92.1\% accuracy on the challenging AD-trajectory task (CN vs AD including MCI converters). Notably, cross-task evaluation reveals that trajectory-trained models achieve \textbf{94.1\% accuracy} (AUC: 0.97) on stable AD detection, demonstrating that training on heterogeneous disease presentations improves generalization. Our results significantly exceed the 80-85\% credible benchmark while using only non-invasive measures and rigorous methodology.
+Deep learning for Alzheimer's disease (AD) classification from MRI has shown promise, yet recent reviews reveal that fewer than 20\% of studies employ external validation, with data leakage inflating reported accuracies to 95-99\%. Studies with rigorous subject-level splitting achieve 66-90\%, establishing 80-85\% as the credible benchmark. We present an end-to-end multimodal framework combining Vision Transformer (ViT) with masked autoencoder pretraining for 3D MRI analysis and Feature Tokenizer Transformer (FT-Transformer) for clinical tabular data, integrated through bidirectional cross-attention. We validate on 6,065 subjects from three independent cohorts (ADNI, OASIS, NACC) using strict subject-level splitting and 5-fold cross-validation. Our approach achieves 92.4\% accuracy on the challenging AD-trajectory task (CN vs AD including MCI converters). Notably, cross-task evaluation reveals that trajectory-trained models achieve \textbf{93.3\% accuracy} (AUC: 0.96) on stable AD detection, demonstrating that training on heterogeneous disease presentations improves generalization. Our results significantly exceed the 80-85\% credible benchmark while using only non-invasive measures and rigorous methodology.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -75,7 +75,7 @@ In this work, we present a fully end-to-end multimodal deep learning framework t
     \item Cross-attention fusion for learned modality interaction
 \end{itemize}
 
-Our contributions are: (1) the first end-to-end combination of 3D ViT and FT-Transformer for AD classification; (2) validation on 6,065 subjects from three independent cohorts (ADNI, OASIS, NACC) with strict subject-level splitting; (3) cross-task evaluation showing that training on heterogeneous AD presentations (including MCI converters) improves stable AD detection to 94.1\% accuracy; and (4) comprehensive ablation studies demonstrating the value of multimodal fusion.
+Our contributions are: (1) the first end-to-end combination of 3D ViT and FT-Transformer for AD classification; (2) validation on 6,065 subjects from three independent cohorts (ADNI, OASIS, NACC) with strict subject-level splitting; (3) cross-task evaluation showing that training on heterogeneous AD presentations (including MCI converters) achieves 93.3\% accuracy on stable AD detection; and (4) comprehensive ablation studies demonstrating the value of multimodal fusion.
 
 \section{Related Work}
 
@@ -197,7 +197,7 @@ This enables each modality to attend to complementary information from the other
 
 \subsection{Training Details}
 
-Models were trained for 100 epochs with early stopping (patience=20, min\_epochs=50), saving the best checkpoint based on validation accuracy. Hyperparameters were selected based on preliminary experiments on a held-out validation set:
+Models were trained for 100 epochs with early stopping (patience=20, min\_epochs=40), saving the best checkpoint based on validation accuracy. Hyperparameters were selected based on preliminary experiments on a held-out validation set:
 \begin{itemize}
     \item AdamW optimizer with weight decay 0.01
     \item Learning rate: 2$\times$10$^{-5}$ with cosine annealing
@@ -222,9 +222,9 @@ Longitudinal neuroimaging studies provide strong evidence that MCI converters ex
 
 All models were trained on the \textbf{CN vs AD-trajectory} task, where AD-trajectory includes both clinically diagnosed AD patients and MCI subjects who later progressed to AD. We evaluate on two test sets: (1) an in-domain AD-trajectory test set matching the training distribution, and (2) a cross-task \textbf{CN vs stable AD} test set containing only clinically confirmed AD patients without MCI converters.
 
-Table~\ref{tab:results} presents our main results. On the in-domain AD-trajectory task, our multimodal model achieved 92.1\% accuracy with AUC of 0.948.
+Table~\ref{tab:results} presents our main results. On the in-domain AD-trajectory task, our multimodal model achieved 92.4\% accuracy with AUC of 0.959.
 
-Remarkably, the same trajectory-trained model achieved \textbf{94.1\% accuracy} (AUC: 0.966) on the stable AD test set, exceeding its in-domain performance. This cross-task improvement demonstrates that training on heterogeneous presentations---including subtle early-stage MCI converters---forces the model to learn fine-grained discriminative features that generalize effectively to established disease with more pronounced atrophy.
+The same trajectory-trained model achieved \textbf{93.3\% accuracy} (AUC: 0.956) on the stable AD test set. While cross-task performance is slightly lower than in-domain, this demonstrates that training on heterogeneous presentations---including subtle early-stage MCI converters---produces robust features that generalize effectively to established disease detection.
 
 \begin{table}[htbp]
 \caption{Classification Results: Models Trained on CN vs AD-Trajectory}
@@ -233,8 +233,8 @@ Remarkably, the same trajectory-trained model achieved \textbf{94.1\% accuracy} 
 \toprule
 \textbf{Test Set} & \textbf{Acc} & \textbf{Sens} & \textbf{Spec} & \textbf{AUC} \\
 \midrule
-AD-trajectory (in-domain) & 92.1\% & 76.5\% & 96.5\% & 0.948 \\
-\textbf{Stable AD (cross-task)} & \textbf{94.1\%} & \textbf{82.0\%} & \textbf{96.4\%} & \textbf{0.966} \\
+AD-trajectory (in-domain) & 92.4\% & 78.8\% & 96.2\% & 0.959 \\
+\textbf{Stable AD (cross-task)} & \textbf{93.3\%} & \textbf{79.0\%} & \textbf{96.2\%} & \textbf{0.956} \\
 \bottomrule
 \end{tabular}
 \label{tab:results}
@@ -243,9 +243,9 @@ AD-trajectory (in-domain) & 92.1\% & 76.5\% & 96.5\% & 0.948 \\
 
 \subsection{Ablation Study}
 
-To quantify the contribution of each modality, we evaluated single-modality baselines using identical training protocols on the AD-trajectory task (Table~\ref{tab:ablation}). All models used 5-fold cross-validation with 3 random seeds. The MRI-only model (ViT with MAE pretraining) achieved 78.1\% accuracy. The tabular-only model (FT-Transformer) achieved 84.8\% accuracy with AUC of 0.929.
+To quantify the contribution of each modality, we evaluated single-modality baselines using identical training protocols on the AD-trajectory task (Table~\ref{tab:ablation}). All models used 5-fold cross-validation with 3 random seeds. The MRI-only model (ViT with MAE pretraining) achieved 78.1\% accuracy. The tabular-only model (FT-Transformer) achieved 84.9\% accuracy with AUC of 0.925.
 
-The multimodal fusion achieves substantial gains over both unimodal baselines: \textbf{+13.5\%} accuracy over MRI-only and \textbf{+6.8\%} over tabular-only. This confirms that the modalities provide complementary information that cross-attention fusion effectively captures. Notably, tabular features alone achieve strong performance, suggesting that cognitive assessments and clinical variables carry significant diagnostic value.
+The multimodal fusion achieves substantial gains over both unimodal baselines: \textbf{+14.3\%} accuracy over MRI-only and \textbf{+7.5\%} over tabular-only. This confirms that the modalities provide complementary information that cross-attention fusion effectively captures. Notably, tabular features alone achieve strong performance, suggesting that cognitive assessments and clinical variables carry significant diagnostic value.
 
 \begin{table}[htbp]
 \caption{Ablation Study: Modality Contributions (AD-trajectory task)}
@@ -255,22 +255,22 @@ The multimodal fusion achieves substantial gains over both unimodal baselines: \
 \textbf{Model} & \textbf{Acc.} & \textbf{Bal. Acc.} & \textbf{AUC} \\
 \midrule
 MRI only (ViT) & 78.1$\pm$1.9\% & 77.9$\pm$2.0\% & --- \\
-Tabular only (FT-T) & 84.8$\pm$0.5\% & 84.9$\pm$0.3\% & 0.929 \\
+Tabular only (FT-T) & 84.9$\pm$0.4\% & 84.4$\pm$0.3\% & 0.925 \\
 \midrule
-\textbf{Multimodal (Ours)} & \textbf{91.6$\pm$0.9\%} & \textbf{85.8$\pm$2.6\%} & \textbf{0.948} \\
+\textbf{Multimodal (Ours)} & \textbf{92.4$\pm$1.0\%} & \textbf{87.5$\pm$2.5\%} & \textbf{0.959} \\
 \bottomrule
 \end{tabular}
 \label{tab:ablation}
 \end{center}
 \vspace{-2mm}
-{\scriptsize Note: Results on AD-trajectory test set with 5-fold CV. Cross-task evaluation on stable AD achieves 94.1\% (Table~\ref{tab:results}).}
+{\scriptsize Note: Results on AD-trajectory test set with 5-fold CV. Cross-task evaluation on stable AD achieves 93.3\% (Table~\ref{tab:results}).}
 \end{table}
 
-Figure~\ref{fig:roc} shows the ROC curves comparing multimodal fusion against unimodal baselines. The multimodal model achieves substantially higher AUC (0.948) than both MRI-only and tabular-only models, demonstrating the benefit of cross-modal attention fusion.
+Figure~\ref{fig:roc} shows the ROC curves comparing multimodal fusion against unimodal baselines. The multimodal model achieves substantially higher AUC (0.959) than both MRI-only and tabular-only models, demonstrating the benefit of cross-modal attention fusion.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\columnwidth]{figures/roc_curves.pdf}}
-\caption{ROC curves comparing multimodal fusion (AUC=0.948) with tabular-only (AUC=0.929) and MRI-only baselines on the AD-trajectory test set. The multimodal model achieves superior discrimination across all operating points.}
+\caption{ROC curves comparing multimodal fusion (AUC=0.959) with tabular-only (AUC=0.925) and MRI-only baselines on the AD-trajectory test set. The multimodal model achieves superior discrimination across all operating points.}
 \label{fig:roc}
 \end{figure}
 
@@ -288,8 +288,8 @@ Table~\ref{tab:comparison} contextualizes our results within the broader literat
 \textbf{Study} & \textbf{Data} & \textbf{Coh.} & \textbf{N} & \textbf{Acc} & \textbf{AUC} \\
 \midrule
 \multicolumn{6}{@{}l}{\textit{Proper subject-level splitting:}} \\
-\textbf{Ours (stable)} & MRI+Tab & 3 & 6,065 & \textbf{94.1\%} & \textbf{0.97} \\
-\textbf{Ours (traj)} & MRI+Tab & 3 & 6,065 & 92.1\% & 0.95 \\
+\textbf{Ours (stable)} & MRI+Tab & 3 & 6,065 & \textbf{93.3\%} & \textbf{0.96} \\
+\textbf{Ours (traj)} & MRI+Tab & 3 & 6,065 & 92.4\% & 0.96 \\
 Qiu \cite{qiu2022} & MRI+Tab & 8 & 8,916 & ---$^*$ & .94--.97$^*$ \\
 VECNN \cite{vecnn2024} & MRI & 1 & 818 & 94.1\% & --- \\
 Hoang \cite{hoang2023} & MRI & 1 & 598 & 83\% & 0.87 \\
@@ -305,21 +305,21 @@ Various \cite{young2025} & MRI & 1 & $<$1k & 95-99\% & --- \\
 {\scriptsize $^\dagger$Bal. acc.; $^*$Binary subtasks, not comparable}
 \end{table}
 
-Our 94.1\% accuracy on stable AD detection and 92.1\% on the challenging AD-trajectory task significantly exceed the 80-85\% ``credible benchmark'' established by Young et al. \cite{young2025} for methodologically rigorous studies. Key differentiators of our work:
+Our 93.3\% accuracy on stable AD detection and 92.4\% on the challenging AD-trajectory task significantly exceed the 80-85\% ``credible benchmark'' established by Young et al. \cite{young2025} for methodologically rigorous studies. Key differentiators of our work:
 
 \textbf{Scale and diversity:} With 6,065 subjects from 3 cohorts, ours is among the largest multi-cohort studies with proper methodology. Most ViT-based approaches use single cohorts with $<$1,000 subjects.
 
 \textbf{End-to-end multimodal learning:} Unlike Qiu et al. \cite{qiu2022} who use separate CNN and CatBoost models, our approach learns joint MRI-clinical representations through cross-attention fusion.
 
-\textbf{ViT improvement:} Compared to single-modality ViT approaches like Hoang et al. \cite{hoang2023} (83\%) and VECNN \cite{vecnn2024} (94.1\% on single cohort), our multimodal fusion achieves comparable performance (94.1\% on stable AD) while generalizing across three cohorts.
+\textbf{ViT improvement:} Compared to single-modality ViT approaches like Hoang et al. \cite{hoang2023} (83\%) and VECNN \cite{vecnn2024} (94.1\% on single cohort), our multimodal fusion achieves comparable performance (93.3\% on stable AD) while generalizing across three cohorts.
 
 \section{Discussion}
 
-\subsection{Why Cross-Task Generalization Works}
+\subsection{Cross-Task Generalization}
 
-Our results show that models trained on the heterogeneous AD-trajectory task (including MCI converters) achieve higher accuracy on stable AD detection (94.1\%) than on the training distribution itself (92.1\%). This result has a principled explanation: MCI converters exhibit subtle, early-stage atrophy patterns that are harder to distinguish from normal aging. Training on these challenging cases forces the model to learn fine-grained discriminative features---subtle hippocampal volume differences, distributed cortical thinning patterns, and nuanced feature interactions between imaging and clinical data.
+Our results show that models trained on the heterogeneous AD-trajectory task (including MCI converters) achieve strong performance on stable AD detection (93.3\%), only slightly below the in-domain trajectory performance (92.4\%). This demonstrates robust generalization: MCI converters exhibit subtle, early-stage atrophy patterns that are harder to distinguish from normal aging. Training on these challenging cases forces the model to learn fine-grained discriminative features---subtle hippocampal volume differences, distributed cortical thinning patterns, and nuanced feature interactions between imaging and clinical data.
 
-When this model is evaluated on established AD cases with more pronounced atrophy, the learned features remain highly discriminative but the classification becomes easier. In contrast, a model trained only on obvious CN vs late-stage AD cases might learn coarse features that fail on subtle presentations. This suggests a general principle for medical imaging: training on heterogeneous, challenging cases can improve generalization to easier cases.
+When evaluated on established AD cases with more pronounced atrophy, the learned features transfer effectively. The small performance gap suggests that features learned from heterogeneous presentations generalize well to established disease detection, supporting the clinical utility of trajectory-based training for robust AD classification.
 
 \subsection{Limitations}
 
@@ -337,7 +337,7 @@ Several extensions merit investigation. First, incorporating attention visualiza
 
 \section{Conclusion}
 
-We presented a multimodal deep learning framework for Alzheimer's disease classification combining Vision Transformer and Feature Tokenizer Transformer with cross-attention fusion. Validated on 6,065 subjects from three cohorts with strict subject-level splitting, we achieve 92.1\% accuracy on the challenging AD-trajectory task and 94.1\% on stable AD detection through cross-task generalization. Our cross-task evaluation reveals that training on heterogeneous disease presentations (including MCI converters) produces more discriminative features, improving generalization to established AD cases. These results significantly exceed the 80-85\% credible benchmark while maintaining methodological rigor.
+We presented a multimodal deep learning framework for Alzheimer's disease classification combining Vision Transformer and Feature Tokenizer Transformer with cross-attention fusion. Validated on 6,065 subjects from three cohorts with strict subject-level splitting, we achieve 92.4\% accuracy on the challenging AD-trajectory task and 93.3\% on stable AD detection through cross-task generalization. Our cross-task evaluation reveals that training on heterogeneous disease presentations (including MCI converters) produces robust features that generalize effectively to established AD cases. These results significantly exceed the 80-85\% credible benchmark while maintaining methodological rigor.
 
 \section*{Acknowledgment}
 
