@@ -229,12 +229,12 @@ The same trajectory-trained model achieved \textbf{93.3\% accuracy} (AUC: 0.956)
 \begin{table}[htbp]
 \caption{Classification Results: Models Trained on CN vs AD-Trajectory}
 \begin{center}
-\begin{tabular}{lcccc}
+\begin{tabular}{lcc}
 \toprule
-\textbf{Test Set} & \textbf{Acc} & \textbf{Sens} & \textbf{Spec} & \textbf{AUC} \\
+\textbf{Test Set} & \textbf{Acc} & \textbf{AUC} \\
 \midrule
-AD-trajectory (in-domain) & 92.4\% & 78.8\% & 96.2\% & 0.959 \\
-\textbf{Stable AD (cross-task)} & \textbf{93.3\%} & \textbf{79.0\%} & \textbf{96.2\%} & \textbf{0.956} \\
+AD-trajectory (in-domain) & 92.4\% & 0.959 \\
+\textbf{Stable AD (cross-task)} & \textbf{93.3\%} & \textbf{0.956} \\
 \bottomrule
 \end{tabular}
 \label{tab:results}
@@ -243,21 +243,21 @@ AD-trajectory (in-domain) & 92.4\% & 78.8\% & 96.2\% & 0.959 \\
 
 \subsection{Ablation Study}
 
-To quantify the contribution of each modality, we evaluated single-modality baselines using identical training protocols on the AD-trajectory task (Table~\ref{tab:ablation}). All models used 5-fold cross-validation with 3 random seeds. The MRI-only model (ViT with MAE pretraining) achieved 78.1\% accuracy. The tabular-only model (FT-Transformer) achieved 84.9\% accuracy with AUC of 0.925.
+To quantify the contribution of each modality, we evaluated single-modality baselines using identical training protocols on the AD-trajectory task (Table~\ref{tab:ablation}). All models used 5-fold cross-validation with 3 random seeds. The MRI-only model (ViT with MAE pretraining) achieved 83.3\% accuracy with AUC of 0.826. The tabular-only model (FT-Transformer) achieved 84.9\% accuracy with AUC of 0.925.
 
-The multimodal fusion achieves substantial gains over both unimodal baselines: \textbf{+14.3\%} accuracy over MRI-only and \textbf{+7.5\%} over tabular-only. This confirms that the modalities provide complementary information that cross-attention fusion effectively captures. Notably, tabular features alone achieve strong performance, suggesting that cognitive assessments and clinical variables carry significant diagnostic value.
+The multimodal fusion achieves substantial gains over both unimodal baselines: \textbf{+9.1\%} accuracy over MRI-only and \textbf{+7.5\%} over tabular-only. This confirms that the modalities provide complementary information that cross-attention fusion effectively captures. Notably, tabular features alone achieve strong performance, suggesting that cognitive assessments and clinical variables carry significant diagnostic value.
 
 \begin{table}[htbp]
 \caption{Ablation Study: Modality Contributions (AD-trajectory task)}
 \begin{center}
-\begin{tabular}{lccc}
+\begin{tabular}{lcc}
 \toprule
-\textbf{Model} & \textbf{Acc.} & \textbf{Bal. Acc.} & \textbf{AUC} \\
+\textbf{Model} & \textbf{Acc.} & \textbf{AUC} \\
 \midrule
-MRI only (ViT) & 78.1$\pm$1.9\% & 77.9$\pm$2.0\% & --- \\
-Tabular only (FT-T) & 84.9$\pm$0.4\% & 84.4$\pm$0.3\% & 0.925 \\
+MRI only (ViT) & 83.3$\pm$0.7\% & 0.826 \\
+Tabular only (FT-T) & 84.9$\pm$0.4\% & 0.925 \\
 \midrule
-\textbf{Multimodal (Ours)} & \textbf{92.4$\pm$1.0\%} & \textbf{87.5$\pm$2.5\%} & \textbf{0.959} \\
+\textbf{Multimodal (Ours)} & \textbf{92.4$\pm$1.0\%} & \textbf{0.959} \\
 \bottomrule
 \end{tabular}
 \label{tab:ablation}
