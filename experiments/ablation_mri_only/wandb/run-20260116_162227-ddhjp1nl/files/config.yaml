@@ -1,0 +1,108 @@
+_wandb:
+    value:
+        cli_version: 0.23.1
+        e:
+            dt16ernteoom072ch4tju7nsbwqmtrc0:
+                args:
+                    - --config
+                    - config.yaml
+                    - --n-folds
+                    - "5"
+                    - --seeds
+                    - "42"
+                    - "123"
+                    - "456"
+                    - --output-dir
+                    - cv_results
+                codePath: experiments/ablation_mri_only/train_cv.py
+                codePathLocal: train_cv.py
+                cpu_count: 20
+                cpu_count_logical: 28
+                cudaVersion: "12.2"
+                disk:
+                    /:
+                        total: "1595870232576"
+                        used: "992333848576"
+                email: tanguyvans@gmail.com
+                executable: /home/tanguy/medical/alzheimer/env/bin/python
+                git:
+                    commit: ec9cf48ddde2eb08ec15f5b9e724ea3570d20ed0
+                    remote: https://github.com/Tanguyvans/alzheimer.git
+                gpu: NVIDIA GeForce RTX 4080
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ada
+                      cudaCores: 9728
+                      memoryTotal: "17171480576"
+                      name: NVIDIA GeForce RTX 4080
+                      uuid: GPU-7bd8a1a2-4418-d7ee-6ab4-3a6e4a383196
+                host: ilia-corsair-5000x
+                memory:
+                    total: "33448153088"
+                os: Linux-6.14.0-37-generic-x86_64-with-glibc2.39
+                program: /home/tanguy/medical/alzheimer/experiments/ablation_mri_only/train_cv.py
+                python: CPython 3.12.3
+                root: /home/tanguy/medical/alzheimer/experiments/ablation_mri_only
+                startedAt: "2026-01-16T15:22:27.876843Z"
+                writerId: dt16ernteoom072ch4tju7nsbwqmtrc0
+        m: []
+        python_version: 3.12.3
+        t:
+            "1":
+                - 1
+                - 5
+                - 53
+            "2":
+                - 1
+                - 5
+                - 53
+            "3":
+                - 2
+                - 13
+                - 16
+                - 62
+            "4": 3.12.3
+            "5": 0.23.1
+            "12": 0.23.1
+            "13": linux-x86_64
+experiment:
+    value:
+        dataset: multi_cohort_v2
+        description: ViT MRI-only baseline for ablation study
+        name: ablation_mri_only
+        task: cn_ad_trajectory
+model:
+    value:
+        architecture: vit_base
+        classifier_dropout: 0.5
+        drop_path_rate: 0.1
+        dropout: 0.1
+        image_size: 128
+        in_channels: 1
+        num_classes: 2
+        pretrained_path: ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+        use_pretrained: true
+n_folds:
+    value: 5
+seeds:
+    value:
+        - 42
+        - 123
+        - 456
+training:
+    value:
+        batch_size: 2
+        epochs: 100
+        freeze_backbone_epochs: 0
+        gradient_accumulation_steps: 1
+        gradient_clip: 1
+        label_smoothing: 0
+        layer_wise_lr_decay: 0.75
+        learning_rate: 1e-05
+        lr_min: 1e-06
+        optimizer: adamw
+        scheduler: cosine
+        seed: 42
+        use_weighted_loss: true
+        warmup_epochs: 5
+        weight_decay: 0.3
