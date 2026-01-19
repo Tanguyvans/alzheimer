@@ -1,0 +1,113 @@
+# Multi-Modal Fusion: ADNI-Only Training with External Validation
+# Train on ADNI, evaluate on ADNI (in-domain), OASIS (external), NACC (external)
+
+experiment:
+  name: "multimodal_fusion_adni_only"
+  task: "cn_ad_trajectory"
+  dataset: "adni_only"
+  description: "ADNI-only training to demonstrate cross-cohort generalization gap"
+
+model:
+  # ViT backbone (frozen or fine-tuned)
+  vit:
+    architecture: "vit_base"
+    image_size: 128
+    pretrained_path: "../mri_vit_ad/pretrained/vit_mae75_pretrained.pth"
+    freeze_backbone: false
+    feature_dim: 768
+
+  # Tabular branch - FT-Transformer
+  tabular:
+    type: "ft_transformer"
+    embed_dim: 64
+    num_heads: 4
+    num_layers: 3
+    dropout: 0.1
+    output_dim: 64
+
+  # Fusion - Cross-modal bidirectional attention
+  fusion:
+    method: "cross_modal"
+    hidden_dim: 512
+    num_heads: 8
+    dropout: 0.3
+    auxiliary_losses: true
+
+  num_classes: 2
+
+data:
+  # ADNI-only training data
+  train_csv: "data/adni_only/train.csv"
+  val_csv: "data/adni_only/val.csv"
+  test_csv: "data/adni_only/test.csv"
+
+  # External test sets for cross-cohort evaluation
+  external_test:
+    oasis: "data/oasis_external/all.csv"
+    nacc: "data/nacc_external/all.csv"
+
+  # 16 common tabular features
+  tabular_features:
+    - "AGE"
+    - "PTGENDER"
+    - "PTEDUCAT"
+    - "PTMARRY"
+    - "CATANIMSC"
+    - "TRAASCOR"
+    - "TRABSCOR"
+    - "DSPANFOR"
+    - "DSPANBAC"
+    - "BNTTOTAL"
+    - "VSWEIGHT"
+    - "BMI"
+    - "MH14ALCH"
+    - "MH16SMOK"
+    - "MH4CARD"
+    - "MH2NEURL"
+
+  checkpoints_dir: "checkpoints_adni"
+  results_dir: "results_adni"
+
+preprocessing:
+  use_paper_preprocessing: true
+  target_spacing: 1.75
+  tabular_normalize: true
+  handle_missing: "median"
+
+training:
+  epochs: 100
+  batch_size: 4
+  learning_rate: 0.00002
+  weight_decay: 0.01
+  lr_min: 0.0000001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  warmup_epochs: 5
+  gradient_clip: 1.0
+  use_weighted_loss: true
+  layer_wise_lr_decay: 0.75
+  seed: 42
+  label_smoothing: 0.1
+  use_auxiliary_loss: true
+  auxiliary_loss_weight: 0.3
+  use_tta: true
+  tta_augmentations: 8
+
+hardware:
+  device: "cuda"
+  num_workers: 4
+  pin_memory: true
+
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 20
+    min_epochs: 40
+    monitor: "val_accuracy"
+  checkpoint:
+    save_best: true
+
+wandb:
+  enabled: true
+  project: "alzheimer-ablation"
+  name: "multimodal_adni_only_external"
