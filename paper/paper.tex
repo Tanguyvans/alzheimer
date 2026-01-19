@@ -266,14 +266,6 @@ Tabular only (FT-T) & 84.9$\pm$0.4\% & 84.4$\pm$0.3\% & 0.925 \\
 {\scriptsize Note: Results on AD-trajectory test set with 5-fold CV. Cross-task evaluation on stable AD achieves 93.3\% (Table~\ref{tab:results}).}
 \end{table}
 
-Figure~\ref{fig:roc} shows the ROC curves comparing multimodal fusion against unimodal baselines. The multimodal model achieves substantially higher AUC (0.959) than both MRI-only and tabular-only models, demonstrating the benefit of cross-modal attention fusion.
-
-\begin{figure}[htbp]
-\centerline{\includegraphics[width=\columnwidth]{figures/roc_curves.pdf}}
-\caption{ROC curves comparing multimodal fusion (AUC=0.959) with tabular-only (AUC=0.925) and MRI-only baselines on the AD-trajectory test set. The multimodal model achieves superior discrimination across all operating points.}
-\label{fig:roc}
-\end{figure}
-
 \subsection{Comparison with Literature}
 
 Table~\ref{tab:comparison} contextualizes our results within the broader literature. Studies with proper subject-level splitting report accuracies in the 66-90\% range \cite{young2025}, while those with potential data leakage claim 95-99\%.
