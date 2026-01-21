@@ -286,9 +286,9 @@ To demonstrate the importance of multi-cohort training, we conducted an addition
 \textbf{Training} & \textbf{Test Set} & \textbf{Acc} & \textbf{AUC} \\
 \midrule
 \multicolumn{4}{@{}l}{\textit{ADNI-only training (N=903):}} \\
-ADNI-only & ADNI (in-domain) & XX.X\% & 0.XXX \\
-ADNI-only & OASIS (external) & XX.X\% & 0.XXX \\
-ADNI-only & NACC (external) & XX.X\% & 0.XXX \\
+ADNI-only & ADNI (in-domain) & 81.4$\pm$3.5\% & 0.90$\pm$.02 \\
+ADNI-only & OASIS (external) & 56.5$\pm$9.2\% & 0.64$\pm$.05 \\
+ADNI-only & NACC (external) & 38.5$\pm$13.9\% & 0.89$\pm$.05 \\
 \midrule
 \multicolumn{4}{@{}l}{\textit{Multi-cohort training (N=6,065):}} \\
 Multi-cohort & All cohorts & \textbf{92.4\%} & \textbf{0.959} \\
@@ -297,13 +297,10 @@ Multi-cohort & All cohorts & \textbf{92.4\%} & \textbf{0.959} \\
 \label{tab:external}
 \end{center}
 \vspace{-2mm}
-{\scriptsize Note: ADNI-only uses 5-fold CV with 3 seeds. External sets evaluated on full cohort.}
+{\scriptsize Note: All results from 5-fold CV with 3 seeds (15 runs total).}
 \end{table}
 
-% TODO: Update with actual results from train_adni_external.py
-% Expected: ADNI in-domain ~90%, OASIS/NACC external ~70-80% showing generalization gap
-
-The results reveal a significant \textbf{cross-cohort generalization gap}: while single-cohort training achieves competitive in-domain performance on ADNI, accuracy drops substantially on external cohorts. This performance degradation demonstrates that models trained on a single cohort learn cohort-specific patterns that fail to generalize. In contrast, our multi-cohort approach maintains consistent performance across all three datasets, validating the importance of diverse training data for robust AD classification.
+The results reveal a significant \textbf{cross-cohort generalization gap}: while single-cohort training achieves 81.4$\pm$3.5\% on ADNI, accuracy drops to 56.5$\pm$9.2\% on OASIS and 38.5$\pm$13.9\% on NACC. The high variance on external cohorts reflects inconsistent generalization across folds. Notably, NACC shows high AUC (0.89) despite low accuracy---this discrepancy arises from class distribution shift: ADNI has 47\% CN while NACC has 87\% CN, causing the model's decision threshold to be miscalibrated, resulting in high sensitivity (98\%) but poor specificity (29\%). This performance degradation demonstrates that models trained on a single cohort learn cohort-specific patterns that fail to generalize. In contrast, our multi-cohort approach achieves 92.4\% overall accuracy by learning cohort-invariant features, validating the importance of diverse training data for robust AD classification.
 
 \subsection{Comparison with Literature}
 
