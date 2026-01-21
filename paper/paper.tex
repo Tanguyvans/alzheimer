@@ -94,17 +94,19 @@ Convolutional neural networks (CNNs) have dominated AD classification from MRI. 
 
 \subsection{Methodological Concerns}
 
-A critical issue in AD classification is data leakage. Young et al. \cite{young2025} found that fewer than 20\% of published studies employ external validation, with methodological issues widespread across the field. Yagis et al. \cite{yagis2021} demonstrated that improper splitting inflates accuracy by 25-55\%. Studies with rigorous subject-level splitting report 66-90\% accuracy.
+A critical issue in AD classification is data leakage, where test subjects' data inadvertently influences training. Yagis et al. \cite{yagis2021} quantified this effect: improper data splitting inflates accuracy by 25-55\%, with models achieving 96\% accuracy even on randomly assigned labels through memorization of individual brain morphology. Young et al. \cite{young2025} found that fewer than 20\% of published studies employ external validation, with studies lacking proper subject-level splitting reporting 95-99\% accuracy while rigorous studies achieve 66-90\%.
 
 \subsection{Transformer Architectures}
 
 Vision Transformers (ViT) \cite{dosovitskiy2021} divide images into patches, treating each as a token for self-attention. Unlike CNNs with local receptive fields, ViT captures global relationships---critical for detecting distributed atrophy patterns in AD. Masked autoencoder (MAE) pretraining \cite{he2022} enables ViT to learn robust representations from unlabeled data by reconstructing masked patches.
 
-For tabular data, the FT-Transformer \cite{gorishniy2021} embeds each feature as a separate token, enabling attention across features. This outperforms traditional MLPs on most benchmarks and achieves competitive results with gradient boosting, particularly when feature interactions matter.
+For tabular data, the FT-Transformer \cite{gorishniy2021} embeds each feature as a separate token, enabling attention across features. This demonstrates strong performance compared to traditional MLPs across diverse tabular benchmarks and narrows the performance gap with gradient boosting methods, though no universally superior solution emerges.
 
 \subsection{Multimodal Fusion}
 
-Combining imaging with clinical data improves classification. Qiu et al. \cite{qiu2020} achieved 96.8\% accuracy on ADNI using an end-to-end FCN-MLP framework. In a larger follow-up study, Qiu et al. \cite{qiu2022} scaled to 8,916 subjects across 8 cohorts using CNN features with CatBoost for tabular data as separate models. We propose combining 3D ViT with FT-Transformer in an end-to-end multimodal framework, leveraging state-of-the-art architectures for both modalities.
+Combining imaging with clinical data improves classification performance. Qiu et al. \cite{qiu2020} demonstrated this with an end-to-end FCN-MLP framework that achieved 96.8\% accuracy on ADNI by integrating MRI features with age, sex, and MMSE scores. However, diagnostic scores like MMSE (median: 29 for CN vs 23.5 for AD) are strongly predictive of cognitive status, raising concerns about whether such models learn disease patterns versus cognitive assessment correlations. In a larger follow-up, Qiu et al. \cite{qiu2022} scaled to 8,916 subjects across 8 cohorts using a hybrid architecture that concatenates CNN-derived imaging features with CatBoost for tabular data fusion.
+
+We advance this line of work by combining state-of-the-art architectures for both modalities: 3D Vision Transformer with masked autoencoder pretraining for imaging and Feature Tokenizer Transformer for clinical data, integrated through bidirectional cross-attention. We exclude diagnostic scores (MMSE, CDR) to ensure the model learns from structural neuroimaging and non-cognitive clinical features rather than test-score proxies of the diagnostic label.
 
 \section{Methods}
 
