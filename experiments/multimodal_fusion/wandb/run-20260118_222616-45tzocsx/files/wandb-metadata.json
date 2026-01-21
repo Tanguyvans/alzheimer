@@ -1,0 +1,57 @@
+{
+  "os": "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+  "python": "3.12.5",
+  "startedAt": "2026-01-18T21:26:16.484814Z",
+  "args": [
+    "--config",
+    "config_cn_ad.yaml",
+    "--n-folds",
+    "5",
+    "--seeds",
+    "42",
+    "123",
+    "456",
+    "--output-dir",
+    "cv_results_cn_ad",
+    "--cn-ad-test",
+    ""
+  ],
+  "program": "/home/maxglo/tanguy/alzheimer/experiments/multimodal_fusion/train_cv.py",
+  "codePath": "experiments/multimodal_fusion/train_cv.py",
+  "git": {
+    "remote": "https://github.com/Tanguyvans/alzheimer.git",
+    "commit": "01bedebde0d2284493c282113053d9dc24dd1682"
+  },
+  "email": "max.gleu@gmail.com",
+  "root": "/home/maxglo/tanguy/alzheimer/experiments/multimodal_fusion",
+  "host": "maxglo",
+  "username": "maxglo",
+  "executable": "/home/maxglo/venv/torch/bin/python",
+  "codePathLocal": "train_cv.py",
+  "cpu_count": 24,
+  "cpu_count_logical": 32,
+  "gpu": "[NVIDIA GeForce RTX 4090]",
+  "gpu_count": 1,
+  "disk": {
+    "/": {
+      "total": "1708291538944",
+      "used": "990127108096"
+    }
+  },
+  "memory": {
+    "total": "67089731584"
+  },
+  "cpu": {
+    "count": 24,
+    "countLogical": 32
+  },
+  "gpu_nvidia": [
+    {
+      "name": "NVIDIA GeForce RTX 4090",
+      "memoryTotal": "25757220864",
+      "cudaCores": 16384,
+      "architecture": "Ada"
+    }
+  ],
+  "cudaVersion": "12.8"
+}

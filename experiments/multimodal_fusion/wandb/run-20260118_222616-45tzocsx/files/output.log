@@ -1,0 +1,1326 @@
+INFO:__main__:WandB initialized
+INFO:__main__:Loading data...
+INFO:__main__:Total samples: 5706
+INFO:__main__:Label distribution:
+label
+0    4782
+1     924
+Name: count, dtype: int64
+INFO:__main__:Trajectory distribution:
+trajectory
+CN    4782
+AD     924
+Name: count, dtype: int64
+INFO:__main__:
+============================================================
+INFO:__main__:SEED: 42
+INFO:__main__:============================================================
+INFO:__main__:
+--- Fold 1/5 ---
+INFO:__main__:Train: 4108, Val: 456, Test: 1142
+INFO:dataset:Filled 1 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 9 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 454 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 459 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 495 missing values in 'TRABSCOR' with 75.00
+INFO:dataset:Filled 773 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 777 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 775 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 138 missing values in 'VSWEIGHT' with 166.00
+INFO:dataset:Filled 1 missing values in 'BMI' with 28.02
+INFO:dataset:Filled 224 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 222 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 222 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 222 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 4108 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 3426 (83.4%)
+INFO:dataset:  Class 1: 682 (16.6%)
+INFO:dataset:Filled 1 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 48 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 49 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 57 missing values in 'TRABSCOR' with 75.00
+INFO:dataset:Filled 85 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 85 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 85 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 16 missing values in 'VSWEIGHT' with 169.00
+INFO:dataset:Filled 20 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 20 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 20 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 20 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 456 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 399 (87.5%)
+INFO:dataset:  Class 1: 57 (12.5%)
+INFO:dataset:Filled 2 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 4 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 114 missing values in 'CATANIMSC' with 20.00
+INFO:dataset:Filled 117 missing values in 'TRAASCOR' with 31.00
+INFO:dataset:Filled 133 missing values in 'TRABSCOR' with 78.00
+INFO:dataset:Filled 216 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 216 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 217 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 46 missing values in 'VSWEIGHT' with 169.60
+INFO:dataset:Filled 2 missing values in 'BMI' with 28.50
+INFO:dataset:Filled 68 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 68 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 68 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 68 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 1142 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 957 (83.8%)
+INFO:dataset:  Class 1: 185 (16.2%)
+INFO:mri_vit_model:Created ViT3DClassifier with vit_base
+INFO:mri_vit_model:  Image size: 128x128x128
+INFO:mri_vit_model:  Patch size: 16
+INFO:mri_vit_model:  Num patches: 512
+INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
+INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
+INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
+INFO:mri_vit_model:Missing keys: 2
+INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
+ViT backbone: 768-dim features
+enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+FT-Transformer tabular encoder: 16 -> 64
+  Auxiliary losses: Enabled (MRI + Tabular classifiers)
+MultiModalFusion initialized:
+  MRI backbone: vit (768-dim)
+  Tabular features: 16 -> 64
+  Fusion method: cross_modal
+  Fusion hidden: 512
+INFO:__main__:  Epoch 1/100 - Train Acc: 68.7%, Val Acc: 87.5%, Val AUC: 0.783
+INFO:__main__:  Epoch 11/100 - Train Acc: 91.5%, Val Acc: 92.5%, Val AUC: 0.918
+INFO:__main__:  Epoch 21/100 - Train Acc: 91.6%, Val Acc: 93.0%, Val AUC: 0.926
+INFO:__main__:  Epoch 31/100 - Train Acc: 92.0%, Val Acc: 93.9%, Val AUC: 0.928
+INFO:__main__:  Epoch 41/100 - Train Acc: 93.5%, Val Acc: 95.2%, Val AUC: 0.954
+INFO:__main__:  Epoch 51/100 - Train Acc: 94.5%, Val Acc: 93.2%, Val AUC: 0.962
+INFO:__main__:  Epoch 61/100 - Train Acc: 95.2%, Val Acc: 95.4%, Val AUC: 0.967
+INFO:__main__:  Early stopping at epoch 66
+INFO:__main__:  Subgroup Analysis:
+INFO:__main__:    AD: 76.8% (185 samples)
+INFO:__main__:    CN: 95.8% (957 samples)
+INFO:__main__:  Val: 96.5% | Traj: Acc=92.7%, BalAcc=86.3%, Sens=76.8%, Spec=95.8%, AUC=0.940
+INFO:__main__:
+--- Fold 2/5 ---
+INFO:__main__:Train: 4109, Val: 456, Test: 1141
+INFO:dataset:Filled 3 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 12 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 444 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 451 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 492 missing values in 'TRABSCOR' with 75.00
+INFO:dataset:Filled 778 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 781 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 781 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 147 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 1 missing values in 'BMI' with 28.10
+INFO:dataset:Filled 225 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 224 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 224 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 224 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 4109 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 3452 (84.0%)
+INFO:dataset:  Class 1: 657 (16.0%)
+INFO:dataset:Filled 1 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 48 missing values in 'CATANIMSC' with 20.00
+INFO:dataset:Filled 49 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 58 missing values in 'TRABSCOR' with 75.00
+INFO:dataset:Filled 88 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 89 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 87 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 13 missing values in 'VSWEIGHT' with 168.00
+INFO:dataset:Filled 1 missing values in 'BMI' with 28.57
+INFO:dataset:Filled 29 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 28 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 28 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 28 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 456 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 374 (82.0%)
+INFO:dataset:  Class 1: 82 (18.0%)
+INFO:dataset:Filled 1 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 124 missing values in 'CATANIMSC' with 20.00
+INFO:dataset:Filled 125 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 135 missing values in 'TRABSCOR' with 77.00
+INFO:dataset:Filled 208 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 208 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 209 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 40 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 1 missing values in 'BMI' with 28.19
+INFO:dataset:Filled 58 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 58 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 58 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 58 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 1141 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 956 (83.8%)
+INFO:dataset:  Class 1: 185 (16.2%)
+INFO:mri_vit_model:Created ViT3DClassifier with vit_base
+INFO:mri_vit_model:  Image size: 128x128x128
+INFO:mri_vit_model:  Patch size: 16
+INFO:mri_vit_model:  Num patches: 512
+INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
+INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
+INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
+INFO:mri_vit_model:Missing keys: 2
+INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
+ViT backbone: 768-dim features
+enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+FT-Transformer tabular encoder: 16 -> 64
+  Auxiliary losses: Enabled (MRI + Tabular classifiers)
+MultiModalFusion initialized:
+  MRI backbone: vit (768-dim)
+  Tabular features: 16 -> 64
+  Fusion method: cross_modal
+  Fusion hidden: 512
+INFO:__main__:  Epoch 1/100 - Train Acc: 67.1%, Val Acc: 82.0%, Val AUC: 0.708
+INFO:__main__:  Epoch 11/100 - Train Acc: 91.6%, Val Acc: 90.4%, Val AUC: 0.925
+INFO:__main__:  Epoch 21/100 - Train Acc: 92.0%, Val Acc: 90.6%, Val AUC: 0.919
+INFO:__main__:  Epoch 31/100 - Train Acc: 92.3%, Val Acc: 91.2%, Val AUC: 0.926
+INFO:__main__:  Epoch 41/100 - Train Acc: 92.7%, Val Acc: 91.0%, Val AUC: 0.914
+INFO:__main__:  Early stopping at epoch 42
+INFO:__main__:  Subgroup Analysis:
+INFO:__main__:    AD: 55.1% (185 samples)
+INFO:__main__:    CN: 98.3% (956 samples)
+INFO:__main__:  Val: 91.4% | Traj: Acc=91.3%, BalAcc=76.7%, Sens=55.1%, Spec=98.3%, AUC=0.924
+INFO:__main__:
+--- Fold 3/5 ---
+INFO:__main__:Train: 4109, Val: 456, Test: 1141
+INFO:dataset:Filled 3 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 12 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 438 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 447 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 490 missing values in 'TRABSCOR' with 75.00
+INFO:dataset:Filled 759 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 761 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 761 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 148 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 3 missing values in 'BMI' with 28.07
+INFO:dataset:Filled 218 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 217 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 217 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 217 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 4109 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 3460 (84.2%)
+INFO:dataset:  Class 1: 649 (15.8%)
+INFO:dataset:Filled 60 missing values in 'CATANIMSC' with 20.00
+INFO:dataset:Filled 60 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 68 missing values in 'TRABSCOR' with 80.00
+INFO:dataset:Filled 105 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 105 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 107 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 15 missing values in 'VSWEIGHT' with 165.00
+INFO:dataset:Filled 29 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 29 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 29 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 29 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 456 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 366 (80.3%)
+INFO:dataset:  Class 1: 90 (19.7%)
+INFO:dataset:Filled 1 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 4 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 118 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 118 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 127 missing values in 'TRABSCOR' with 72.50
+INFO:dataset:Filled 210 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 212 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 209 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 37 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 65 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 64 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 64 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 64 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 1141 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 956 (83.8%)
+INFO:dataset:  Class 1: 185 (16.2%)
+INFO:mri_vit_model:Created ViT3DClassifier with vit_base
+INFO:mri_vit_model:  Image size: 128x128x128
+INFO:mri_vit_model:  Patch size: 16
+INFO:mri_vit_model:  Num patches: 512
+INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
+INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
+INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
+INFO:mri_vit_model:Missing keys: 2
+INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
+ViT backbone: 768-dim features
+enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+FT-Transformer tabular encoder: 16 -> 64
+  Auxiliary losses: Enabled (MRI + Tabular classifiers)
+MultiModalFusion initialized:
+  MRI backbone: vit (768-dim)
+  Tabular features: 16 -> 64
+  Fusion method: cross_modal
+  Fusion hidden: 512
+INFO:__main__:  Epoch 1/100 - Train Acc: 67.6%, Val Acc: 80.3%, Val AUC: 0.773
+INFO:__main__:  Epoch 11/100 - Train Acc: 91.7%, Val Acc: 89.9%, Val AUC: 0.919
+INFO:__main__:  Epoch 21/100 - Train Acc: 92.7%, Val Acc: 91.4%, Val AUC: 0.941
+INFO:__main__:  Epoch 31/100 - Train Acc: 94.3%, Val Acc: 91.9%, Val AUC: 0.951
+INFO:__main__:  Epoch 41/100 - Train Acc: 95.1%, Val Acc: 92.1%, Val AUC: 0.946
+INFO:__main__:  Epoch 51/100 - Train Acc: 96.2%, Val Acc: 91.9%, Val AUC: 0.944
+INFO:__main__:  Epoch 61/100 - Train Acc: 97.6%, Val Acc: 91.7%, Val AUC: 0.936
+INFO:__main__:  Epoch 71/100 - Train Acc: 98.6%, Val Acc: 92.1%, Val AUC: 0.921
+INFO:__main__:  Early stopping at epoch 73
+INFO:__main__:  Subgroup Analysis:
+INFO:__main__:    AD: 68.6% (185 samples)
+INFO:__main__:    CN: 96.4% (956 samples)
+INFO:__main__:  Val: 93.9% | Traj: Acc=91.9%, BalAcc=82.5%, Sens=68.6%, Spec=96.4%, AUC=0.950
+INFO:__main__:
+--- Fold 4/5 ---
+INFO:__main__:Train: 4109, Val: 456, Test: 1141
+INFO:dataset:Filled 3 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 13 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 429 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 434 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 479 missing values in 'TRABSCOR' with 76.00
+INFO:dataset:Filled 758 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 760 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 759 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 146 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 3 missing values in 'BMI' with 28.19
+INFO:dataset:Filled 225 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 224 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 224 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 224 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 4109 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 3452 (84.0%)
+INFO:dataset:  Class 1: 657 (16.0%)
+INFO:dataset:Filled 1 missing values in 'AGE' with 68.70
+INFO:dataset:Filled 2 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 48 missing values in 'CATANIMSC' with 20.00
+INFO:dataset:Filled 49 missing values in 'TRAASCOR' with 31.00
+INFO:dataset:Filled 51 missing values in 'TRABSCOR' with 75.00
+INFO:dataset:Filled 85 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 85 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 86 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 17 missing values in 'VSWEIGHT' with 170.00
+INFO:dataset:Filled 25 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 24 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 24 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 24 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 456 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 374 (82.0%)
+INFO:dataset:  Class 1: 82 (18.0%)
+INFO:dataset:Filled 1 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 139 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 142 missing values in 'TRAASCOR' with 31.00
+INFO:dataset:Filled 155 missing values in 'TRABSCOR' with 74.00
+INFO:dataset:Filled 231 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 233 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 232 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 37 missing values in 'VSWEIGHT' with 165.00
+INFO:dataset:Filled 62 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 62 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 62 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 62 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 1141 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 956 (83.8%)
+INFO:dataset:  Class 1: 185 (16.2%)
+INFO:mri_vit_model:Created ViT3DClassifier with vit_base
+INFO:mri_vit_model:  Image size: 128x128x128
+INFO:mri_vit_model:  Patch size: 16
+INFO:mri_vit_model:  Num patches: 512
+INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
+INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
+INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
+INFO:mri_vit_model:Missing keys: 2
+INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
+ViT backbone: 768-dim features
+enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+FT-Transformer tabular encoder: 16 -> 64
+  Auxiliary losses: Enabled (MRI + Tabular classifiers)
+MultiModalFusion initialized:
+  MRI backbone: vit (768-dim)
+  Tabular features: 16 -> 64
+  Fusion method: cross_modal
+  Fusion hidden: 512
+INFO:__main__:  Epoch 1/100 - Train Acc: 64.8%, Val Acc: 82.0%, Val AUC: 0.743
+INFO:__main__:  Epoch 11/100 - Train Acc: 91.4%, Val Acc: 90.8%, Val AUC: 0.912
+INFO:__main__:  Epoch 21/100 - Train Acc: 92.2%, Val Acc: 90.4%, Val AUC: 0.900
+INFO:__main__:  Epoch 31/100 - Train Acc: 93.7%, Val Acc: 93.2%, Val AUC: 0.937
+INFO:__main__:  Epoch 41/100 - Train Acc: 94.5%, Val Acc: 93.0%, Val AUC: 0.943
+INFO:__main__:  Epoch 51/100 - Train Acc: 96.0%, Val Acc: 92.5%, Val AUC: 0.946
+INFO:__main__:  Early stopping at epoch 58
+INFO:__main__:  Subgroup Analysis:
+INFO:__main__:    AD: 73.0% (185 samples)
+INFO:__main__:    CN: 97.0% (956 samples)
+INFO:__main__:  Val: 93.9% | Traj: Acc=93.1%, BalAcc=85.0%, Sens=73.0%, Spec=97.0%, AUC=0.957
+INFO:__main__:
+--- Fold 5/5 ---
+INFO:__main__:Train: 4109, Val: 456, Test: 1141
+INFO:dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 10 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 452 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 460 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 504 missing values in 'TRABSCOR' with 75.00
+INFO:dataset:Filled 784 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 788 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 785 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 148 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 2 missing values in 'BMI' with 28.12
+INFO:dataset:Filled 225 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 224 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 224 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 224 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 4109 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 3443 (83.8%)
+INFO:dataset:  Class 1: 666 (16.2%)
+INFO:dataset:Filled 2 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 43 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 42 missing values in 'TRAASCOR' with 31.00
+INFO:dataset:Filled 46 missing values in 'TRABSCOR' with 78.50
+INFO:dataset:Filled 81 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 81 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 82 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 12 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 1 missing values in 'BMI' with 28.10
+INFO:dataset:Filled 28 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 28 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 28 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 28 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 456 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 382 (83.8%)
+INFO:dataset:  Class 1: 74 (16.2%)
+INFO:dataset:Filled 4 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 121 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 123 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 135 missing values in 'TRABSCOR' with 75.00
+INFO:dataset:Filled 209 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 209 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 210 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 40 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 59 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 58 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 58 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 58 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 1141 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 957 (83.9%)
+INFO:dataset:  Class 1: 184 (16.1%)
+INFO:mri_vit_model:Created ViT3DClassifier with vit_base
+INFO:mri_vit_model:  Image size: 128x128x128
+INFO:mri_vit_model:  Patch size: 16
+INFO:mri_vit_model:  Num patches: 512
+INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
+INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
+INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
+INFO:mri_vit_model:Missing keys: 2
+INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
+ViT backbone: 768-dim features
+enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+FT-Transformer tabular encoder: 16 -> 64
+  Auxiliary losses: Enabled (MRI + Tabular classifiers)
+MultiModalFusion initialized:
+  MRI backbone: vit (768-dim)
+  Tabular features: 16 -> 64
+  Fusion method: cross_modal
+  Fusion hidden: 512
+INFO:__main__:  Epoch 1/100 - Train Acc: 67.6%, Val Acc: 83.8%, Val AUC: 0.755
+INFO:__main__:  Epoch 11/100 - Train Acc: 91.6%, Val Acc: 90.1%, Val AUC: 0.906
+INFO:__main__:  Epoch 21/100 - Train Acc: 91.7%, Val Acc: 89.7%, Val AUC: 0.892
+INFO:__main__:  Epoch 31/100 - Train Acc: 92.4%, Val Acc: 90.1%, Val AUC: 0.883
+INFO:__main__:  Epoch 41/100 - Train Acc: 92.2%, Val Acc: 90.6%, Val AUC: 0.891
+INFO:__main__:  Epoch 51/100 - Train Acc: 92.7%, Val Acc: 90.1%, Val AUC: 0.885
+INFO:__main__:  Early stopping at epoch 59
+INFO:__main__:  Subgroup Analysis:
+INFO:__main__:    AD: 66.8% (184 samples)
+INFO:__main__:    CN: 97.3% (957 samples)
+INFO:__main__:  Val: 91.0% | Traj: Acc=92.4%, BalAcc=82.1%, Sens=66.8%, Spec=97.3%, AUC=0.947
+INFO:__main__:
+Seed 42 Trajectory Summary:
+INFO:__main__:  Acc: 92.3±0.6%
+INFO:__main__:  BalAcc: 82.5±3.3%
+INFO:__main__:  Sens: 68.1±7.3%
+INFO:__main__:  Spec: 97.0±0.8%
+INFO:__main__:  AUC: 0.944±0.011
+INFO:__main__:
+============================================================
+INFO:__main__:SEED: 123
+INFO:__main__:============================================================
+INFO:__main__:
+--- Fold 1/5 ---
+INFO:__main__:Train: 4108, Val: 456, Test: 1142
+INFO:dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 12 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 439 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 446 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 483 missing values in 'TRABSCOR' with 75.00
+INFO:dataset:Filled 760 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 763 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 763 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 2 missing values in 'BMI' with 28.16
+INFO:dataset:Filled 217 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 215 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 215 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 215 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 4108 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 3431 (83.5%)
+INFO:dataset:  Class 1: 677 (16.5%)
+INFO:dataset:Filled 1 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 61 missing values in 'CATANIMSC' with 20.00
+INFO:dataset:Filled 62 missing values in 'TRAASCOR' with 31.00
+INFO:dataset:Filled 67 missing values in 'TRABSCOR' with 77.00
+INFO:dataset:Filled 96 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 96 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 96 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 20 missing values in 'VSWEIGHT' with 162.50
+INFO:dataset:Filled 25 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 25 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 25 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 25 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 456 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 394 (86.4%)
+INFO:dataset:  Class 1: 62 (13.6%)
+INFO:dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 116 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 117 missing values in 'TRAASCOR' with 31.00
+INFO:dataset:Filled 135 missing values in 'TRABSCOR' with 75.00
+INFO:dataset:Filled 218 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 219 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 218 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 39 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 1 missing values in 'BMI' with 28.10
+INFO:dataset:Filled 70 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 70 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 70 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 70 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 1142 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 957 (83.8%)
+INFO:dataset:  Class 1: 185 (16.2%)
+INFO:mri_vit_model:Created ViT3DClassifier with vit_base
+INFO:mri_vit_model:  Image size: 128x128x128
+INFO:mri_vit_model:  Patch size: 16
+INFO:mri_vit_model:  Num patches: 512
+INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
+INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
+INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
+INFO:mri_vit_model:Missing keys: 2
+INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
+ViT backbone: 768-dim features
+enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+FT-Transformer tabular encoder: 16 -> 64
+  Auxiliary losses: Enabled (MRI + Tabular classifiers)
+MultiModalFusion initialized:
+  MRI backbone: vit (768-dim)
+  Tabular features: 16 -> 64
+  Fusion method: cross_modal
+  Fusion hidden: 512
+INFO:__main__:  Epoch 1/100 - Train Acc: 79.2%, Val Acc: 86.4%, Val AUC: 0.647
+INFO:__main__:  Epoch 11/100 - Train Acc: 91.1%, Val Acc: 91.4%, Val AUC: 0.929
+INFO:__main__:  Epoch 21/100 - Train Acc: 92.9%, Val Acc: 91.7%, Val AUC: 0.937
+INFO:__main__:  Epoch 31/100 - Train Acc: 94.2%, Val Acc: 91.9%, Val AUC: 0.941
+INFO:__main__:  Epoch 41/100 - Train Acc: 95.1%, Val Acc: 92.5%, Val AUC: 0.948
+INFO:__main__:  Epoch 51/100 - Train Acc: 95.7%, Val Acc: 93.4%, Val AUC: 0.954
+INFO:__main__:  Early stopping at epoch 59
+INFO:__main__:  Subgroup Analysis:
+INFO:__main__:    AD: 63.2% (185 samples)
+INFO:__main__:    CN: 98.3% (957 samples)
+INFO:__main__:  Val: 93.9% | Traj: Acc=92.6%, BalAcc=80.8%, Sens=63.2%, Spec=98.3%, AUC=0.944
+INFO:__main__:
+--- Fold 2/5 ---
+INFO:__main__:Train: 4109, Val: 456, Test: 1141
+INFO:dataset:Filled 3 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 11 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 438 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 443 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 484 missing values in 'TRABSCOR' with 76.00
+INFO:dataset:Filled 760 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 762 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 761 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 152 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 3 missing values in 'BMI' with 28.10
+INFO:dataset:Filled 214 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 213 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 213 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 213 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 4109 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 3436 (83.6%)
+INFO:dataset:  Class 1: 673 (16.4%)
+INFO:dataset:Filled 1 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 56 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 56 missing values in 'TRAASCOR' with 29.00
+INFO:dataset:Filled 62 missing values in 'TRABSCOR' with 73.50
+INFO:dataset:Filled 91 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 91 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 92 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 7 missing values in 'VSWEIGHT' with 163.00
+INFO:dataset:Filled 29 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 29 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 29 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 29 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 456 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 390 (85.5%)
+INFO:dataset:  Class 1: 66 (14.5%)
+INFO:dataset:Filled 1 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 4 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 122 missing values in 'CATANIMSC' with 20.00
+INFO:dataset:Filled 126 missing values in 'TRAASCOR' with 31.00
+INFO:dataset:Filled 139 missing values in 'TRABSCOR' with 74.00
+INFO:dataset:Filled 223 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 225 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 224 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 41 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 69 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 68 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 68 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 68 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 1141 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 956 (83.8%)
+INFO:dataset:  Class 1: 185 (16.2%)
+INFO:mri_vit_model:Created ViT3DClassifier with vit_base
+INFO:mri_vit_model:  Image size: 128x128x128
+INFO:mri_vit_model:  Patch size: 16
+INFO:mri_vit_model:  Num patches: 512
+INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
+INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
+INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
+INFO:mri_vit_model:Missing keys: 2
+INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
+ViT backbone: 768-dim features
+enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+FT-Transformer tabular encoder: 16 -> 64
+  Auxiliary losses: Enabled (MRI + Tabular classifiers)
+MultiModalFusion initialized:
+  MRI backbone: vit (768-dim)
+  Tabular features: 16 -> 64
+  Fusion method: cross_modal
+  Fusion hidden: 512
+INFO:__main__:  Epoch 1/100 - Train Acc: 80.9%, Val Acc: 85.5%, Val AUC: 0.688
+INFO:__main__:  Epoch 11/100 - Train Acc: 91.5%, Val Acc: 92.5%, Val AUC: 0.915
+INFO:__main__:  Epoch 21/100 - Train Acc: 92.5%, Val Acc: 91.9%, Val AUC: 0.936
+INFO:__main__:  Epoch 31/100 - Train Acc: 94.2%, Val Acc: 93.0%, Val AUC: 0.927
+INFO:__main__:  Epoch 41/100 - Train Acc: 95.1%, Val Acc: 93.4%, Val AUC: 0.938
+INFO:__main__:  Early stopping at epoch 49
+INFO:__main__:  Subgroup Analysis:
+INFO:__main__:    AD: 68.6% (185 samples)
+INFO:__main__:    CN: 98.0% (956 samples)
+INFO:__main__:  Val: 94.5% | Traj: Acc=93.3%, BalAcc=83.3%, Sens=68.6%, Spec=98.0%, AUC=0.945
+INFO:__main__:
+--- Fold 3/5 ---
+INFO:__main__:Train: 4109, Val: 456, Test: 1141
+INFO:dataset:Filled 2 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 12 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 445 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 455 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 495 missing values in 'TRABSCOR' with 76.00
+INFO:dataset:Filled 773 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 776 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 776 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 144 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 2 missing values in 'BMI' with 28.10
+INFO:dataset:Filled 225 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 224 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 224 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 224 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 4109 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 3452 (84.0%)
+INFO:dataset:  Class 1: 657 (16.0%)
+INFO:dataset:Filled 2 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 50 missing values in 'CATANIMSC' with 20.50
+INFO:dataset:Filled 49 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 58 missing values in 'TRABSCOR' with 70.00
+INFO:dataset:Filled 94 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 94 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 93 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 14 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 31 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 31 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 31 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 31 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 456 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 374 (82.0%)
+INFO:dataset:  Class 1: 82 (18.0%)
+INFO:dataset:Filled 4 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 121 missing values in 'CATANIMSC' with 20.00
+INFO:dataset:Filled 121 missing values in 'TRAASCOR' with 29.00
+INFO:dataset:Filled 132 missing values in 'TRABSCOR' with 74.00
+INFO:dataset:Filled 207 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 208 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 208 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 42 missing values in 'VSWEIGHT' with 165.00
+INFO:dataset:Filled 1 missing values in 'BMI' with 28.10
+INFO:dataset:Filled 56 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 55 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 55 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 55 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 1141 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 956 (83.8%)
+INFO:dataset:  Class 1: 185 (16.2%)
+INFO:mri_vit_model:Created ViT3DClassifier with vit_base
+INFO:mri_vit_model:  Image size: 128x128x128
+INFO:mri_vit_model:  Patch size: 16
+INFO:mri_vit_model:  Num patches: 512
+INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
+INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
+INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
+INFO:mri_vit_model:Missing keys: 2
+INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
+ViT backbone: 768-dim features
+enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+FT-Transformer tabular encoder: 16 -> 64
+  Auxiliary losses: Enabled (MRI + Tabular classifiers)
+MultiModalFusion initialized:
+  MRI backbone: vit (768-dim)
+  Tabular features: 16 -> 64
+  Fusion method: cross_modal
+  Fusion hidden: 512
+INFO:__main__:  Epoch 1/100 - Train Acc: 81.3%, Val Acc: 82.0%, Val AUC: 0.664
+INFO:__main__:  Epoch 11/100 - Train Acc: 91.7%, Val Acc: 92.8%, Val AUC: 0.946
+INFO:__main__:  Epoch 21/100 - Train Acc: 93.7%, Val Acc: 94.3%, Val AUC: 0.959
+INFO:__main__:  Epoch 31/100 - Train Acc: 95.1%, Val Acc: 93.0%, Val AUC: 0.960
+INFO:__main__:  Epoch 41/100 - Train Acc: 95.9%, Val Acc: 93.0%, Val AUC: 0.960
+INFO:__main__:  Early stopping at epoch 47
+INFO:__main__:  Subgroup Analysis:
+INFO:__main__:    AD: 69.7% (185 samples)
+INFO:__main__:    CN: 98.1% (956 samples)
+INFO:__main__:  Val: 95.2% | Traj: Acc=93.5%, BalAcc=83.9%, Sens=69.7%, Spec=98.1%, AUC=0.964
+INFO:__main__:
+--- Fold 4/5 ---
+INFO:__main__:Train: 4109, Val: 456, Test: 1141
+INFO:dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 12 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 439 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 445 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 488 missing values in 'TRABSCOR' with 75.00
+INFO:dataset:Filled 774 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 778 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 776 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 149 missing values in 'VSWEIGHT' with 166.00
+INFO:dataset:Filled 3 missing values in 'BMI' with 28.12
+INFO:dataset:Filled 228 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 226 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 226 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 226 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 4109 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 3428 (83.4%)
+INFO:dataset:  Class 1: 681 (16.6%)
+INFO:dataset:Filled 2 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 54 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 55 missing values in 'TRAASCOR' with 29.00
+INFO:dataset:Filled 59 missing values in 'TRABSCOR' with 73.00
+INFO:dataset:Filled 91 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 91 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 92 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 17 missing values in 'VSWEIGHT' with 166.00
+INFO:dataset:Filled 24 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 24 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 24 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 24 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 456 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 398 (87.3%)
+INFO:dataset:  Class 1: 58 (12.7%)
+INFO:dataset:Filled 2 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 123 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 125 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 138 missing values in 'TRABSCOR' with 76.00
+INFO:dataset:Filled 209 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 209 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 209 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 34 missing values in 'VSWEIGHT' with 168.00
+INFO:dataset:Filled 60 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 60 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 60 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 60 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 1141 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 956 (83.8%)
+INFO:dataset:  Class 1: 185 (16.2%)
+INFO:mri_vit_model:Created ViT3DClassifier with vit_base
+INFO:mri_vit_model:  Image size: 128x128x128
+INFO:mri_vit_model:  Patch size: 16
+INFO:mri_vit_model:  Num patches: 512
+INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
+INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
+INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
+INFO:mri_vit_model:Missing keys: 2
+INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
+ViT backbone: 768-dim features
+enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+FT-Transformer tabular encoder: 16 -> 64
+  Auxiliary losses: Enabled (MRI + Tabular classifiers)
+MultiModalFusion initialized:
+  MRI backbone: vit (768-dim)
+  Tabular features: 16 -> 64
+  Fusion method: cross_modal
+  Fusion hidden: 512
+INFO:__main__:  Epoch 1/100 - Train Acc: 79.9%, Val Acc: 87.3%, Val AUC: 0.685
+INFO:__main__:  Epoch 11/100 - Train Acc: 91.1%, Val Acc: 92.5%, Val AUC: 0.922
+INFO:__main__:  Epoch 21/100 - Train Acc: 92.5%, Val Acc: 93.4%, Val AUC: 0.936
+INFO:__main__:  Epoch 31/100 - Train Acc: 93.7%, Val Acc: 94.7%, Val AUC: 0.935
+INFO:__main__:  Epoch 41/100 - Train Acc: 95.3%, Val Acc: 89.5%, Val AUC: 0.936
+INFO:__main__:  Early stopping at epoch 45
+INFO:__main__:  Subgroup Analysis:
+INFO:__main__:    AD: 70.8% (185 samples)
+INFO:__main__:    CN: 97.4% (956 samples)
+INFO:__main__:  Val: 95.0% | Traj: Acc=93.1%, BalAcc=84.1%, Sens=70.8%, Spec=97.4%, AUC=0.937
+INFO:__main__:
+--- Fold 5/5 ---
+INFO:__main__:Train: 4109, Val: 456, Test: 1141
+INFO:dataset:Filled 1 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 12 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 432 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 439 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 490 missing values in 'TRABSCOR' with 75.00
+INFO:dataset:Filled 769 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 772 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 771 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 144 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 1 missing values in 'BMI' with 28.20
+INFO:dataset:Filled 230 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 228 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 228 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 228 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 4109 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 3448 (83.9%)
+INFO:dataset:  Class 1: 661 (16.1%)
+INFO:dataset:Filled 1 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 50 missing values in 'CATANIMSC' with 20.00
+INFO:dataset:Filled 50 missing values in 'TRAASCOR' with 32.00
+INFO:dataset:Filled 54 missing values in 'TRABSCOR' with 78.50
+INFO:dataset:Filled 88 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 89 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 88 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 12 missing values in 'VSWEIGHT' with 166.00
+INFO:dataset:Filled 1 missing values in 'BMI' with 27.79
+INFO:dataset:Filled 25 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 25 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 25 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 25 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 456 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 377 (82.7%)
+INFO:dataset:  Class 1: 79 (17.3%)
+INFO:dataset:Filled 3 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 134 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 136 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 141 missing values in 'TRABSCOR' with 75.00
+INFO:dataset:Filled 217 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 217 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 218 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 44 missing values in 'VSWEIGHT' with 166.00
+INFO:dataset:Filled 1 missing values in 'BMI' with 27.84
+INFO:dataset:Filled 57 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 57 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 57 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 57 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 1141 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 957 (83.9%)
+INFO:dataset:  Class 1: 184 (16.1%)
+INFO:mri_vit_model:Created ViT3DClassifier with vit_base
+INFO:mri_vit_model:  Image size: 128x128x128
+INFO:mri_vit_model:  Patch size: 16
+INFO:mri_vit_model:  Num patches: 512
+INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
+INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
+INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
+INFO:mri_vit_model:Missing keys: 2
+INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
+ViT backbone: 768-dim features
+enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+FT-Transformer tabular encoder: 16 -> 64
+  Auxiliary losses: Enabled (MRI + Tabular classifiers)
+MultiModalFusion initialized:
+  MRI backbone: vit (768-dim)
+  Tabular features: 16 -> 64
+  Fusion method: cross_modal
+  Fusion hidden: 512
+INFO:__main__:  Epoch 1/100 - Train Acc: 80.2%, Val Acc: 82.7%, Val AUC: 0.690
+INFO:__main__:  Epoch 11/100 - Train Acc: 91.7%, Val Acc: 91.7%, Val AUC: 0.922
+INFO:__main__:  Epoch 21/100 - Train Acc: 93.0%, Val Acc: 92.3%, Val AUC: 0.942
+INFO:__main__:  Epoch 31/100 - Train Acc: 93.7%, Val Acc: 92.8%, Val AUC: 0.965
+INFO:__main__:  Epoch 41/100 - Train Acc: 94.8%, Val Acc: 92.5%, Val AUC: 0.958
+INFO:__main__:  Early stopping at epoch 41
+INFO:__main__:  Subgroup Analysis:
+INFO:__main__:    AD: 75.0% (184 samples)
+INFO:__main__:    CN: 96.8% (957 samples)
+INFO:__main__:  Val: 93.6% | Traj: Acc=93.3%, BalAcc=85.9%, Sens=75.0%, Spec=96.8%, AUC=0.946
+INFO:__main__:
+Seed 123 Trajectory Summary:
+INFO:__main__:  Acc: 93.1±0.3%
+INFO:__main__:  BalAcc: 83.6±1.6%
+INFO:__main__:  Sens: 69.5±3.8%
+INFO:__main__:  Spec: 97.7±0.6%
+INFO:__main__:  AUC: 0.947±0.009
+INFO:__main__:
+============================================================
+INFO:__main__:SEED: 456
+INFO:__main__:============================================================
+INFO:__main__:
+--- Fold 1/5 ---
+INFO:__main__:Train: 4108, Val: 456, Test: 1142
+INFO:dataset:Filled 2 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 12 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 444 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 450 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 496 missing values in 'TRABSCOR' with 75.00
+INFO:dataset:Filled 790 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 794 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 791 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 142 missing values in 'VSWEIGHT' with 166.90
+INFO:dataset:Filled 3 missing values in 'BMI' with 28.19
+INFO:dataset:Filled 234 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 233 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 233 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 233 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 4108 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 3450 (84.0%)
+INFO:dataset:  Class 1: 658 (16.0%)
+INFO:dataset:Filled 1 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 44 missing values in 'CATANIMSC' with 20.00
+INFO:dataset:Filled 45 missing values in 'TRAASCOR' with 31.00
+INFO:dataset:Filled 47 missing values in 'TRABSCOR' with 77.00
+INFO:dataset:Filled 72 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 72 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 73 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 16 missing values in 'VSWEIGHT' with 162.00
+INFO:dataset:Filled 22 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 22 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 22 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 22 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 456 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 375 (82.2%)
+INFO:dataset:  Class 1: 81 (17.8%)
+INFO:dataset:Filled 1 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 4 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 128 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 130 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 142 missing values in 'TRABSCOR' with 74.00
+INFO:dataset:Filled 212 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 212 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 213 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 42 missing values in 'VSWEIGHT' with 170.00
+INFO:dataset:Filled 56 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 55 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 55 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 55 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 1142 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 957 (83.8%)
+INFO:dataset:  Class 1: 185 (16.2%)
+INFO:mri_vit_model:Created ViT3DClassifier with vit_base
+INFO:mri_vit_model:  Image size: 128x128x128
+INFO:mri_vit_model:  Patch size: 16
+INFO:mri_vit_model:  Num patches: 512
+INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
+INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
+INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
+INFO:mri_vit_model:Missing keys: 2
+INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
+ViT backbone: 768-dim features
+enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+FT-Transformer tabular encoder: 16 -> 64
+  Auxiliary losses: Enabled (MRI + Tabular classifiers)
+MultiModalFusion initialized:
+  MRI backbone: vit (768-dim)
+  Tabular features: 16 -> 64
+  Fusion method: cross_modal
+  Fusion hidden: 512
+INFO:__main__:  Epoch 1/100 - Train Acc: 70.4%, Val Acc: 82.2%, Val AUC: 0.757
+INFO:__main__:  Epoch 11/100 - Train Acc: 91.8%, Val Acc: 93.2%, Val AUC: 0.964
+INFO:__main__:  Epoch 21/100 - Train Acc: 93.5%, Val Acc: 94.3%, Val AUC: 0.974
+INFO:__main__:  Epoch 31/100 - Train Acc: 95.0%, Val Acc: 94.5%, Val AUC: 0.976
+INFO:__main__:  Epoch 41/100 - Train Acc: 95.4%, Val Acc: 94.7%, Val AUC: 0.973
+INFO:__main__:  Epoch 51/100 - Train Acc: 96.7%, Val Acc: 95.2%, Val AUC: 0.974
+INFO:__main__:  Epoch 61/100 - Train Acc: 97.8%, Val Acc: 96.3%, Val AUC: 0.974
+INFO:__main__:  Epoch 71/100 - Train Acc: 99.1%, Val Acc: 95.6%, Val AUC: 0.970
+INFO:__main__:  Early stopping at epoch 72
+INFO:__main__:  Subgroup Analysis:
+INFO:__main__:    AD: 72.4% (185 samples)
+INFO:__main__:    CN: 95.8% (957 samples)
+INFO:__main__:  Val: 96.3% | Traj: Acc=92.0%, BalAcc=84.1%, Sens=72.4%, Spec=95.8%, AUC=0.941
+INFO:__main__:
+--- Fold 2/5 ---
+INFO:__main__:Train: 4109, Val: 456, Test: 1141
+INFO:dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 10 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 428 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 434 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 478 missing values in 'TRABSCOR' with 75.00
+INFO:dataset:Filled 746 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 749 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 749 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 145 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 1 missing values in 'BMI' with 28.17
+INFO:dataset:Filled 218 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 216 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 216 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 216 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 4109 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 3454 (84.1%)
+INFO:dataset:  Class 1: 655 (15.9%)
+INFO:dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 48 missing values in 'CATANIMSC' with 20.00
+INFO:dataset:Filled 48 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 54 missing values in 'TRABSCOR' with 77.50
+INFO:dataset:Filled 82 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 82 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 82 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 15 missing values in 'VSWEIGHT' with 163.00
+INFO:dataset:Filled 23 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 23 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 23 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 23 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 456 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 372 (81.6%)
+INFO:dataset:  Class 1: 84 (18.4%)
+INFO:dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 140 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 143 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 153 missing values in 'TRABSCOR' with 76.00
+INFO:dataset:Filled 246 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 247 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 246 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 40 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 2 missing values in 'BMI' with 28.08
+INFO:dataset:Filled 71 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 71 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 71 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 71 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 1141 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 956 (83.8%)
+INFO:dataset:  Class 1: 185 (16.2%)
+INFO:mri_vit_model:Created ViT3DClassifier with vit_base
+INFO:mri_vit_model:  Image size: 128x128x128
+INFO:mri_vit_model:  Patch size: 16
+INFO:mri_vit_model:  Num patches: 512
+INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
+INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
+INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
+INFO:mri_vit_model:Missing keys: 2
+INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
+ViT backbone: 768-dim features
+enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+FT-Transformer tabular encoder: 16 -> 64
+  Auxiliary losses: Enabled (MRI + Tabular classifiers)
+MultiModalFusion initialized:
+  MRI backbone: vit (768-dim)
+  Tabular features: 16 -> 64
+  Fusion method: cross_modal
+  Fusion hidden: 512
+INFO:__main__:  Epoch 1/100 - Train Acc: 70.2%, Val Acc: 81.6%, Val AUC: 0.742
+INFO:__main__:  Epoch 11/100 - Train Acc: 91.8%, Val Acc: 90.4%, Val AUC: 0.927
+INFO:__main__:  Epoch 21/100 - Train Acc: 93.6%, Val Acc: 93.4%, Val AUC: 0.949
+INFO:__main__:  Epoch 31/100 - Train Acc: 95.2%, Val Acc: 94.1%, Val AUC: 0.960
+INFO:__main__:  Epoch 41/100 - Train Acc: 96.1%, Val Acc: 93.0%, Val AUC: 0.958
+INFO:__main__:  Epoch 51/100 - Train Acc: 97.6%, Val Acc: 92.3%, Val AUC: 0.946
+INFO:__main__:  Early stopping at epoch 51
+INFO:__main__:  Subgroup Analysis:
+INFO:__main__:    AD: 70.8% (185 samples)
+INFO:__main__:    CN: 98.6% (956 samples)
+INFO:__main__:  Val: 94.1% | Traj: Acc=94.1%, BalAcc=84.7%, Sens=70.8%, Spec=98.6%, AUC=0.963
+INFO:__main__:
+--- Fold 3/5 ---
+INFO:__main__:Train: 4109, Val: 456, Test: 1141
+INFO:dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 10 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 453 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 459 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 501 missing values in 'TRABSCOR' with 76.00
+INFO:dataset:Filled 780 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 782 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 781 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 3 missing values in 'BMI' with 28.10
+INFO:dataset:Filled 218 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 216 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 216 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 216 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 4109 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 3438 (83.7%)
+INFO:dataset:  Class 1: 671 (16.3%)
+INFO:dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 53 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 55 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 58 missing values in 'TRABSCOR' with 74.00
+INFO:dataset:Filled 88 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 89 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 89 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 13 missing values in 'VSWEIGHT' with 165.00
+INFO:dataset:Filled 26 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 26 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 26 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 26 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 456 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 388 (85.1%)
+INFO:dataset:  Class 1: 68 (14.9%)
+INFO:dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 110 missing values in 'CATANIMSC' with 20.00
+INFO:dataset:Filled 111 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 126 missing values in 'TRABSCOR' with 75.00
+INFO:dataset:Filled 206 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 207 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 207 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 46 missing values in 'VSWEIGHT' with 165.00
+INFO:dataset:Filled 68 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 68 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 68 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 68 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 1141 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 956 (83.8%)
+INFO:dataset:  Class 1: 185 (16.2%)
+INFO:mri_vit_model:Created ViT3DClassifier with vit_base
+INFO:mri_vit_model:  Image size: 128x128x128
+INFO:mri_vit_model:  Patch size: 16
+INFO:mri_vit_model:  Num patches: 512
+INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
+INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
+INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
+INFO:mri_vit_model:Missing keys: 2
+INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
+ViT backbone: 768-dim features
+enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+FT-Transformer tabular encoder: 16 -> 64
+  Auxiliary losses: Enabled (MRI + Tabular classifiers)
+MultiModalFusion initialized:
+  MRI backbone: vit (768-dim)
+  Tabular features: 16 -> 64
+  Fusion method: cross_modal
+  Fusion hidden: 512
+INFO:__main__:  Epoch 1/100 - Train Acc: 68.7%, Val Acc: 85.1%, Val AUC: 0.673
+INFO:__main__:  Epoch 11/100 - Train Acc: 91.9%, Val Acc: 90.6%, Val AUC: 0.898
+INFO:__main__:  Epoch 21/100 - Train Acc: 92.2%, Val Acc: 91.2%, Val AUC: 0.934
+INFO:__main__:  Epoch 31/100 - Train Acc: 93.9%, Val Acc: 93.0%, Val AUC: 0.959
+INFO:__main__:  Epoch 41/100 - Train Acc: 95.2%, Val Acc: 93.0%, Val AUC: 0.961
+INFO:__main__:  Epoch 51/100 - Train Acc: 95.7%, Val Acc: 93.2%, Val AUC: 0.960
+INFO:__main__:  Epoch 61/100 - Train Acc: 96.3%, Val Acc: 93.4%, Val AUC: 0.959
+INFO:__main__:  Epoch 71/100 - Train Acc: 97.0%, Val Acc: 93.2%, Val AUC: 0.958
+INFO:__main__:  Early stopping at epoch 75
+INFO:__main__:  Subgroup Analysis:
+INFO:__main__:    AD: 69.7% (185 samples)
+INFO:__main__:    CN: 97.8% (956 samples)
+INFO:__main__:  Val: 94.3% | Traj: Acc=93.3%, BalAcc=83.8%, Sens=69.7%, Spec=97.8%, AUC=0.952
+INFO:__main__:
+--- Fold 4/5 ---
+INFO:__main__:Train: 4109, Val: 456, Test: 1141
+INFO:dataset:Filled 2 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 11 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 454 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 462 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 505 missing values in 'TRABSCOR' with 75.50
+INFO:dataset:Filled 790 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 793 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 791 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 153 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 2 missing values in 'BMI' with 28.12
+INFO:dataset:Filled 229 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 227 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 227 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 227 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 4109 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 3445 (83.8%)
+INFO:dataset:  Class 1: 664 (16.2%)
+INFO:dataset:Filled 1 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 52 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 54 missing values in 'TRAASCOR' with 29.00
+INFO:dataset:Filled 59 missing values in 'TRABSCOR' with 72.00
+INFO:dataset:Filled 94 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 94 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 94 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 10 missing values in 'VSWEIGHT' with 165.00
+INFO:dataset:Filled 1 missing values in 'BMI' with 27.69
+INFO:dataset:Filled 31 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 31 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 31 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 31 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 456 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 381 (83.6%)
+INFO:dataset:  Class 1: 75 (16.4%)
+INFO:dataset:Filled 2 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 4 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 110 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 109 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 121 missing values in 'TRABSCOR' with 74.00
+INFO:dataset:Filled 190 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 191 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 192 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 37 missing values in 'VSWEIGHT' with 166.00
+INFO:dataset:Filled 52 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 52 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 52 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 52 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 1141 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 956 (83.8%)
+INFO:dataset:  Class 1: 185 (16.2%)
+INFO:mri_vit_model:Created ViT3DClassifier with vit_base
+INFO:mri_vit_model:  Image size: 128x128x128
+INFO:mri_vit_model:  Patch size: 16
+INFO:mri_vit_model:  Num patches: 512
+INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
+INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
+INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
+INFO:mri_vit_model:Missing keys: 2
+INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
+ViT backbone: 768-dim features
+enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+FT-Transformer tabular encoder: 16 -> 64
+  Auxiliary losses: Enabled (MRI + Tabular classifiers)
+MultiModalFusion initialized:
+  MRI backbone: vit (768-dim)
+  Tabular features: 16 -> 64
+  Fusion method: cross_modal
+  Fusion hidden: 512
+INFO:__main__:  Epoch 1/100 - Train Acc: 70.0%, Val Acc: 83.6%, Val AUC: 0.688
+INFO:__main__:  Epoch 11/100 - Train Acc: 91.1%, Val Acc: 93.6%, Val AUC: 0.930
+INFO:__main__:  Epoch 21/100 - Train Acc: 91.7%, Val Acc: 91.2%, Val AUC: 0.940
+INFO:__main__:  Epoch 31/100 - Train Acc: 92.9%, Val Acc: 93.4%, Val AUC: 0.939
+INFO:__main__:  Epoch 41/100 - Train Acc: 94.4%, Val Acc: 94.1%, Val AUC: 0.961
+INFO:__main__:  Epoch 51/100 - Train Acc: 95.8%, Val Acc: 93.9%, Val AUC: 0.960
+INFO:__main__:  Early stopping at epoch 58
+INFO:__main__:  Subgroup Analysis:
+INFO:__main__:    AD: 65.9% (185 samples)
+INFO:__main__:    CN: 98.7% (956 samples)
+INFO:__main__:  Val: 94.3% | Traj: Acc=93.4%, BalAcc=82.3%, Sens=65.9%, Spec=98.7%, AUC=0.952
+INFO:__main__:
+--- Fold 5/5 ---
+INFO:__main__:Train: 4109, Val: 456, Test: 1141
+INFO:dataset:Filled 3 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 13 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 432 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 437 missing values in 'TRAASCOR' with 30.00
+INFO:dataset:Filled 482 missing values in 'TRABSCOR' with 75.00
+INFO:dataset:Filled 760 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 763 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 762 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 146 missing values in 'VSWEIGHT' with 167.00
+INFO:dataset:Filled 2 missing values in 'BMI' with 28.10
+INFO:dataset:Filled 216 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 215 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 215 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 215 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 4109 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 3443 (83.8%)
+INFO:dataset:  Class 1: 666 (16.2%)
+INFO:dataset:Filled 1 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 56 missing values in 'CATANIMSC' with 20.50
+INFO:dataset:Filled 56 missing values in 'TRAASCOR' with 29.00
+INFO:dataset:Filled 60 missing values in 'TRABSCOR' with 72.00
+INFO:dataset:Filled 94 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 94 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 96 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 19 missing values in 'VSWEIGHT' with 165.00
+INFO:dataset:Filled 31 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 31 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 31 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 31 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 456 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 382 (83.8%)
+INFO:dataset:  Class 1: 74 (16.2%)
+INFO:dataset:Filled 1 missing values in 'AGE' with 69.00
+INFO:dataset:Filled 2 missing values in 'PTEDUCAT' with 16.00
+INFO:dataset:Filled 128 missing values in 'CATANIMSC' with 21.00
+INFO:dataset:Filled 132 missing values in 'TRAASCOR' with 31.00
+INFO:dataset:Filled 143 missing values in 'TRABSCOR' with 77.00
+INFO:dataset:Filled 220 missing values in 'DSPANFOR' with -4.00
+INFO:dataset:Filled 221 missing values in 'DSPANBAC' with -4.00
+INFO:dataset:Filled 219 missing values in 'BNTTOTAL' with -4.00
+INFO:dataset:Filled 35 missing values in 'VSWEIGHT' with 166.00
+INFO:dataset:Filled 1 missing values in 'BMI' with 27.99
+INFO:dataset:Filled 65 missing values in 'MH14ALCH' with 0.00
+INFO:dataset:Filled 64 missing values in 'MH16SMOK' with 0.00
+INFO:dataset:Filled 64 missing values in 'MH4CARD' with 0.00
+INFO:dataset:Filled 64 missing values in 'MH2NEURL' with -4.00
+INFO:dataset:Loaded 1141 samples
+INFO:dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:dataset:  Class 0: 957 (83.9%)
+INFO:dataset:  Class 1: 184 (16.1%)
+INFO:mri_vit_model:Created ViT3DClassifier with vit_base
+INFO:mri_vit_model:  Image size: 128x128x128
+INFO:mri_vit_model:  Patch size: 16
+INFO:mri_vit_model:  Num patches: 512
+INFO:mri_vit_model:  Embed dim: 768, Depth: 12, Heads: 12
+INFO:mri_vit_model:Loading MAE pre-trained weights from ../mri_vit_ad/pretrained/vit_mae75_pretrained.pth
+INFO:mri_vit_model:  Loaded pos_embed directly (shapes match: torch.Size([1, 513, 768]))
+INFO:mri_vit_model:Loaded 150 pretrained weights (including pos_embed, cls_token, patch_embed if matched)
+INFO:mri_vit_model:Missing keys: 2
+INFO:mri_vit_model:  Missing: ['head.1.weight', 'head.1.bias']
+ViT backbone: 768-dim features
+enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+FT-Transformer tabular encoder: 16 -> 64
+  Auxiliary losses: Enabled (MRI + Tabular classifiers)
+MultiModalFusion initialized:
+  MRI backbone: vit (768-dim)
+  Tabular features: 16 -> 64
+  Fusion method: cross_modal
+  Fusion hidden: 512
+INFO:__main__:  Epoch 1/100 - Train Acc: 70.2%, Val Acc: 83.8%, Val AUC: 0.648
+INFO:__main__:  Epoch 11/100 - Train Acc: 91.7%, Val Acc: 91.7%, Val AUC: 0.922
+INFO:__main__:  Epoch 21/100 - Train Acc: 93.2%, Val Acc: 92.1%, Val AUC: 0.950
+INFO:__main__:  Epoch 31/100 - Train Acc: 94.1%, Val Acc: 95.0%, Val AUC: 0.974
+INFO:__main__:  Epoch 41/100 - Train Acc: 95.4%, Val Acc: 94.7%, Val AUC: 0.974
+INFO:__main__:  Epoch 51/100 - Train Acc: 96.8%, Val Acc: 96.1%, Val AUC: 0.973
+INFO:__main__:  Epoch 61/100 - Train Acc: 97.9%, Val Acc: 94.7%, Val AUC: 0.967
+INFO:__main__:  Epoch 71/100 - Train Acc: 98.6%, Val Acc: 93.9%, Val AUC: 0.958
+INFO:__main__:  Early stopping at epoch 71
+INFO:__main__:  Subgroup Analysis:
+INFO:__main__:    AD: 75.0% (184 samples)
+INFO:__main__:    CN: 97.3% (957 samples)
+INFO:__main__:  Val: 96.1% | Traj: Acc=93.7%, BalAcc=86.1%, Sens=75.0%, Spec=97.3%, AUC=0.959
+INFO:__main__:
+Seed 456 Trajectory Summary:
+INFO:__main__:  Acc: 93.3±0.7%
+INFO:__main__:  BalAcc: 84.2±1.2%
+INFO:__main__:  Sens: 70.8±3.0%
+INFO:__main__:  Spec: 97.7±1.1%
+INFO:__main__:  AUC: 0.954±0.007
+INFO:__main__:
+============================================================
+INFO:__main__:FINAL CROSS-VALIDATION RESULTS (Multi-Modal)
+INFO:__main__:============================================================
+INFO:__main__:
+CN_AD_TRAJECTORY (train+test):
+INFO:__main__:  Accuracy:     92.9±0.7%
+INFO:__main__:  Balanced Acc: 83.4±2.4%
+INFO:__main__:  Sensitivity:  69.4±5.4%
+INFO:__main__:  Specificity:  97.4±0.9%
+INFO:__main__:  AUC:          0.948±0.011

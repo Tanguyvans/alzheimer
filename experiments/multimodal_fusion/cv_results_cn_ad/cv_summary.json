@@ -1,0 +1,332 @@
+{
+  "n_folds": 5,
+  "seeds": [
+    42,
+    123,
+    456
+  ],
+  "traj_accuracy": 92.9139697308769,
+  "traj_accuracy_std": 0.7441724609462419,
+  "traj_balanced_accuracy": 83.44825790914096,
+  "traj_balanced_accuracy_std": 2.4284300319142944,
+  "traj_sensitivity": 69.44751273012143,
+  "traj_sensitivity_std": 5.371440151772682,
+  "traj_specificity": 97.4490030881605,
+  "traj_specificity_std": 0.9491428279679204,
+  "traj_auc": 0.9480219150959304,
+  "traj_auc_std": 0.010633399400239272,
+  "subgroup_summary": {
+    "AD": {
+      "accuracy_mean": 69.44751273012143,
+      "accuracy_std": 5.189304193929795,
+      "avg_samples_per_fold": 184.8
+    },
+    "CN": {
+      "accuracy_mean": 97.4490030881605,
+      "accuracy_std": 0.9169590870684531,
+      "avg_samples_per_fold": 956.4
+    }
+  },
+  "per_fold_results": [
+    {
+      "seed": 42,
+      "fold": 0,
+      "val_accuracy": 96.49122807017544,
+      "traj_accuracy": 92.73204903677758,
+      "traj_balanced_accuracy": 86.2885142195487,
+      "traj_sensitivity": 76.75675675675676,
+      "traj_specificity": 95.82027168234065,
+      "traj_auc": 0.9400152503600779,
+      "subgroup_accuracy": {
+        "AD": {
+          "accuracy": 76.75675675675676,
+          "n_samples": 185
+        },
+        "CN": {
+          "accuracy": 95.82027168234065,
+          "n_samples": 957
+        }
+      }
+    },
+    {
+      "seed": 42,
+      "fold": 1,
+      "val_accuracy": 91.44736842105263,
+      "traj_accuracy": 91.32340052585451,
+      "traj_balanced_accuracy": 76.73074748388555,
+      "traj_sensitivity": 55.13513513513514,
+      "traj_specificity": 98.32635983263599,
+      "traj_auc": 0.9239341852312565,
+      "subgroup_accuracy": {
+        "AD": {
+          "accuracy": 55.13513513513514,
+          "n_samples": 185
+        },
+        "CN": {
+          "accuracy": 98.32635983263597,
+          "n_samples": 956
+        }
+      }
+    },
+    {
+      "seed": 42,
+      "fold": 2,
+      "val_accuracy": 93.85964912280701,
+      "traj_accuracy": 91.93689745836986,
+      "traj_balanced_accuracy": 82.54608164650006,
+      "traj_sensitivity": 68.64864864864865,
+      "traj_specificity": 96.44351464435147,
+      "traj_auc": 0.949841682686871,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 96.44351464435147,
+          "n_samples": 956
+        },
+        "AD": {
+          "accuracy": 68.64864864864865,
+          "n_samples": 185
+        }
+      }
+    },
+    {
+      "seed": 42,
+      "fold": 3,
+      "val_accuracy": 93.85964912280701,
+      "traj_accuracy": 93.07624890446976,
+      "traj_balanced_accuracy": 84.96975008481284,
+      "traj_sensitivity": 72.97297297297297,
+      "traj_specificity": 96.96652719665272,
+      "traj_auc": 0.9568189528440575,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 96.96652719665272,
+          "n_samples": 956
+        },
+        "AD": {
+          "accuracy": 72.97297297297297,
+          "n_samples": 185
+        }
+      }
+    },
+    {
+      "seed": 42,
+      "fold": 4,
+      "val_accuracy": 91.00877192982456,
+      "traj_accuracy": 92.37510955302366,
+      "traj_balanced_accuracy": 82.06550134023898,
+      "traj_sensitivity": 66.84782608695652,
+      "traj_specificity": 97.28317659352142,
+      "traj_auc": 0.9470719185861615,
+      "subgroup_accuracy": {
+        "AD": {
+          "accuracy": 66.84782608695652,
+          "n_samples": 184
+        },
+        "CN": {
+          "accuracy": 97.28317659352143,
+          "n_samples": 957
+        }
+      }
+    },
+    {
+      "seed": 123,
+      "fold": 0,
+      "val_accuracy": 93.85964912280701,
+      "traj_accuracy": 92.6444833625219,
+      "traj_balanced_accuracy": 80.78567595808974,
+      "traj_sensitivity": 63.24324324324324,
+      "traj_specificity": 98.32810867293625,
+      "traj_auc": 0.9437487644384196,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 98.32810867293625,
+          "n_samples": 957
+        },
+        "AD": {
+          "accuracy": 63.24324324324324,
+          "n_samples": 185
+        }
+      }
+    },
+    {
+      "seed": 123,
+      "fold": 1,
+      "val_accuracy": 94.51754385964912,
+      "traj_accuracy": 93.25153374233129,
+      "traj_balanced_accuracy": 83.33060047495194,
+      "traj_sensitivity": 68.64864864864865,
+      "traj_specificity": 98.01255230125523,
+      "traj_auc": 0.9445437068868031,
+      "subgroup_accuracy": {
+        "AD": {
+          "accuracy": 68.64864864864865,
+          "n_samples": 185
+        },
+        "CN": {
+          "accuracy": 98.01255230125523,
+          "n_samples": 956
+        }
+      }
+    },
+    {
+      "seed": 123,
+      "fold": 2,
+      "val_accuracy": 95.17543859649123,
+      "traj_accuracy": 93.51446099912357,
+      "traj_balanced_accuracy": 83.9234422707226,
+      "traj_sensitivity": 69.72972972972973,
+      "traj_specificity": 98.11715481171548,
+      "traj_auc": 0.9640902408684836,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 98.11715481171548,
+          "n_samples": 956
+        },
+        "AD": {
+          "accuracy": 69.72972972972973,
+          "n_samples": 185
+        }
+      }
+    },
+    {
+      "seed": 123,
+      "fold": 3,
+      "val_accuracy": 94.95614035087719,
+      "traj_accuracy": 93.07624890446976,
+      "traj_balanced_accuracy": 84.09787402465227,
+      "traj_sensitivity": 70.8108108108108,
+      "traj_specificity": 97.38493723849372,
+      "traj_auc": 0.9365599909532965,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 97.38493723849372,
+          "n_samples": 956
+        },
+        "AD": {
+          "accuracy": 70.8108108108108,
+          "n_samples": 185
+        }
+      }
+    },
+    {
+      "seed": 123,
+      "fold": 4,
+      "val_accuracy": 93.64035087719299,
+      "traj_accuracy": 93.25153374233129,
+      "traj_balanced_accuracy": 85.88035527690701,
+      "traj_sensitivity": 75.0,
+      "traj_specificity": 96.76071055381401,
+      "traj_auc": 0.9456124210621962,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 96.760710553814,
+          "n_samples": 957
+        },
+        "AD": {
+          "accuracy": 75.0,
+          "n_samples": 184
+        }
+      }
+    },
+    {
+      "seed": 456,
+      "fold": 0,
+      "val_accuracy": 96.2719298245614,
+      "traj_accuracy": 92.03152364273205,
+      "traj_balanced_accuracy": 84.12635205738654,
+      "traj_sensitivity": 72.43243243243244,
+      "traj_specificity": 95.82027168234065,
+      "traj_auc": 0.9411646756474342,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 95.82027168234065,
+          "n_samples": 957
+        },
+        "AD": {
+          "accuracy": 72.43243243243244,
+          "n_samples": 185
+        }
+      }
+    },
+    {
+      "seed": 456,
+      "fold": 1,
+      "val_accuracy": 94.07894736842105,
+      "traj_accuracy": 94.12795793163892,
+      "traj_balanced_accuracy": 84.72548908741378,
+      "traj_sensitivity": 70.8108108108108,
+      "traj_specificity": 98.64016736401673,
+      "traj_auc": 0.9630385615741264,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 98.64016736401673,
+          "n_samples": 956
+        },
+        "AD": {
+          "accuracy": 70.8108108108108,
+          "n_samples": 185
+        }
+      }
+    },
+    {
+      "seed": 456,
+      "fold": 2,
+      "val_accuracy": 94.29824561403508,
+      "traj_accuracy": 93.25153374233129,
+      "traj_balanced_accuracy": 83.76653850503223,
+      "traj_sensitivity": 69.72972972972973,
+      "traj_specificity": 97.80334728033473,
+      "traj_auc": 0.9524652267330092,
+      "subgroup_accuracy": {
+        "AD": {
+          "accuracy": 69.72972972972973,
+          "n_samples": 185
+        },
+        "CN": {
+          "accuracy": 97.80334728033473,
+          "n_samples": 956
+        }
+      }
+    },
+    {
+      "seed": 456,
+      "fold": 3,
+      "val_accuracy": 94.29824561403508,
+      "traj_accuracy": 93.42681858019282,
+      "traj_balanced_accuracy": 82.34535791021148,
+      "traj_sensitivity": 65.94594594594595,
+      "traj_specificity": 98.74476987447699,
+      "traj_auc": 0.9524878434920276,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 98.74476987447699,
+          "n_samples": 956
+        },
+        "AD": {
+          "accuracy": 65.94594594594595,
+          "n_samples": 185
+        }
+      }
+    },
+    {
+      "seed": 456,
+      "fold": 4,
+      "val_accuracy": 96.05263157894737,
+      "traj_accuracy": 93.6897458369851,
+      "traj_balanced_accuracy": 86.1415882967607,
+      "traj_sensitivity": 75.0,
+      "traj_specificity": 97.28317659352142,
+      "traj_auc": 0.9589353050747353,
+      "subgroup_accuracy": {
+        "CN": {
+          "accuracy": 97.28317659352143,
+          "n_samples": 957
+        },
+        "AD": {
+          "accuracy": 75.0,
+          "n_samples": 184
+        }
+      }
+    }
+  ]
+}
