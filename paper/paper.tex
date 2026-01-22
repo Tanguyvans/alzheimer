@@ -84,7 +84,7 @@ In this work, we present a fully end-to-end multimodal deep learning framework t
     \item Cross-attention fusion for learned modality interaction
 \end{itemize}
 
-Our contributions are: (1) an end-to-end multimodal framework combining 3D ViT and FT-Transformer for AD classification; (2) validation on 6,065 subjects from three independent cohorts (ADNI, OASIS, NACC) with strict subject-level splitting; (3) cross-task generalization: training on the AD trajectory (including MCI converters) achieves 93.3\% on established AD detection; and (4) comprehensive ablation studies demonstrating the value of multimodal fusion.
+Our contributions are: (1) an end-to-end multimodal framework combining 3D ViT and FT-Transformer for AD classification; (2) validation on 6,065 subjects from three independent cohorts (ADNI, OASIS, NACC) with strict subject-level splitting; (3) cross-task generalization: training on the AD-trajectory (including MCI converters) achieves 93.3\% on established AD detection; and (4) comprehensive ablation studies demonstrating the value of multimodal fusion.
 
 \section{Related Work}
 
@@ -114,16 +114,16 @@ We advance this line of work by combining state-of-the-art architectures for bot
 
 We aggregated data from three publicly available cohorts:
 
-\textbf{ADNI (Alzheimer's Disease Neuroimaging Initiative):} Data used in the preparation of this article were obtained from the ADNI database (adni.loni.usc.edu). The ADNI was launched in 2003 as a public-private partnership, led by Principal Investigator Michael W. Weiner, MD. The primary goal of ADNI has been to test whether serial MRI, PET, other biological markers, and clinical and neuropsychological assessment can be combined to measure the progression of MCI and early AD. We included 903 subjects (424 CN, 479 AD-trajectory).
+\textbf{ADNI (Alzheimer's Disease Neuroimaging Initiative):} Data used in the preparation of this article were obtained from the ADNI database (adni.loni.usc.edu). ADNI is a longitudinal study collecting multimodal neuroimaging and clinical data to track Alzheimer's disease progression. We included 903 subjects (424 CN, 479 AD-trajectory).
 
-\textbf{OASIS-3 (Open Access Series of Imaging Studies) \cite{oasis3}:} A longitudinal neuroimaging dataset from Washington University. We included 1,030 subjects (742 CN, 288 AD-trajectory).
+\textbf{OASIS-3 (Open Access Series of Imaging Studies) \cite{oasis3}:} A longitudinal neuroimaging dataset from Washington University including cognitively normal older adults and individuals with cognitive decline. We included 1,030 subjects (742 CN, 288 AD-trajectory).
 
-\textbf{NACC (National Alzheimer's Coordinating Center):} The largest US Alzheimer's database, aggregating clinical data from over 40 research centers. MRI data were obtained from SCAN (Standardized Centralized Alzheimer's \& Related Dementias Neuroimaging), NACC's neuroimaging repository. We included 4,132 subjects (3,581 CN, 551 AD-trajectory).
+\textbf{NACC (National Alzheimer's Coordinating Center):} The largest US Alzheimer's database, aggregating data from over 40 Alzheimer's Disease Research Centers (ADRCs). MRI data were obtained from SCAN (Standardized Centralized Alzheimer's \& Related Dementias Neuroimaging), NACC's centralized neuroimaging repository. We included 4,132 subjects (3,581 CN, 551 AD-trajectory).
 
-The AD-trajectory group includes both clinically diagnosed AD patients and MCI subjects who subsequently progressed to AD, representing individuals on the Alzheimer's disease continuum. The combined dataset comprises 6,065 subjects (4,747 CN, 1,318 AD-trajectory; 78.3\% vs 21.7\%). Table~\ref{tab:dataset} summarizes the dataset characteristics.
+The AD-trajectory group includes both clinically diagnosed AD patients and MCI subjects who subsequently progressed to AD, representing individuals on the Alzheimer's disease continuum. The combined dataset comprises 6,065 subjects (4,747 CN, 1,318 AD-trajectory: 78.3\% vs 21.7\%). Table~\ref{tab:dataset} summarizes the dataset characteristics.
 
 \begin{table}[htbp]
-\caption{Dataset Composition}
+\caption{Multi-Cohort Dataset Composition and Subject Distribution}
 \begin{center}
 \begin{tabular}{lccccc}
 \toprule
@@ -151,6 +151,7 @@ To prevent data leakage, we employed strict subject-level splitting with 5-fold 
     \item Within each fold: train is split 90/10 into train/val
     \item Final splits per fold: 72\% train / 8\% val / 20\% test (4,367 / 485 / 1,213 subjects)
     \item Experiments repeated with 3 random seeds (42, 123, 456)
+    \item Tabular feature normalization (StandardScaler) fitted only on training split to prevent information leakage
 \end{itemize}
 
 This full cross-validation approach ensures every subject serves as a test sample exactly once per seed, providing robust performance estimates. The methodology follows recommendations from Wen et al.\ \cite{wen2020} and addresses concerns raised by recent systematic reviews \cite{yagis2021}.
@@ -161,7 +162,7 @@ T1-weighted MRI scans underwent standardized preprocessing (Fig.~\ref{fig:prepro
 \begin{enumerate}
     \item Conversion from DICOM to NIfTI format
     \item N4 bias field correction to remove intensity inhomogeneities
-    \item Affine registration to MNI-152 template (1.75mm isotropic)
+    \item Non-linear registration to MNI-152 template using SyN (1.75mm isotropic)
     \item Skull stripping using SynthStrip \cite{synthstrip}
     \item Resampling to 128$\times$128$\times$128 voxels
 \end{enumerate}
@@ -174,7 +175,7 @@ T1-weighted MRI scans underwent standardized preprocessing (Fig.~\ref{fig:prepro
 
 \subsection{Clinical Features}
 
-We extracted 16 clinical features common across all three cohorts:
+We harmonized and extracted 16 clinical features consistently available across all three cohorts (ADNI, OASIS, NACC):
 \begin{itemize}
     \item \textbf{Demographics (4):} Age, sex, education years, marital status
     \item \textbf{Neuropsychological tests (6):} Category fluency (animals), Trail Making Tests A/B, digit span forward/backward, Boston Naming Test
@@ -182,7 +183,7 @@ We extracted 16 clinical features common across all three cohorts:
     \item \textbf{Medical history (4):} Alcohol use, smoking history, cardiovascular disease, neurological conditions
 \end{itemize}
 
-Missing values were imputed using median imputation and all features were z-score normalized. Importantly, diagnostic criteria scores (MMSE, CDR) were excluded to prevent data leakage.
+Missing values were imputed using median imputation and all features were z-score normalized. Importantly, cognitive screening scores (MMSE, CDR) were excluded, as clinicians use these scores to diagnose AD, making them unsuitable as predictive features.
 
 \subsection{Model Architecture}
 
@@ -198,28 +199,55 @@ Our multimodal fusion architecture (Fig.~\ref{fig:architecture}) consists of thr
 
 \textbf{Tabular Encoder:} We employ the FT-Transformer \cite{gorishniy2021}, which embeds each feature independently before processing through transformer layers. We use 3 transformer blocks with 64-dimensional embeddings and 4 attention heads, producing a 64-dimensional output.
 
-\textbf{Cross-Modal Fusion:} Both modality representations are fused using bidirectional cross-attention with 8 heads and hidden dimension 512:
+\textbf{Cross-Modal Fusion:} Both modality representations are fused using bidirectional cross-attention with 8 heads and hidden dimension 512. Each cross-attention layer includes residual connections and feed-forward networks:
 \begin{align}
-f'_{mri} &= \text{CrossAttn}(Q{=}f_{mri}, K{=}f_{tab}, V{=}f_{tab}) \\
-f'_{tab} &= \text{CrossAttn}(Q{=}f_{tab}, K{=}f_{mri}, V{=}f_{mri}) \\
+\hat{f}_{mri} &= \text{LN}(f_{mri} + \text{CrossAttn}(f_{mri}, f_{tab}, f_{tab})) \\
+f'_{mri} &= \text{LN}(\hat{f}_{mri} + \text{FFN}(\hat{f}_{mri})) \\
+\hat{f}_{tab} &= \text{LN}(f_{tab} + \text{CrossAttn}(f_{tab}, f'_{mri}, f'_{mri})) \\
+f'_{tab} &= \text{LN}(\hat{f}_{tab} + \text{FFN}(\hat{f}_{tab})) \\
 f_{fused} &= \text{MLP}([f'_{mri}; f'_{tab}])
 \end{align}
-This enables each modality to attend to complementary information from the other. Auxiliary classifiers on each branch (weighted 0.3) encourage modality-specific learning.
+This bidirectional attention enables each modality to attend to complementary information from the other. Auxiliary classifiers on each branch (weighted 0.3) encourage modality-specific learning.
 
 \subsection{Training Details}
 
-Models were trained for 100 epochs with early stopping (patience=20, min\_epochs=40), saving the best checkpoint based on validation accuracy. Hyperparameters were selected based on preliminary experiments on a held-out validation set:
+Models were trained for up to 100 epochs with early stopping (patience of 20 epochs after a minimum of 40 epochs), saving the best checkpoint based on validation accuracy.
+
+\textbf{Optimization:}
 \begin{itemize}
-    \item AdamW optimizer with weight decay 0.01
-    \item Learning rate: 2$\times$10$^{-5}$ with cosine annealing
-    \item 5 warmup epochs
-    \item Layer-wise learning rate decay (0.75) for ViT fine-tuning
-    \item Weighted cross-entropy loss with label smoothing (0.1)
-    \item Batch size: 4 (due to 3D volume memory requirements)
-    \item Test-time augmentation (8 augmentations)
+    \item AdamW optimizer (weight decay = 0.01)
+    \item Learning rate: 2$\times$10$^{-5}$ with cosine annealing to 1$\times$10$^{-7}$
+    \item Linear warmup over 5 epochs
+    \item Layer-wise learning rate decay factor of 0.75 for ViT fine-tuning
+    \item Gradient clipping at norm 1.0
 \end{itemize}
 
-Experiments used 5-fold cross-validation repeated with 3 random seeds (42, 123, 456) to assess stability, yielding 15 total training runs per model configuration.
+\textbf{Regularization:}
+\begin{itemize}
+    \item Weighted cross-entropy loss with label smoothing ($\epsilon$ = 0.1)
+    \item Auxiliary losses on modality-specific branches (weight = 0.3)
+    \item Test-time augmentation with 8 geometric transformations
+\end{itemize}
+
+\textbf{Implementation:}
+\begin{itemize}
+    \item Batch size: 4 (limited by 3D volume memory requirements)
+\end{itemize}
+
+All experiments used 5-fold cross-validation repeated with 3 random seeds (42, 123, 456), yielding 15 training runs per configuration to assess stability.
+
+\subsection{Evaluation Metrics}
+
+Model performance was assessed using multiple metrics to provide comprehensive evaluation:
+\begin{itemize}
+    \item \textbf{Accuracy:} Overall classification accuracy
+    \item \textbf{Balanced Accuracy:} Average of sensitivity and specificity, accounting for class imbalance
+    \item \textbf{Sensitivity:} True positive rate (recall for AD-trajectory class)
+    \item \textbf{Specificity:} True negative rate (recall for CN class)
+    \item \textbf{AUC:} Area under the receiver operating characteristic curve
+\end{itemize}
+
+Results are reported as mean $\pm$ standard deviation across 15 runs (5 folds $\times$ 3 seeds).
 
 \section{Results}
 
