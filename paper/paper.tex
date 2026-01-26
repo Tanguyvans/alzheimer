@@ -15,7 +15,8 @@
 
 \begin{document}
 
-\title{Multi-Cohort Alzheimer's Classification via MRI-Clinical Fusion}
+\title{End-to-End Multimodal Transformers for Multi-Cohort Alzheimer's            
+  Classification}
 
 \author{\IEEEauthorblockN{Tanguy Vansnick}
 \IEEEauthorblockA{\textit{Faculty of Engineering - ILIA} \\
@@ -36,9 +37,9 @@ Rue de Houdain 9, 7000 Mons, Belgium \\
 otmane.amel@umons.ac.be}
 \and
 \IEEEauthorblockN{Vito Tota}
-\IEEEauthorblockA{\textit{Faculty of Engineering - ILIA} \\
+\IEEEauthorblockA{\textit{Department of Neuroscience} \\
 \textit{University of Mons}\\
-Rue de Houdain 9, 7000 Mons, Belgium \\
+20 Place du Parc, 7000 Mons, Belgium \\
 vito.tota@umons.ac.be}
 \and
 \IEEEauthorblockN{Mathis Delehouzee}
@@ -60,7 +61,7 @@ said.mahmoudi@umons.ac.be}
 \maketitle
 
 \begin{abstract}
-Deep learning for Alzheimer's disease (AD) classification from MRI has shown promise, yet recent reviews reveal that fewer than 20\% of studies employ external validation, with data leakage (e.g., same subjects in train and test sets) inflating reported accuracies to 95-99\%. Studies with rigorous subject-level splitting achieve 66-90\%. We present an end-to-end multimodal framework combining Vision Transformer (ViT) with masked autoencoder pretraining for 3D MRI analysis and Feature Tokenizer Transformer (FT-Transformer) for clinical tabular data, integrated through bidirectional cross-attention. We validate on 6,065 subjects from three independent cohorts (ADNI, OASIS, NACC) using strict subject-level 5-fold cross-validation. Our approach achieves \textbf{92.4\% accuracy} (AUC: 0.96) for distinguishing cognitively normal subjects from AD-trajectory patients (including MCI patients who later developed AD), and \textbf{93.3\%} on established AD cases.
+Deep learning for Alzheimer's disease (AD) classification from MRI has shown promise, yet recent reviews reveal that fewer than 20\% of studies employ external validation, with data leakage (e.g., same subjects in train and test sets) inflating reported accuracies to 95-99\%. Studies with rigorous subject-level splitting achieve 66-90\%. We present an end-to-end multimodal framework combining Vision Transformer (ViT) for 3D MRI analysis and Feature Tokenizer Transformer (FT-Transformer) for clinical tabular data, integrated through bidirectional cross-attention. We validate on 6,065 subjects from three independent cohorts (ADNI, OASIS, NACC) using strict subject-level 5-fold cross-validation. Our approach achieves \textbf{92.4\% accuracy} (AUC: 0.96) for distinguishing cognitively normal subjects from AD-trajectory patients (including MCI patients who later developed AD), and \textbf{93.3\%} on established AD cases. External validation reveals that single-cohort models suffer severe performance degradation (accuracy drops of 25-43 points), while our multi-cohort approach maintains robust generalization.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -69,7 +70,7 @@ Alzheimer's disease, multimodal fusion, Vision Transformer, deep learning, MRI c
 
 \section{Introduction}
 
-Alzheimer's disease (AD) is the most common cause of dementia, contributing to 60--70\% of the 57 million dementia cases worldwide \cite{who2023}. Early and accurate diagnosis is crucial for patient care, clinical trials enrollment, and treatment planning. Early diagnosis increasingly relies on biomarkers---CSF analysis requiring lumbar puncture, or amyloid PET imaging with radioactive tracers---which are impractical for routine screening. Structural MRI combined with clinical tabular data offers a practical alternative, capturing characteristic patterns of brain atrophy alongside demographic and cognitive assessments without invasive procedures or radiation exposure.
+Alzheimer's disease (AD) is the most common cause of dementia, contributing to 60-70\% of the 57 million dementia cases worldwide \cite{who2023}. Early and accurate diagnosis is crucial for patient care, clinical trials enrollment, and treatment planning. Early diagnosis increasingly relies on biomarkers---CSF analysis requiring lumbar puncture, or amyloid PET imaging with radioactive tracers---which are impractical for routine screening. Structural MRI combined with clinical tabular data offers a practical alternative, capturing characteristic patterns of brain atrophy alongside demographic and cognitive assessments without invasive procedures or radiation exposure.
 
 Deep learning approaches for AD classification have proliferated in recent years, with many studies reporting accuracies exceeding 95\%. However, a recent scoping review by Young et al. \cite{young2025} revealed that fewer than 20\% of published studies employ external validation, and methodological issues remain widespread. The primary issue is data leakage: when data from the same subject appears in both training and test sets, models learn to recognize individual brain morphology rather than disease-specific patterns.
 
@@ -98,9 +99,9 @@ A critical issue in AD classification is data leakage, where test subjects' data
 
 \subsection{Transformer Architectures}
 
-Vision Transformers (ViT) \cite{dosovitskiy2021} divide images into patches, treating each as a token for self-attention. Unlike CNNs with local receptive fields, ViT captures global relationships---critical for detecting distributed atrophy patterns in AD. Masked autoencoder (MAE) pretraining \cite{he2022} enables ViT to learn robust representations from unlabeled data by reconstructing masked patches.
+Vision Transformers (ViT) \cite{dosovitskiy2021} divide images into patches, treating each as a token for self-attention. The self-attention mechanism allows direct modeling of long-range spatial dependencies, which may be beneficial for capturing distributed atrophy patterns characteristic of AD across multiple brain regions. Masked autoencoder (MAE) pretraining \cite{he2022} enables ViT to learn robust representations from unlabeled data by reconstructing masked patches. Kunanbayev et al. \cite{kunanbayev2024} explored MAE pretraining for medical imaging in low-data regimes, training ViT-Base models on medical datasets (BRATS 2023, IXI, OASIS3, HCP) with masking ratios of 25\%, 50\%, and 75\%. The 75\% masking ratio achieved the highest performance gains (up to 13.6\% improvement on ADNI), and the authors released pretrained weights which we use to initialize our MRI encoder.
 
-For tabular data, the FT-Transformer \cite{gorishniy2021} embeds each feature as a separate token, enabling attention across features. This demonstrates strong performance compared to traditional MLPs across diverse tabular benchmarks and narrows the performance gap with gradient boosting methods, though no universally superior solution emerges.
+For tabular data, the FT-Transformer \cite{gorishniy2021} embeds each feature as a separate token, enabling attention across features. This demonstrates strong performance compared to traditional MLPs across diverse tabular benchmarks.
 
 \subsection{Multimodal Fusion}
 
@@ -114,13 +115,14 @@ We advance this line of work by combining state-of-the-art architectures for bot
 
 We aggregated data from three publicly available cohorts:
 
-\textbf{ADNI (Alzheimer's Disease Neuroimaging Initiative):} Data used in the preparation of this article were obtained from the ADNI database (adni.loni.usc.edu). ADNI is a longitudinal study collecting multimodal neuroimaging and clinical data to track Alzheimer's disease progression. We included 903 subjects (424 CN, 479 AD-trajectory).
+\textbf{ADNI (Alzheimer's Disease Neuroimaging Initiative):} A longitudinal study collecting multimodal neuroimaging and clinical data to track Alzheimer's disease progression. We included 903 subjects (424 CN, 479 AD-trajectory).
 
 \textbf{OASIS-3 (Open Access Series of Imaging Studies) \cite{oasis3}:} A longitudinal neuroimaging dataset from Washington University including cognitively normal older adults and individuals with cognitive decline. We included 1,030 subjects (742 CN, 288 AD-trajectory).
 
 \textbf{NACC (National Alzheimer's Coordinating Center):} The largest US Alzheimer's database, aggregating data from over 40 Alzheimer's Disease Research Centers (ADRCs). MRI data were obtained from SCAN (Standardized Centralized Alzheimer's \& Related Dementias Neuroimaging), NACC's centralized neuroimaging repository. We included 4,132 subjects (3,581 CN, 551 AD-trajectory).
 
-The AD-trajectory group includes both clinically diagnosed AD patients and MCI subjects who subsequently progressed to AD, representing individuals on the Alzheimer's disease continuum. The combined dataset comprises 6,065 subjects (4,747 CN, 1,318 AD-trajectory: 78.3\% vs 21.7\%). Table~\ref{tab:dataset} summarizes the dataset characteristics.
+\textbf{Classification Groups:} The AD-trajectory group includes both clinically diagnosed AD patients (established AD) and MCI subjects who subsequently progressed to AD (MCI converters). This grouping is grounded in the 2018 NIA-AA Research Framework \cite{jack2018}, which defines AD as a biological continuum rather than a clinical syndrome---individuals with AD pathology are on the Alzheimer's continuum regardless of clinical stage. Longitudinal neuroimaging studies have demonstrated that MCI converters exhibit AD-like atrophy patterns detectable on structural MRI at baseline \cite{jack2000,misra2009}. The combined dataset comprises 6,065 subjects (4,747 CN, 1,318 AD-trajectory: 78.3\% vs 21.7\%). Table~\ref{tab:dataset} summarizes the dataset characteristics.
+
 
 \begin{table}[htbp]
 \caption{Multi-Cohort Dataset Composition and Subject Distribution}
@@ -145,8 +147,8 @@ NACC & 4,132 & 3,581 & 551 & 68.1\% \\
 To prevent data leakage, we employed strict subject-level splitting with 5-fold stratified cross-validation:
 \begin{itemize}
     \item Each subject appears in exactly one split (train/val/test)
-    \item Only the first visit per subject is used (no longitudinal leakage)
-    \item All 6,065 subjects are pooled and split via stratified 5-fold CV
+    \item Only the first visit per subject is used to avoid temporal leakage from repeated scans
+    \item All 6,065 subjects are pooled and split via stratified 5-fold CV (stratified by class label; cohort distribution varies naturally across folds)
     \item Each fold: 80\% train+val / 20\% test (rotating test sets)
     \item Within each fold: train is split 90/10 into train/val
     \item Final splits per fold: 72\% train / 8\% val / 20\% test (4,367 / 485 / 1,213 subjects)
@@ -154,7 +156,7 @@ To prevent data leakage, we employed strict subject-level splitting with 5-fold 
     \item Tabular feature normalization (StandardScaler) fitted only on training split to prevent information leakage
 \end{itemize}
 
-This full cross-validation approach ensures every subject serves as a test sample exactly once per seed, providing robust performance estimates. The methodology follows recommendations from Wen et al.\ \cite{wen2020} and addresses concerns raised by recent systematic reviews \cite{yagis2021}.
+This full cross-validation approach ensures every subject serves as a test sample exactly once per seed. The methodology follows recommendations from Wen et al.\ \cite{wen2020} and addresses concerns raised by recent systematic reviews \cite{yagis2021}.
 
 \subsection{MRI Preprocessing}
 
@@ -183,7 +185,7 @@ We harmonized and extracted 16 clinical features consistently available across a
     \item \textbf{Medical history (4):} Alcohol use, smoking history, cardiovascular disease, neurological conditions
 \end{itemize}
 
-Missing values were imputed using median imputation and all features were z-score normalized. Importantly, cognitive screening scores (MMSE, CDR) were excluded, as clinicians use these scores to diagnose AD, making them unsuitable as predictive features.
+Missing values were imputed using median imputation and all features were z-score normalized. Importantly, cognitive screening scores (MMSE, CDR) were excluded.
 
 \subsection{Model Architecture}
 
@@ -195,11 +197,11 @@ Missing values were imputed using median imputation and all features were z-scor
 
 Our multimodal fusion architecture (Fig.~\ref{fig:architecture}) consists of three components:
 
-\textbf{MRI Encoder:} We use a Vision Transformer (ViT-Base) adapted for 3D volumes, pretrained using masked autoencoder (MAE) reconstruction with 75\% masking ratio. Input volumes are divided into 16$\times$16$\times$16 patches, each embedded into 768-dimensional tokens. The encoder consists of 12 transformer blocks.
+\textbf{MRI Encoder:} We use a Vision Transformer (ViT-Base) adapted for 3D volumes, initialized with MAE-pretrained weights from Kunanbayev et al. \cite{kunanbayev2024}. Input volumes are divided into 16$\times$16$\times$16 patches, each embedded into 768-dimensional tokens. The encoder consists of 12 transformer blocks with 12 attention heads and 768-dimensional embeddings.
 
 \textbf{Tabular Encoder:} We employ the FT-Transformer \cite{gorishniy2021}, which embeds each feature independently before processing through transformer layers. We use 3 transformer blocks with 64-dimensional embeddings and 4 attention heads, producing a 64-dimensional output.
 
-\textbf{Cross-Modal Fusion:} Both modality representations are fused using bidirectional cross-attention with 8 heads and hidden dimension 512. Each cross-attention layer includes residual connections and feed-forward networks:
+\textbf{Cross-Modal Fusion:} Both modality representations are fused using sequential bidirectional cross-attention with 8 heads and hidden dimension 512. MRI features first attend to tabular features, then tabular features attend to the enriched MRI representation:
 \begin{align}
 \hat{f}_{mri} &= \text{LN}(f_{mri} + \text{CrossAttn}(f_{mri}, f_{tab}, f_{tab})) \\
 f'_{mri} &= \text{LN}(\hat{f}_{mri} + \text{FFN}(\hat{f}_{mri})) \\
@@ -207,7 +209,7 @@ f'_{mri} &= \text{LN}(\hat{f}_{mri} + \text{FFN}(\hat{f}_{mri})) \\
 f'_{tab} &= \text{LN}(\hat{f}_{tab} + \text{FFN}(\hat{f}_{tab})) \\
 f_{fused} &= \text{MLP}([f'_{mri}; f'_{tab}])
 \end{align}
-This bidirectional attention enables each modality to attend to complementary information from the other. Auxiliary classifiers on each branch (weighted 0.3) encourage modality-specific learning.
+where LN denotes layer normalization and semicolon denotes concatenation. Auxiliary classifiers on each branch (weighted 0.3) encourage modality-specific learning.
 
 \subsection{Training Details}
 
@@ -224,89 +226,85 @@ Models were trained for up to 100 epochs with early stopping (patience of 20 epo
 
 \textbf{Regularization:}
 \begin{itemize}
-    \item Weighted cross-entropy loss with label smoothing ($\epsilon$ = 0.1)
+    \item Weighted cross-entropy loss with inverse-frequency class weights and label smoothing ($\epsilon$ = 0.1)
     \item Auxiliary losses on modality-specific branches (weight = 0.3)
-    \item Test-time augmentation with 8 geometric transformations
+    \item Test-time augmentation with 8 geometric transformations (original volume plus 7 combinations of axial/sagittal/coronal flips)
 \end{itemize}
 
 \textbf{Implementation:}
 \begin{itemize}
-    \item Batch size: 4 (limited by 3D volume memory requirements)
+    \item Batch size: 4 (limited by 3D volume memory requirements; no gradient accumulation)
+    \item PyTorch 2.0 on NVIDIA GPU
 \end{itemize}
 
 All experiments used 5-fold cross-validation repeated with 3 random seeds (42, 123, 456), yielding 15 training runs per configuration to assess stability.
 
 \subsection{Evaluation Metrics}
 
-Model performance was assessed using multiple metrics to provide comprehensive evaluation:
-\begin{itemize}
-    \item \textbf{Accuracy:} Overall classification accuracy
-    \item \textbf{Balanced Accuracy:} Average of sensitivity and specificity, accounting for class imbalance
-    \item \textbf{Sensitivity:} True positive rate (recall for AD-trajectory class)
-    \item \textbf{Specificity:} True negative rate (recall for CN class)
-    \item \textbf{AUC:} Area under the receiver operating characteristic curve
-\end{itemize}
-
-Results are reported as mean $\pm$ standard deviation across 15 runs (5 folds $\times$ 3 seeds).
+We report accuracy, sensitivity, specificity, and AUC. Results are reported as mean $\pm$ standard deviation across 15 runs (5 folds $\times$ 3 seeds).
 
 \section{Results}
 
 \subsection{The Alzheimer's Disease Continuum}
 
-Our classification groups established AD patients with MCI subjects who subsequently progressed to AD (MCI converters). This grouping is grounded in the 2018 NIA-AA Research Framework \cite{jack2018}, which defines AD as a biological continuum rather than a clinical syndrome---individuals with AD pathology are on the ``Alzheimer's continuum'' regardless of clinical stage.
-
-Longitudinal neuroimaging studies provide strong evidence that MCI converters exhibit AD-like atrophy patterns detectable on structural MRI. Misra et al. \cite{misra2009} demonstrated using ADNI data that MCI converters show significantly higher hippocampal atrophy rates ($-3.5\%$/year) compared to stable MCI patients ($-2.2\%$/year), with baseline MRI achieving 81.5\% accuracy in predicting future conversion. Importantly, converters had already reached ``levels of widespread and significant brain atrophy at baseline,'' indicating that structural changes precede clinical diagnosis.
+Our classification groups established AD patients with MCI subjects who subsequently progressed to AD (MCI converters). This grouping is grounded in the 2018 NIA-AA Research Framework \cite{jack2018}, which defines AD as a biological continuum rather than a clinical syndrome---individuals with AD pathology are on the ``Alzheimer's continuum'' regardless of clinical stage. Longitudinal neuroimaging studies have demonstrated that MCI converters exhibit AD-like atrophy patterns detectable on structural MRI at baseline \cite{jack2000,misra2009}.
 
 \subsection{Classification Performance}
 
-All models were trained on the \textbf{CN vs AD-trajectory} task, where AD-trajectory includes both clinically diagnosed AD patients and MCI subjects who later progressed to AD. We evaluate on two test sets: (1) an in-domain AD-trajectory test set matching the training distribution, and (2) a cross-task \textbf{CN vs established AD} test set containing only established AD patients without MCI converters.
+All models were trained on the \textbf{CN vs AD-trajectory} task. We evaluate on two test sets: (1) an in-domain AD-trajectory test set matching the training distribution, and (2) a cross-task \textbf{CN vs established AD} test set containing only established AD patients without MCI converters.
 
-Table~\ref{tab:results} presents our main results. On the in-domain AD-trajectory task, our multimodal model achieved 92.4\% accuracy with AUC of 0.959.
+Table~\ref{tab:results} presents our main results. On the in-domain AD-trajectory task, our multimodal model achieved 92.4\% accuracy (sensitivity: 78.8\%, specificity: 96.2\%) with AUC of 0.959. The high specificity indicates strong performance in correctly identifying cognitively normal subjects, while the moderate sensitivity reflects the challenge of detecting early-stage disease presentations.
 
-The same trajectory-trained model achieved \textbf{93.3\% accuracy} (AUC: 0.956) on the established AD test set. This higher cross-task performance demonstrates that training on heterogeneous presentations---including subtle early-stage MCI converters---produces robust features that generalize effectively to established disease detection, where atrophy patterns are more pronounced.
+The same trajectory-trained model achieved \textbf{93.3\% accuracy} (sensitivity: 79.0\%, specificity: 96.2\%, AUC: 0.956) on the established AD test set. Notably, trajectory-based training achieves \textbf{superior sensitivity} (79.0\% vs 69.4\%) compared to training exclusively on established AD cases, while maintaining comparable specificity (96.2\% vs 97.4\%). Training on early-stage MCI converters teaches the model to detect subtle atrophy patterns, improving sensitivity on established AD cases.
 
 \begin{table}[htbp]
 \caption{Classification Results: Cross-Task Generalization}
 \begin{center}
-\begin{tabular}{llcc}
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}llrrrr@{}}
 \toprule
-\textbf{Training Task} & \textbf{Test Set} & \textbf{Acc} & \textbf{AUC} \\
+\textbf{Training Task} & \textbf{Test Set} & \textbf{Acc} & \textbf{Sens} & \textbf{Spec} & \textbf{AUC} \\
 \midrule
-\multicolumn{4}{@{}l}{\textit{Trained on CN vs AD-trajectory:}} \\
-AD-trajectory & AD-trajectory (in-domain) & 92.4$\pm$1.0\% & 0.959$\pm$.01 \\
-AD-trajectory & Established AD (cross-task) & \textbf{93.3$\pm$0.9\%} & 0.956$\pm$.01 \\
+\multicolumn{6}{@{}l}{\textit{Trained on CN vs AD-trajectory:}} \\
+AD-traj & AD-traj & 92.4$\pm$1.0 & 78.8$\pm$5.5 & 96.2$\pm$1.1 & .959$\pm$.01 \\
+AD-traj & Estab. AD & \textbf{93.3$\pm$0.9} & \textbf{79.0$\pm$5.9} & \textbf{96.2$\pm$1.1} & .956$\pm$.01 \\
 \midrule
-\multicolumn{4}{@{}l}{\textit{Trained on CN vs Established AD:}} \\
-Established AD & Established AD (in-domain) & 92.9$\pm$0.7\% & 0.948$\pm$.01 \\
+\multicolumn{6}{@{}l}{\textit{Trained on CN vs Established AD:}} \\
+Estab. AD & Estab. AD & 92.9$\pm$0.7 & 69.4$\pm$5.4 & 97.4$\pm$0.9 & .948$\pm$.01 \\
 \bottomrule
 \end{tabular}
 \label{tab:results}
 \end{center}
+\vspace{-2mm}
+{\scriptsize Values in \%.}
 \end{table}
 
 \subsection{Ablation Study}
 
-To quantify the contribution of each modality, we evaluated single-modality baselines using identical training protocols on the AD-trajectory task (Table~\ref{tab:ablation}). All models used 5-fold cross-validation with 3 random seeds. The MRI-only model (ViT with MAE pretraining) achieved 83.3\% accuracy with AUC of 0.826. The tabular-only model (FT-Transformer) achieved 84.9\% accuracy with AUC of 0.925.
+To quantify the contribution of each modality, we evaluated single-modality baselines using identical training protocols on the AD-trajectory task (Table~\ref{tab:ablation}). All models used 5-fold cross-validation with 3 random seeds. The MRI-only model (ViT with MAE pretraining) achieved 83.3\% accuracy (sensitivity: 56.2\%, specificity: 90.8\%) with AUC of 0.826. The tabular-only model (FT-Transformer) achieved 84.9\% accuracy (sensitivity: 83.5\%, specificity: 85.2\%) with AUC of 0.925.
 
-The multimodal fusion achieves substantial gains over both unimodal baselines: \textbf{+9.1\%} accuracy over MRI-only and \textbf{+7.5\%} over tabular-only. This confirms that the modalities provide complementary information that cross-attention fusion effectively captures. Notably, tabular features alone achieve strong performance, suggesting that cognitive assessments and clinical variables carry significant diagnostic value.
+The multimodal fusion achieves substantial gains over both unimodal baselines: \textbf{+9.1\%} accuracy over MRI-only and \textbf{+7.5\%} over tabular-only. Critically, the multimodal approach achieves \textbf{96.2\% specificity}---substantially higher than either modality alone---demonstrating that cross-attention fusion learns to leverage complementary strengths. The MRI-only model exhibits low sensitivity (56.2\%), suggesting that structural imaging alone struggles with early-stage detection. Conversely, tabular features achieve balanced sensitivity/specificity (83.5\%/85.2\%), confirming that cognitive assessments and clinical variables carry significant diagnostic value.
 
 \begin{table}[htbp]
-\caption{Ablation Study: Modality Contributions (AD-trajectory task)}
+\caption{Ablation Study: Modality Contributions}
 \begin{center}
-\begin{tabular}{lcc}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrr@{}}
 \toprule
-\textbf{Model} & \textbf{Acc.} & \textbf{AUC} \\
+\textbf{Model} & \textbf{Acc} & \textbf{Sens} & \textbf{Spec} & \textbf{AUC} \\
 \midrule
-MRI only (ViT) & 83.3$\pm$0.7\% & 0.826 \\
-Tabular only (FT-T) & 84.9$\pm$0.4\% & 0.925 \\
+MRI only (ViT) & 83.3$\pm$0.7 & 56.2$\pm$1.4 & 90.8$\pm$0.6 & .826 \\
+Tabular only (FT-T) & 84.9$\pm$0.4 & 83.5$\pm$0.2 & 85.2$\pm$0.5 & .925 \\
 \midrule
-\textbf{Multimodal (Ours)} & \textbf{92.4$\pm$1.0\%} & \textbf{0.959} \\
+\textbf{Multimodal (Ours)} & \textbf{92.4$\pm$1.0} & \textbf{78.8$\pm$5.5} & \textbf{96.2$\pm$1.1} & \textbf{.959} \\
 \bottomrule
 \end{tabular}
 \label{tab:ablation}
 \end{center}
 \vspace{-2mm}
-{\scriptsize Note: Results on AD-trajectory test set with 5-fold CV. Cross-task evaluation on established AD achieves 93.3\% (Table~\ref{tab:results}).}
+{\scriptsize AD-trajectory task, 5-fold CV. Values in \%.}
 \end{table}
 
 \subsection{Cross-Cohort Generalization}
@@ -316,72 +314,68 @@ To demonstrate the importance of multi-cohort training, we conducted an addition
 \begin{table}[htbp]
 \caption{Single-Cohort vs Multi-Cohort Training}
 \begin{center}
-\begin{tabular}{llcc}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}llrrrr@{}}
 \toprule
-\textbf{Training} & \textbf{Test Set} & \textbf{Acc} & \textbf{AUC} \\
+\textbf{Training} & \textbf{Test Set} & \textbf{Acc} & \textbf{Sens} & \textbf{Spec} & \textbf{AUC} \\
 \midrule
-\multicolumn{4}{@{}l}{\textit{ADNI-only training (N=903):}} \\
-ADNI-only & ADNI (in-domain) & 81.4$\pm$3.5\% & 0.90$\pm$.02 \\
-ADNI-only & OASIS (external) & 56.5$\pm$9.2\% & 0.64$\pm$.05 \\
-ADNI-only & NACC (external) & 38.5$\pm$13.9\% & 0.89$\pm$.05 \\
+\multicolumn{6}{@{}l}{\textit{ADNI-only (N=903):}} \\
+ADNI & ADNI & 81.4$\pm$3.5 & 82.7$\pm$5.0 & 79.9$\pm$6.4 & .90$\pm$.02 \\
+ADNI & OASIS & 56.5$\pm$9.2 & 63.7$\pm$13.7 & 53.8$\pm$17.2 & .64$\pm$.05 \\
+ADNI & NACC & 38.5$\pm$13.9 & 98.0$\pm$2.3 & 29.4$\pm$16.4 & .89$\pm$.05 \\
 \midrule
-\multicolumn{4}{@{}l}{\textit{Multi-cohort training (N=6,065):}} \\
-Multi-cohort & All cohorts & \textbf{92.4$\pm$1.0\%} & \textbf{0.959$\pm$.01} \\
+\multicolumn{6}{@{}l}{\textit{Multi-cohort (N=6,065):}} \\
+Multi & All & \textbf{92.4$\pm$1.0} & \textbf{78.8$\pm$5.5} & \textbf{96.2$\pm$1.1} & \textbf{.959$\pm$.01} \\
 \bottomrule
 \end{tabular}
 \label{tab:external}
 \end{center}
 \vspace{-2mm}
-{\scriptsize Note: All results from 5-fold CV with 3 seeds (15 runs total).}
+{\scriptsize All results: 5-fold CV $\times$ 3 seeds. Values in \%.}
 \end{table}
 
-The results reveal a significant \textbf{cross-cohort generalization gap}: while single-cohort training achieves 81.4$\pm$3.5\% on ADNI, accuracy drops to 56.5$\pm$9.2\% on OASIS and 38.5$\pm$13.9\% on NACC. The high variance on external cohorts reflects inconsistent generalization across folds. Notably, NACC shows high AUC (0.89) despite low accuracy---this discrepancy arises from class distribution shift: ADNI has 47\% CN while NACC has 87\% CN, causing the model's decision threshold to be miscalibrated, resulting in high sensitivity (98\%) but poor specificity (29\%). This performance degradation demonstrates that models trained on a single cohort learn cohort-specific patterns that fail to generalize. In contrast, our multi-cohort approach achieves 92.4\% overall accuracy by learning cohort-invariant features, validating the importance of diverse training data for robust AD classification.
+The results reveal substantial cross-cohort generalization gaps for single-cohort models: while ADNI-only training achieves 81.4$\pm$3.5\% accuracy in-domain, performance drops to 56.5$\pm$9.2\% on OASIS (-24.9 points) and 38.5$\pm$13.9\% on NACC (-42.9 points). The high variance on external cohorts (SD up to 13.9\%) reflects inconsistent generalization across folds. NACC exhibits notable miscalibration despite high AUC (0.89): the model achieves 98\% sensitivity but only 29\% specificity, incorrectly classifying 70\% of healthy controls as diseased. This arises from class distribution shift (ADNI: 47\% CN; NACC: 87\% CN), causing decision threshold mismatch. These results demonstrate that single-cohort models overfit to scanner-specific and population-specific patterns. By comparison, our multi-cohort approach achieves \textbf{92.4\% accuracy}---surpassing even ADNI in-domain performance by 11 points---by learning cohort-invariant features from diverse acquisition protocols and demographics, confirming that multi-cohort training is essential for clinically deployable AD classification systems.
 
 \subsection{Comparison with Literature}
 
-Table~\ref{tab:comparison} contextualizes our results within the broader literature. Studies with proper subject-level splitting report accuracies in the 66-90\% range \cite{young2025}, while those with potential data leakage claim 95-99\%.
+Table~\ref{tab:comparison} compares our results with prior work using proper subject-level splitting.
 
 \begin{table}[htbp]
 \caption{Comparison with State-of-the-Art Methods}
 \begin{center}
 \footnotesize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}lcccrr@{}}
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}lccrrrrr@{}}
 \toprule
-\textbf{Study} & \textbf{Data} & \textbf{Coh.} & \textbf{N} & \textbf{Acc} & \textbf{AUC} \\
+\textbf{Study} & \textbf{Data} & \textbf{Coh} & \textbf{N} & \textbf{Acc} & \textbf{Sens} & \textbf{Spec} & \textbf{AUC} \\
 \midrule
-\multicolumn{6}{@{}l}{\textit{Proper subject-level splitting:}} \\
-\textbf{Ours (established)} & MRI+Tab & 3 & 6,065 & \textbf{93.3\%} & \textbf{0.96} \\
-\textbf{Ours (traj)} & MRI+Tab & 3 & 6,065 & 92.4\% & 0.96 \\
-Qiu \cite{qiu2022} & MRI+Tab & 8 & 8,916 & ---$^*$ & .94--.97$^*$ \\
-VECNN \cite{vecnn2024} & MRI & 1 & 818 & 94.1\% & --- \\
-Wen \cite{wen2020} & MRI & 3 & 1k & 89\%$^\dagger$ & --- \\
+\multicolumn{8}{@{}l}{\textit{Proper subject-level splitting:}} \\
+\textbf{Ours (estab)} & MRI+Tab & 3 & 6,065 & \textbf{93.3} & \textbf{79.0} & \textbf{96.2} & \textbf{.96} \\
+\textbf{Ours (traj)} & MRI+Tab & 3 & 6,065 & 92.4 & 78.8 & 96.2 & .96 \\
+Qiu \cite{qiu2022} & MRI+Tab & 8 & 8,916 & ---$^*$ & --- & --- & .94--.97$^*$ \\
+VECNN \cite{vecnn2024} & MRI & 1 & 818 & 94.1 & 95.7 & 97.1 & --- \\
+Wen \cite{wen2020} & MRI & 3 & 1k & 89$^\dag$ & --- & --- & --- \\
 \midrule
-\multicolumn{6}{@{}l}{\textit{Potential data leakage:}} \\
-Various \cite{young2025} & MRI & 1 & $<$1k & 95-99\% & --- \\
+\multicolumn{8}{@{}l}{\textit{Potential data leakage:}} \\
+Various \cite{young2025} & MRI & 1 & $<$1k & 95--99 & --- & --- & --- \\
 \bottomrule
 \end{tabular}
 \label{tab:comparison}
 \end{center}
 \vspace{-2mm}
-{\scriptsize $^\dagger$Bal. acc.; $^*$Binary subtasks, not comparable}
+{\scriptsize Acc/Sens/Spec in \%. $^\dag$Balanced accuracy; $^*$Binary subtasks.}
 \end{table}
 
-Our 93.3\% accuracy on established AD detection and 92.4\% on the challenging AD-trajectory task significantly exceed the 66-90\% range reported by Young et al. \cite{young2025} for methodologically rigorous studies. Key differentiators of our work:
-
-\textbf{Scale and diversity:} With 6,065 subjects from 3 cohorts, ours is among the largest multi-cohort studies with proper methodology. Most ViT-based approaches use single cohorts with $<$1,000 subjects.
-
-\textbf{End-to-end multimodal learning:} Unlike Qiu et al. \cite{qiu2022} who use separate CNN and CatBoost models, our approach learns joint MRI-clinical representations through cross-attention fusion.
-
-\textbf{ViT improvement:} Compared to single-modality ViT approaches like VECNN \cite{vecnn2024} (94.1\% on single cohort), our multimodal fusion achieves comparable performance (93.3\% on established AD) while generalizing across three cohorts.
+We achieve 93.3\% accuracy on established AD detection and 92.4\% on the AD-trajectory task. Most prior work evaluates on single cohorts with $<$1,000 subjects. While approaches like VECNN \cite{vecnn2024} achieve strong single-cohort performance (94.1\% accuracy on ADNI), our external validation experiments (Table~\ref{tab:external}) reveal the critical importance of multi-cohort training. Qiu et al. \cite{qiu2022} achieved similar AUC performance (0.94--0.97) using separate CNN and CatBoost models, whereas our approach employs end-to-end learning with cross-attention fusion for joint MRI-clinical representation learning.
 
 \section{Discussion}
 
 \subsection{Cross-Task Generalization}
 
-Our results show that models trained on the heterogeneous AD-trajectory task (including MCI converters) achieve strong performance on established AD detection (93.3\%), only slightly below the in-domain trajectory performance (92.4\%). This demonstrates robust generalization: MCI converters exhibit subtle, early-stage atrophy patterns that are harder to distinguish from normal aging. Training on these challenging cases forces the model to learn fine-grained discriminative features---subtle hippocampal volume differences, distributed cortical thinning patterns, and nuanced feature interactions between imaging and clinical data.
+Our results reveal that training on the heterogeneous AD-trajectory task (including MCI converters) yields superior performance for established AD detection compared to training exclusively on established AD cases. Models trained on AD-trajectory achieve 0.956 AUC on established AD versus 0.948 for models trained directly on established AD (Table~\ref{tab:results}), with significantly higher sensitivity (79.0\% vs 69.4\%) despite slightly lower specificity (96.2\% vs 97.4\%).
 
-When evaluated on established AD cases with more pronounced atrophy, the learned features transfer effectively. The small performance gap suggests that features learned from heterogeneous presentations generalize well to established disease detection, supporting the clinical utility of trajectory-based training for robust AD classification.
+This demonstrates that training on challenging early-stage cases forces the model to learn discriminative features that generalize to pronounced disease. MCI converters exhibit subtle atrophy patterns near the noise floor of normal aging variability, requiring fine-grained feature extraction. When applied to established AD cases with pronounced atrophy, these learned features transfer effectively without relying on gross anatomical changes. The trajectory-trained model achieves 93.3\% accuracy on established AD detection, only 0.9 points below its in-domain performance (92.4\%), supporting the clinical utility of heterogeneous training for robust early detection.
 
 \subsection{Limitations}
 
@@ -389,17 +383,13 @@ Several limitations should be acknowledged:
 
 \textbf{Class imbalance:} The 78\%/22\% CN/AD ratio affects sensitivity. Future work could explore oversampling or focal loss.
 
-\textbf{Missing data:} Some tabular features have incomplete coverage across cohorts (23-100\%), handled via median imputation. Cohort-specific models could leverage richer feature sets.
+\textbf{Missing data:} Some tabular features have incomplete coverage across cohorts (23-100\%), handled via median imputation which may lose information.
 
-\textbf{Single-cohort limitations:} Our cross-cohort experiment (Table~\ref{tab:external}) demonstrates significant performance drops when training on ADNI alone and testing on external cohorts, highlighting the importance of diverse training data.
-
-\subsection{Future Directions}
-
-Several extensions merit investigation. First, incorporating attention visualization could identify which brain regions and clinical features drive predictions, improving interpretability for clinical adoption. Second, extending to multi-class classification (CN vs MCI vs AD) would enable earlier intervention. Finally, prospective clinical validation is needed before deployment as a screening tool.
+\textbf{External validation:} While our cross-cohort experiment (Table~\ref{tab:external}) demonstrates the importance of multi-cohort training, all three cohorts participate in cross-validation. A fully independent held-out cohort used only for testing would provide stronger generalization evidence.
 
 \section{Conclusion}
 
-We presented a multimodal deep learning framework for Alzheimer's disease classification combining Vision Transformer and Feature Tokenizer Transformer with cross-attention fusion. Validated on 6,065 subjects from three cohorts with strict subject-level splitting, we achieve 92.4\% accuracy on the challenging AD-trajectory task and 93.3\% on established AD detection through cross-task generalization. Our cross-cohort experiments demonstrate that single-cohort training fails to generalize to external datasets, validating the importance of multi-cohort training for robust clinical deployment. These results exceed the 66-90\% range reported by rigorous studies while maintaining methodological rigor.
+We presented a multimodal deep learning framework for Alzheimer's disease classification combining Vision Transformer and Feature Tokenizer Transformer with cross-attention fusion. Validated on 6,065 subjects from three independent cohorts with strict subject-level splitting, our approach achieves 92.4\% accuracy on the challenging AD-trajectory task and 93.3\% on established AD detection. Multimodal fusion provides substantial gains over unimodal baselines (+9.1\% over MRI-only, +7.5\% over tabular-only). Training on heterogeneous AD-trajectory cases yields improved generalization to established AD (AUC: 0.956 vs 0.948), demonstrating that early-stage training enhances late-stage detection. External validation experiments confirm the necessity of multi-cohort training for robust clinical deployment, with single-cohort models exhibiting performance drops of 25-43 points on held-out cohorts.
 
 \section*{Acknowledgment}
 
@@ -430,15 +420,19 @@ The NACC database is funded by NIA/NIH Grant U24 AG072122. SCAN is a multi-insti
 
 \bibitem{gorishniy2021} Y. Gorishniy, I. Rubachev, V. Khrulkov, and A. Babenko, ``Revisiting deep learning models for tabular data,'' in \textit{Proc. NeurIPS}, 2021.
 
+\bibitem{kunanbayev2024} K. Kunanbayev, V. Shen, and D. S. Kim, ``Training ViT with limited data for Alzheimer's disease classification: An empirical study,'' in \textit{Proc. MICCAI}, 2024, pp. 339--349. doi: 10.1007/978-3-031-72390-2\_32.
+
 \bibitem{qiu2022} S. Qiu et al., ``Multimodal deep learning for Alzheimer's disease dementia assessment,'' \textit{Nat. Commun.}, vol. 13, p. 3404, 2022.
+
+\bibitem{oasis3} P. J. LaMontagne et al., ``OASIS-3: Longitudinal neuroimaging, clinical, and cognitive dataset for normal aging and Alzheimer disease,'' \textit{medRxiv}, 2019. doi: 10.1101/2019.12.13.19014902.
 
 \bibitem{synthstrip} A. Hoopes, J. S. Mora, A. V. Dalca, B. Fischl, and M. Hoffmann, ``SynthStrip: Skull-stripping for any brain image,'' \textit{NeuroImage}, vol. 260, p. 119474, 2022.
 
 \bibitem{jack2018} C. R. Jack Jr. et al., ``NIA-AA Research Framework: Toward a biological definition of Alzheimer's disease,'' \textit{Alzheimer's Dement.}, vol. 14, no. 4, pp. 535--562, 2018.
 
-\bibitem{misra2009} C. Misra, Y. Fan, and C. Davatzikos, ``Baseline and longitudinal patterns of brain atrophy in MCI patients, and their use in prediction of short-term conversion to AD: Results from ADNI,'' \textit{NeuroImage}, vol. 44, no. 4, pp. 1415--1422, 2009.
+\bibitem{jack2000} C. R. Jack Jr., R. C. Petersen, Y. Xu, et al., ``Rates of hippocampal atrophy correlate with change in clinical status in aging and AD,'' \textit{Neurology}, vol. 55, no. 4, pp. 484--489, 2000.
 
-\bibitem{oasis3} P. J. LaMontagne et al., ``OASIS-3: Longitudinal neuroimaging, clinical, and cognitive dataset for normal aging and Alzheimer disease,'' \textit{medRxiv}, 2019. doi: 10.1101/2019.12.13.19014902.
+\bibitem{misra2009} C. Misra, Y. Fan, and C. Davatzikos, ``Baseline and longitudinal patterns of brain atrophy in MCI patients, and their use in prediction of short-term conversion to AD: Results from ADNI,'' \textit{NeuroImage}, vol. 44, no. 4, pp. 1415--1422, 2009.
 
 \end{thebibliography}
 
