@@ -61,7 +61,7 @@ said.mahmoudi@umons.ac.be}
 \maketitle
 
 \begin{abstract}
-Deep learning for Alzheimer's disease (AD) classification from MRI has shown promise, yet recent reviews reveal that fewer than 20\% of studies employ external validation, with data leakage (e.g., same subjects in train and test sets) inflating reported accuracies to 95-99\%. Studies with rigorous subject-level splitting achieve 66-90\%. We present an end-to-end multimodal framework combining Vision Transformer (ViT) for 3D MRI analysis and Feature Tokenizer Transformer (FT-Transformer) for clinical tabular data, integrated through bidirectional cross-attention. We validate on 6,065 subjects from three independent cohorts (ADNI, OASIS, NACC) using strict subject-level 5-fold cross-validation. Our approach achieves \textbf{92.4\% accuracy} (AUC: 0.96) for distinguishing cognitively normal subjects from AD-trajectory patients (including MCI patients who later developed AD), and \textbf{93.3\%} on established AD cases. External validation reveals that single-cohort models suffer severe performance degradation (accuracy drops of 25-43 points), while our multi-cohort approach maintains robust generalization.
+Deep learning for Alzheimer's disease (AD) classification from MRI has shown promise, yet recent reviews reveal that fewer than 20\% of studies employ external validation, with data leakage (e.g., same subjects in train and test sets) inflating reported accuracies to 95-99\%. Studies with rigorous subject-level splitting achieve 66-90\%. We present an end-to-end multimodal framework combining Vision Transformer (ViT) for 3D MRI analysis and Feature Tokenizer Transformer (FT-Transformer) for clinical tabular data, integrated through bidirectional cross-attention. We validate on 6,065 subjects from three independent cohorts (ADNI, OASIS, NACC) using strict subject-level 5-fold cross-validation. Our approach achieves \textbf{92.4\% accuracy} (AUC: 0.96) for distinguishing cognitively normal subjects from AD-trajectory patients (including MCI patients who later developed AD), and \textbf{93.3\%} on established AD cases. External validation across datasets reveals that single-cohort models suffer severe performance degradation (accuracy drops of 25-43 points), while our multi-cohort approach maintains robust generalization.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -74,9 +74,9 @@ Alzheimer's disease (AD) is the most common cause of dementia, contributing to 6
 
 Deep learning approaches for AD classification have proliferated in recent years, with many studies reporting accuracies exceeding 95\%. However, a recent scoping review by Young et al. \cite{young2025} revealed that fewer than 20\% of published studies employ external validation, and methodological issues remain widespread. The primary issue is data leakage: when data from the same subject appears in both training and test sets, models learn to recognize individual brain morphology rather than disease-specific patterns.
 
-Yagis et al. \cite{yagis2021} quantified this effect: when 2D slices from the same subject appear in both train and test sets, models achieve 96\% accuracy even with \textit{randomly assigned labels}---demonstrating that they learn to recognize individual brain morphology rather than disease patterns. With proper subject-level splitting, random-label accuracy drops to 50\% (as expected), and reported accuracies for real labels fall to 66-90\% \cite{young2025}.
+Yagis et al. \cite{yagis2021} quantified this effect: when 2D slices from the same subject appear in both train and test sets, models achieve 96\% accuracy even with \textit{randomly assigned labels}---demonstrating that they learn to recognize individual brain morphology rather than disease patterns. With proper subject-level splitting, random-label accuracy drops to 50\%, and reported accuracies for real labels fall to 66-90\% \cite{young2025}.
 
-Combining multiple data modalities has shown promise for improving AD classification. Clinical tabular data (demographics, cognitive assessments) provides complementary information to structural MRI. However, some clinical scores are strongly tied to cognitive status. The Mini-Mental State Examination (MMSE), a 30-point clinician-administered cognitive test, showed median scores of 29 for CN versus 23.5 for AD in the ADNI cohort \cite{qiu2020}---making it highly predictive of diagnostic group. We explore combining modern transformer architectures---specifically ViT for 3D MRI and FT-Transformer for tabular data---while excluding such cognitive scores to ensure the model learns from imaging and non-cognitive clinical features.
+Combining multiple data modalities has shown promise for improving AD classification. Clinical tabular data (demographics, cognitive assessments) provides complementary information to structural MRI. However, some clinical scores are strongly tied to cognitive status. The Mini-Mental State Examination (MMSE), a 30-point clinician-administered cognitive test, showed median scores of 29 for cognitively normal (CN) subjects versus 23.5 for AD patients in the ADNI cohort \cite{qiu2020}---making it highly predictive of diagnostic group. We explore combining modern transformer architectures---specifically ViT for 3D MRI and FT-Transformer for tabular data---while excluding such cognitive scores to ensure the model learns from imaging and non-cognitive clinical features.
 
 In this work, we present a fully end-to-end multimodal deep learning framework that combines:
 \begin{itemize}
@@ -91,7 +91,7 @@ Our contributions are: (1) an end-to-end multimodal framework combining 3D ViT a
 
 \subsection{Deep Learning for AD Classification}
 
-Convolutional neural networks (CNNs) have dominated AD classification from MRI. Wen et al. \cite{wen2020} provided a comprehensive review, showing that 3D CNNs achieve up to 89\% balanced accuracy with proper methodology. More recently, Vision Transformers (ViT) \cite{dosovitskiy2021} have been adapted for 3D medical imaging. VECNN \cite{vecnn2024} combined ViT with CNNs, reaching 94.1\% on a single cohort.
+Convolutional neural networks (CNNs) have dominated AD classification from MRI. Wen et al. \cite{wen2020} provided a comprehensive review, showing that 3D CNNs achieve up to 89\% balanced accuracy with proper methodology. More recently, Vision Transformers (ViT) \cite{dosovitskiy2021} have been adapted for 3D medical imaging. VECNN \cite{vecnn2024} combined ViT with CNNs, reaching 94.1\% on ADNI.
 
 \subsection{Methodological Concerns}
 
@@ -244,10 +244,6 @@ All experiments used 5-fold cross-validation repeated with 3 random seeds (42, 1
 We report accuracy, sensitivity, specificity, and AUC. Results are reported as mean $\pm$ standard deviation across 15 runs (5 folds $\times$ 3 seeds).
 
 \section{Results}
-
-\subsection{The Alzheimer's Disease Continuum}
-
-Our classification groups established AD patients with MCI subjects who subsequently progressed to AD (MCI converters). This grouping is grounded in the 2018 NIA-AA Research Framework \cite{jack2018}, which defines AD as a biological continuum rather than a clinical syndrome---individuals with AD pathology are on the ``Alzheimer's continuum'' regardless of clinical stage. Longitudinal neuroimaging studies have demonstrated that MCI converters exhibit AD-like atrophy patterns detectable on structural MRI at baseline \cite{jack2000,misra2009}.
 
 \subsection{Classification Performance}
 
