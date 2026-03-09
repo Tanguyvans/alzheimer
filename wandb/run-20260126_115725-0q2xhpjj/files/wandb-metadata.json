@@ -1,0 +1,46 @@
+{
+  "os":  "Linux-6.14.0-37-generic-x86_64-with-glibc2.39",
+  "python":  "CPython 3.12.3",
+  "startedAt":  "2026-01-26T10:57:25.472851Z",
+  "args":  [
+    "--config",
+    "medgemma/config.yaml",
+    "--max_samples",
+    "2"
+  ],
+  "program":  "/home/tanguy/medical/alzheimer/medgemma/train.py",
+  "codePath":  "medgemma/train.py",
+  "codePathLocal":  "medgemma/train.py",
+  "git":  {
+    "remote":  "https://github.com/Tanguyvans/alzheimer.git",
+    "commit":  "5a91b3b6065350d693a3aa3fd961401140498b8b"
+  },
+  "email":  "tanguyvans@gmail.com",
+  "root":  "/home/tanguy/medical/alzheimer",
+  "host":  "ilia-corsair-5000x",
+  "executable":  "/home/tanguy/medical/alzheimer/env/bin/python",
+  "cpu_count":  20,
+  "cpu_count_logical":  28,
+  "gpu":  "NVIDIA GeForce RTX 4080",
+  "gpu_count":  1,
+  "disk":  {
+    "/":  {
+      "total":  "1595870232576",
+      "used":  "1049191055360"
+    }
+  },
+  "memory":  {
+    "total":  "33448153088"
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "NVIDIA GeForce RTX 4080",
+      "memoryTotal":  "17171480576",
+      "cudaCores":  9728,
+      "architecture":  "Ada",
+      "uuid":  "GPU-7bd8a1a2-4418-d7ee-6ab4-3a6e4a383196"
+    }
+  ],
+  "cudaVersion":  "12.2",
+  "writerId":  "ao6c3qqmhrhdtyfkh82pzqcqejdgqn36"
+}

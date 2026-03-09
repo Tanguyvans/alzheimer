@@ -1,0 +1,120 @@
+# MedGemma 1.5 4B Configuration for Alzheimer's Classification
+# Task: CN (Cognitively Normal) vs AD (Alzheimer's Disease)
+# Approach: Multi-view slices (2 coronal + 2 axial) + clinical data
+
+experiment:
+  name: "medgemma_alzheimer_cn_ad"
+  task: "cn_ad_binary"
+  description: "MedGemma 1.5 4B fine-tuning for Alzheimer's classification using multi-view MRI slices"
+
+model:
+  name: "google/medgemma-1.5-4b-it"
+  # Quantization for memory-efficient training
+  # NOTE: Quantization breaks inference - use bf16 for evaluation
+  quantization:
+    load_in_4bit: true
+    bnb_4bit_use_double_quant: true
+    bnb_4bit_quant_type: "nf4"
+    bnb_4bit_compute_dtype: "bfloat16"
+
+  # LoRA configuration
+  lora:
+    r: 16
+    lora_alpha: 16
+    lora_dropout: 0.05
+    target_modules: "all-linear"
+    task_type: "CAUSAL_LM"
+
+data:
+  # CSV files with scan paths and labels
+  train_csv: "../experiments/multimodal_fusion/data/combined_trajectory/train.csv"
+  val_csv: "../experiments/multimodal_fusion/data/combined_trajectory/val.csv"
+  test_csv: "../experiments/multimodal_fusion/data/combined_trajectory/test.csv"
+
+  # Multi-view slice extraction configuration
+  slice_extraction:
+    n_coronal: 2                   # Coronal slices (hippocampus view)
+    n_axial: 2                     # Axial slices (ventricle view)
+    coronal_region: [0.45, 0.55]   # Hippocampus region (45-55% of y-axis)
+    axial_region: [0.35, 0.45]     # Ventricle region (35-45% of z-axis)
+    output_size: 448               # Image size (448 for memory efficiency)
+
+  # Include tabular/clinical features in prompt
+  use_tabular: true
+  tabular_features:
+    - AGE
+    - PTGENDER
+    - PTEDUCAT
+    - CATANIMSC      # Category fluency (animals)
+    - TRAASCOR       # Trail Making A
+    - TRABSCOR       # Trail Making B
+    - DSPANFOR       # Digit span forward
+    - DSPANBAC       # Digit span backward
+    - BNTTOTAL       # Boston Naming Test
+
+  # Class mapping
+  classes:
+    CN: 0
+    AD: 1
+
+training:
+  # Training hyperparameters (optimized for RTX 4080 16GB)
+  num_epochs: 3
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 16
+  effective_batch_size: 16  # batch_size * gradient_accumulation
+
+  # Memory optimization
+  gradient_checkpointing: true  # Trades compute for memory
+
+  # Optimizer settings
+  learning_rate: 2.0e-5
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  lr_scheduler_type: "cosine"
+
+  # Mixed precision
+  bf16: true
+  fp16: false
+
+  # Gradient settings
+  max_grad_norm: 1.0
+
+  # Logging and saving
+  logging_steps: 10
+  eval_steps: 100
+  save_strategy: "epoch"
+  eval_strategy: "epoch"
+  save_total_limit: 3
+  load_best_model_at_end: true
+  metric_for_best_model: "eval_loss"
+  greater_is_better: false
+
+  # Output
+  output_dir: "./checkpoints"
+
+  # Reproducibility
+  seed: 42
+
+inference:
+  # Generation settings for classification
+  max_new_tokens: 10
+  do_sample: false
+  temperature: 1.0
+  # IMPORTANT: Use bf16 (no quantization) for inference - quantization breaks generation
+
+wandb:
+  enabled: true
+  project: "medgemma-alzheimer"
+  name: "medgemma_cn_ad_multiview"
+  tags:
+    - "medgemma"
+    - "alzheimer"
+    - "cn-vs-ad"
+    - "qlora"
+    - "multiview"
+
+hardware:
+  device_map: "auto"
+  torch_dtype: "bfloat16"

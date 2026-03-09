@@ -1,0 +1,139 @@
+INFO:__main__:Quantization config:
+INFO:__main__:  4-bit: True
+INFO:__main__:  Double quant: True
+INFO:__main__:  Quant type: nf4
+INFO:__main__:  Compute dtype: torch.bfloat16
+INFO:__main__:LoRA config:
+INFO:__main__:  Rank (r): 16
+INFO:__main__:  Alpha: 16
+INFO:__main__:  Dropout: 0.05
+INFO:__main__:  Target modules: all-linear
+INFO:__main__:Loading model: google/medgemma-1.5-4b-it
+INFO:__main__:Device map: auto
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+`torch_dtype` is deprecated! Use `dtype` instead!
+Fetching 2 files: 100%|██████████| 2/2 [01:08<00:00, 34.10s/it]
+INFO:accelerate.utils.modeling:We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+Loading checkpoint shards: 100%|██████████| 2/2 [00:05<00:00,  2.61s/it]
+INFO:__main__:Model loaded. Parameters: 4,300,079,472
+INFO:__main__:Trainable parameters: 38,497,792 / 2,528,720,752 (1.52%)
+INFO:__main__:Train CSV: medgemma/../data/combined/mri_cn_ad_train.csv
+INFO:__main__:Val CSV: medgemma/../data/combined/mri_cn_ad_val.csv
+INFO:dataset:Loaded 2 samples
+INFO:dataset:  CN: 2 (100.0%)
+INFO:dataset:Loaded 2 samples
+INFO:dataset:  CN: 2 (100.0%)
+INFO:__main__:Training configuration:
+INFO:__main__:  Epochs: 3
+INFO:__main__:  Batch size: 1
+INFO:__main__:  Gradient accumulation: 16
+INFO:__main__:  Effective batch size: 16
+INFO:__main__:  Gradient checkpointing: True
+INFO:__main__:  Learning rate: 2e-05
+INFO:__main__:  Output dir: medgemma/checkpoints
+WARNING:dataset:Error loading /Volumes/KINGSTON/ADNI-skull/002_S_0295/MP-RAGE_2009-05-22_07_00_57.0_I144446_144446_registered_skull_stripped.nii.gz: No such file or no access: '/Volumes/KINGSTON/ADNI-skull/002_S_0295/MP-RAGE_2009-05-22_07_00_57.0_I144446_144446_registered_skull_stripped.nii.gz'. Using black images.
+INFO:__main__:Starting training...
+The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 1, 'bos_token_id': 2, 'pad_token_id': 0}.
+  0%|          | 0/3 [00:00<?, ?it/s]WARNING:dataset:Error loading /Volumes/KINGSTON/ADNI-skull/002_S_0295/MP-RAGE_2009-05-22_07_00_57.0_I144446_144446_registered_skull_stripped.nii.gz: No such file or no access: '/Volumes/KINGSTON/ADNI-skull/002_S_0295/MP-RAGE_2009-05-22_07_00_57.0_I144446_144446_registered_skull_stripped.nii.gz'. Using black images.
+WARNING:dataset:Error loading /Volumes/KINGSTON/ADNI-skull/002_S_0295/MPRAGE_2012-05-10_15_44_50.0_I303066_303066_registered_skull_stripped.nii.gz: No such file or no access: '/Volumes/KINGSTON/ADNI-skull/002_S_0295/MPRAGE_2012-05-10_15_44_50.0_I303066_303066_registered_skull_stripped.nii.gz'. Using black images.
+Traceback (most recent call last):
+  File "/home/tanguy/medical/alzheimer/medgemma/train.py", line 345, in <module>
+    main()
+  File "/home/tanguy/medical/alzheimer/medgemma/train.py", line 341, in main
+    train(config, str(config_path), args.max_samples)
+  File "/home/tanguy/medical/alzheimer/medgemma/train.py", line 283, in train
+    trainer.train()
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/transformers/trainer.py", line 2325, in train
+    return inner_training_loop(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/transformers/trainer.py", line 2674, in _inner_training_loop
+    tr_loss_step = self.training_step(model, inputs, num_items_in_batch)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/trl/trainer/sft_trainer.py", line 1264, in training_step
+    return super().training_step(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/transformers/trainer.py", line 4020, in training_step
+    loss = self.compute_loss(model, inputs, num_items_in_batch=num_items_in_batch)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/trl/trainer/sft_trainer.py", line 1161, in compute_loss
+    (loss, outputs) = super().compute_loss(
+                      ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/transformers/trainer.py", line 4110, in compute_loss
+    outputs = model(**inputs)
+              ^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/accelerate/utils/operations.py", line 819, in forward
+    return model_forward(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/accelerate/utils/operations.py", line 807, in __call__
+    return convert_to_fp32(self.model_forward(*args, **kwargs))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/amp/autocast_mode.py", line 44, in decorate_autocast
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/peft/peft_model.py", line 1923, in forward
+    return self.base_model(
+           ^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/peft/tuners/tuners_utils.py", line 311, in forward
+    return self.model.forward(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/transformers/models/gemma3/modeling_gemma3.py", line 1100, in forward
+    outputs = self.model(
+              ^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/transformers/utils/generic.py", line 918, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/transformers/models/gemma3/modeling_gemma3.py", line 908, in forward
+    image_features = self.get_image_features(pixel_values)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/transformers/models/gemma3/modeling_gemma3.py", line 806, in get_image_features
+    vision_outputs = self.vision_tower(pixel_values=pixel_values).last_hidden_state
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/transformers/utils/generic.py", line 1072, in wrapper
+    outputs = func(self, *args, **kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/transformers/models/siglip/modeling_siglip.py", line 789, in forward
+    return self.vision_model(
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/transformers/models/siglip/modeling_siglip.py", line 698, in forward
+    hidden_states = self.embeddings(pixel_values, interpolate_pos_encoding=interpolate_pos_encoding)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/transformers/models/siglip/modeling_siglip.py", line 276, in forward
+    _, _, height, width = pixel_values.shape
+    ^^^^^^^^^^^^^^^^^^^
+ValueError: too many values to unpack (expected 4)

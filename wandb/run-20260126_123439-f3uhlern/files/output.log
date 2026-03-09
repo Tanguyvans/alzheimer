@@ -1,0 +1,63 @@
+INFO:__main__:Quantization config:
+INFO:__main__:  4-bit: True
+INFO:__main__:  Double quant: True
+INFO:__main__:  Quant type: nf4
+INFO:__main__:  Compute dtype: torch.bfloat16
+INFO:__main__:LoRA config:
+INFO:__main__:  Rank (r): 16
+INFO:__main__:  Alpha: 16
+INFO:__main__:  Dropout: 0.05
+INFO:__main__:  Target modules: all-linear
+INFO:__main__:Loading model: google/medgemma-1.5-4b-it
+INFO:__main__:Device map: auto
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+`torch_dtype` is deprecated! Use `dtype` instead!
+INFO:accelerate.utils.modeling:We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.12s/it]
+INFO:__main__:Model loaded. Parameters: 4,300,079,472
+INFO:__main__:Trainable parameters: 38,497,792 / 2,528,720,752 (1.52%)
+INFO:__main__:Train CSV: medgemma/../experiments/multimodal_fusion/data/combined_trajectory/train.csv
+INFO:__main__:Val CSV: medgemma/../experiments/multimodal_fusion/data/combined_trajectory/val.csv
+INFO:dataset:Loaded 2 samples
+INFO:dataset:  CN: 1 (50.0%)
+INFO:dataset:  AD: 1 (50.0%)
+INFO:dataset:Loaded 2 samples
+INFO:dataset:  CN: 1 (50.0%)
+INFO:dataset:  AD: 1 (50.0%)
+INFO:__main__:Training configuration:
+INFO:__main__:  Epochs: 3
+INFO:__main__:  Batch size: 1
+INFO:__main__:  Gradient accumulation: 16
+INFO:__main__:  Effective batch size: 16
+INFO:__main__:  Gradient checkpointing: True
+INFO:__main__:  Learning rate: 2e-05
+INFO:__main__:  Output dir: medgemma/checkpoints
+INFO:__main__:Starting training...
+The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 1, 'bos_token_id': 2, 'pad_token_id': 0}.
+ 33%|███▎      | 1/3 [00:06<00:10,  5.17s/it]Traceback (most recent call last):
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/transformers/trainer.py", line 3290, in _determine_best_metric
+{'eval_loss': 21.744327545166016, 'eval_runtime': 1.6265, 'eval_samples_per_second': 1.23, 'eval_steps_per_second': 1.23, 'eval_entropy': 1.3081896305084229, 'eval_num_tokens': 1668.0, 'eval_mean_token_accuracy': 0.03121248446404934, 'epoch': 1.0}
+    metric_value = metrics[metric_to_check]
+                   ~~~~~~~^^^^^^^^^^^^^^^^^
+KeyError: 'eval_balanced_accuracy'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/tanguy/medical/alzheimer/medgemma/train.py", line 345, in <module>
+    main()
+  File "/home/tanguy/medical/alzheimer/medgemma/train.py", line 341, in main
+    train(config, str(config_path), args.max_samples)
+  File "/home/tanguy/medical/alzheimer/medgemma/train.py", line 283, in train
+    trainer.train()
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/transformers/trainer.py", line 2325, in train
+    return inner_training_loop(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/transformers/trainer.py", line 2790, in _inner_training_loop
+    self._maybe_log_save_evaluate(
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/transformers/trainer.py", line 3222, in _maybe_log_save_evaluate
+    is_new_best_metric = self._determine_best_metric(metrics=metrics, trial=trial)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/transformers/trainer.py", line 3292, in _determine_best_metric
+    raise KeyError(
+KeyError: "The `metric_for_best_model` training argument is set to 'eval_balanced_accuracy', which is not found in the evaluation metrics. The available evaluation metrics are: ['eval_loss', 'eval_runtime', 'eval_samples_per_second', 'eval_steps_per_second']. Consider changing the `metric_for_best_model` via the TrainingArguments."

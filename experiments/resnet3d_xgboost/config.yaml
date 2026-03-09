@@ -1,0 +1,67 @@
+# ResNet50 3D (MedicalNet pretrained, frozen) + XGBoost Late Fusion: CN vs AD Classification
+# K-fold CV with same data/methodology as multimodal_fusion
+
+experiment:
+  name: "resnet3d_xgboost_late_fusion"
+  task: "cn_ad_trajectory"
+  dataset: "multi_cohort_v2"
+  description: "ResNet50 3D (MedicalNet pretrained, frozen) feature extraction + XGBoost for CN vs AD trajectory"
+
+model:
+  resnet:
+    architecture: "resnet50"
+    pretrained: true
+    spatial_dims: 3
+    in_channels: 1
+    feature_dim: 2048
+
+  xgboost:
+    max_depth: 6
+    learning_rate: 0.1
+    subsample: 0.8
+    colsample_bytree: 0.8
+    num_boost_round: 300
+    early_stopping_rounds: 30
+
+data:
+  train_csv: "../multimodal_fusion/data/combined_trajectory/train.csv"
+  val_csv: "../multimodal_fusion/data/combined_trajectory/val.csv"
+  test_csv: "../multimodal_fusion/data/combined_trajectory/test.csv"
+
+  tabular_features:
+    - "AGE"
+    - "PTGENDER"
+    - "PTEDUCAT"
+    - "PTMARRY"
+    - "CATANIMSC"
+    - "TRAASCOR"
+    - "TRABSCOR"
+    - "DSPANFOR"
+    - "DSPANBAC"
+    - "BNTTOTAL"
+    - "VSWEIGHT"
+    - "BMI"
+    - "MH14ALCH"
+    - "MH16SMOK"
+    - "MH4CARD"
+    - "MH2NEURL"
+
+  checkpoints_dir: "checkpoints"
+  results_dir: "results"
+
+preprocessing:
+  use_paper_preprocessing: true
+  target_spacing: 1.75
+  target_shape: [128, 128, 128]
+  handle_missing: "median"
+
+hardware:
+  device: "cuda"
+  num_workers: 4
+  pin_memory: true
+  batch_size: 4  # For feature extraction only (no backprop needed)
+
+wandb:
+  enabled: false
+  project: "alzheimer-resnet3d-xgboost"
+  name: "resnet3d_xgboost_cv"

@@ -1,0 +1,89 @@
+# ResNet50 3D (MedicalNet pretrained) + MLP Early Fusion: CN vs AD Classification
+# K-fold CV with same data/methodology as multimodal_fusion
+
+experiment:
+  name: "resnet3d_mlp_early_fusion"
+  task: "cn_ad_trajectory"
+  dataset: "multi_cohort_v2"
+  description: "ResNet50 3D (MedicalNet pretrained) early fusion (MLP) for CN vs AD trajectory"
+
+model:
+  resnet:
+    architecture: "resnet50"
+    pretrained: true
+    spatial_dims: 3
+    in_channels: 1
+    feature_dim: 2048
+
+  tabular:
+    input_dim: 16
+    hidden_dims: [64, 32]
+    dropout: 0.3
+
+  early_fusion:
+    concat_dim: 2080  # 2048 (CNN) + 32 (tabular encoder output)
+    hidden_dims: [256, 128]
+    dropout: 0.3
+    num_classes: 2
+
+data:
+  train_csv: "../multimodal_fusion/data/combined_trajectory/train.csv"
+  val_csv: "../multimodal_fusion/data/combined_trajectory/val.csv"
+  test_csv: "../multimodal_fusion/data/combined_trajectory/test.csv"
+
+  tabular_features:
+    - "AGE"
+    - "PTGENDER"
+    - "PTEDUCAT"
+    - "PTMARRY"
+    - "CATANIMSC"
+    - "TRAASCOR"
+    - "TRABSCOR"
+    - "DSPANFOR"
+    - "DSPANBAC"
+    - "BNTTOTAL"
+    - "VSWEIGHT"
+    - "BMI"
+    - "MH14ALCH"
+    - "MH16SMOK"
+    - "MH4CARD"
+    - "MH2NEURL"
+
+  checkpoints_dir: "checkpoints"
+  results_dir: "results"
+
+preprocessing:
+  use_paper_preprocessing: true
+  target_spacing: 1.75
+  target_shape: [128, 128, 128]
+  handle_missing: "median"
+
+training:
+  epochs: 100
+  batch_size: 2
+  gradient_accumulation_steps: 2  # effective batch = 4
+  mixed_precision: true  # AMP to reduce VRAM
+  learning_rate: 0.0001  # Head LR; backbone gets 10x lower (0.00001)
+  weight_decay: 0.01
+  lr_min: 0.0000001
+  warmup_epochs: 5
+  freeze_backbone_epochs: 3
+  gradient_clip: 1.0
+  loss_type: "ce"
+  use_weighted_loss: true
+
+hardware:
+  device: "cuda"
+  num_workers: 4
+  pin_memory: true
+
+callbacks:
+  early_stopping:
+    enabled: true
+    patience: 20
+    min_epochs: 30
+
+wandb:
+  enabled: false
+  project: "alzheimer-resnet3d-mlp"
+  name: "resnet3d_mlp_cv"

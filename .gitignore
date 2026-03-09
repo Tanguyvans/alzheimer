@@ -49,3 +49,9 @@ tensorboard_logs/
 # MedicalNet downloaded weights
 *.pth
 *.tar.gz
+
+# Experiment logs and results
+experiments/*/log*.txt
+experiments/*/results*/
+experiments/*/cv_results/
+nohup.out

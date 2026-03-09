@@ -1,0 +1,52 @@
+INFO:__main__:Quantization config:
+INFO:__main__:  4-bit: True
+INFO:__main__:  Double quant: True
+INFO:__main__:  Quant type: nf4
+INFO:__main__:  Compute dtype: torch.bfloat16
+INFO:__main__:LoRA config:
+INFO:__main__:  Rank (r): 16
+INFO:__main__:  Alpha: 16
+INFO:__main__:  Dropout: 0.05
+INFO:__main__:  Target modules: all-linear
+INFO:__main__:Loading model: google/medgemma-1.5-4b-it
+INFO:__main__:Device map: auto
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+`torch_dtype` is deprecated! Use `dtype` instead!
+INFO:accelerate.utils.modeling:We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+Loading checkpoint shards: 100%|██████████| 2/2 [00:03<00:00,  1.56s/it]
+INFO:__main__:Model loaded. Parameters: 4,300,079,472
+INFO:__main__:Trainable parameters: 38,497,792 / 2,528,720,752 (1.52%)
+INFO:__main__:Train CSV: medgemma/../experiments/multimodal_fusion/data/combined_trajectory/train.csv
+INFO:__main__:Val CSV: medgemma/../experiments/multimodal_fusion/data/combined_trajectory/val.csv
+INFO:dataset:Loaded 500 samples
+INFO:dataset:  CN: 380 (76.0%)
+INFO:dataset:  AD: 120 (24.0%)
+INFO:dataset:Loaded 500 samples
+INFO:dataset:  CN: 390 (78.0%)
+INFO:dataset:  AD: 110 (22.0%)
+INFO:__main__:Training configuration:
+INFO:__main__:  Epochs: 3
+INFO:__main__:  Batch size: 1
+INFO:__main__:  Gradient accumulation: 16
+INFO:__main__:  Effective batch size: 16
+INFO:__main__:  Gradient checkpointing: True
+INFO:__main__:  Learning rate: 2e-05
+INFO:__main__:  Output dir: medgemma/checkpoints
+INFO:__main__:Starting training...
+The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 1, 'bos_token_id': 2, 'pad_token_id': 0}.
+100%|██████████| 96/96 [1:18:32<00:00, 49.09s/it] 
+{'loss': 20.7171, 'grad_norm': 37.5, 'learning_rate': 1.8e-05, 'entropy': 1.4898846827447414, 'num_tokens': 133440.0, 'mean_token_accuracy': 0.030619747308082878, 'epoch': 0.32}
+{'loss': 14.5768, 'grad_norm': 13.5625, 'learning_rate': 1.9464397731576093e-05, 'entropy': 3.5999389976263045, 'num_tokens': 266880.0, 'mean_token_accuracy': 0.03148259255103767, 'epoch': 0.64}
+{'loss': 10.8259, 'grad_norm': 9.3125, 'learning_rate': 1.7686471397785322e-05, 'entropy': 7.162684491276741, 'num_tokens': 400320.0, 'mean_token_accuracy': 0.03152761058881879, 'epoch': 0.96}
+INFO:__main__:Saving final model to medgemma/checkpoints/final
+{'eval_loss': 9.259096145629883, 'eval_runtime': 401.4747, 'eval_samples_per_second': 1.245, 'eval_steps_per_second': 1.245, 'eval_entropy': 8.863906400680541, 'eval_num_tokens': 417000.0, 'eval_mean_token_accuracy': 0.03205762286111712, 'epoch': 1.0}
+{'loss': 8.7774, 'grad_norm': 10.75, 'learning_rate': 1.4894178478110856e-05, 'entropy': 8.90874570124858, 'num_tokens': 523752.0, 'mean_token_accuracy': 0.03251841288009608, 'epoch': 1.26}
+{'loss': 6.777, 'grad_norm': 13.25, 'learning_rate': 1.1456011677350052e-05, 'entropy': 8.33127510547638, 'num_tokens': 657192.0, 'mean_token_accuracy': 0.03379351852927357, 'epoch': 1.58}
+{'loss': 5.0213, 'grad_norm': 5.375, 'learning_rate': 7.825698244184432e-06, 'entropy': 6.039405983686447, 'num_tokens': 790632.0, 'mean_token_accuracy': 0.03502400983124972, 'epoch': 1.9}
+{'eval_loss': 4.374337673187256, 'eval_runtime': 380.006, 'eval_samples_per_second': 1.316, 'eval_steps_per_second': 1.316, 'eval_entropy': 4.331184701919556, 'eval_num_tokens': 834000.0, 'eval_mean_token_accuracy': 0.037911164104938506, 'epoch': 2.0}
+{'loss': 4.3772, 'grad_norm': 1.703125, 'learning_rate': 4.482322592295541e-06, 'entropy': 4.351089802948204, 'num_tokens': 914064.0, 'mean_token_accuracy': 0.03847214531757542, 'epoch': 2.19}
+{'loss': 4.2623, 'grad_norm': 1.3203125, 'learning_rate': 1.8671025926443464e-06, 'entropy': 4.111296209692955, 'num_tokens': 1047504.0, 'mean_token_accuracy': 0.04011854722630233, 'epoch': 2.51}
+{'loss': 4.2326, 'grad_norm': 1.5234375, 'learning_rate': 3.2516302942574794e-07, 'entropy': 4.097675794363022, 'num_tokens': 1180944.0, 'mean_token_accuracy': 0.04066626641433686, 'epoch': 2.83}
+{'eval_loss': 4.22977352142334, 'eval_runtime': 382.6551, 'eval_samples_per_second': 1.307, 'eval_steps_per_second': 1.307, 'eval_entropy': 4.096835290908813, 'eval_num_tokens': 1251000.0, 'eval_mean_token_accuracy': 0.04058823516964912, 'epoch': 3.0}
+{'train_runtime': 4712.2687, 'train_samples_per_second': 0.318, 'train_steps_per_second': 0.02, 'train_loss': 8.55263638496399, 'epoch': 3.0}
+INFO:__main__:Saving LoRA adapter to medgemma/checkpoints/adapter

@@ -1,0 +1,153 @@
+_wandb:
+    value:
+        cli_version: 0.23.1
+        e:
+            ce6rzvm5gbjuu52z5ays42oauxrjpxpx:
+                args:
+                    - --config
+                    - medgemma/config.yaml
+                    - --max_samples
+                    - "2"
+                codePath: medgemma/train.py
+                codePathLocal: medgemma/train.py
+                cpu_count: 20
+                cpu_count_logical: 28
+                cudaVersion: "12.2"
+                disk:
+                    /:
+                        total: "1595870232576"
+                        used: "1049190879232"
+                email: tanguyvans@gmail.com
+                executable: /home/tanguy/medical/alzheimer/env/bin/python
+                git:
+                    commit: 5a91b3b6065350d693a3aa3fd961401140498b8b
+                    remote: https://github.com/Tanguyvans/alzheimer.git
+                gpu: NVIDIA GeForce RTX 4080
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ada
+                      cudaCores: 9728
+                      memoryTotal: "17171480576"
+                      name: NVIDIA GeForce RTX 4080
+                      uuid: GPU-7bd8a1a2-4418-d7ee-6ab4-3a6e4a383196
+                host: ilia-corsair-5000x
+                memory:
+                    total: "33448153088"
+                os: Linux-6.14.0-37-generic-x86_64-with-glibc2.39
+                program: /home/tanguy/medical/alzheimer/medgemma/train.py
+                python: CPython 3.12.3
+                root: /home/tanguy/medical/alzheimer
+                startedAt: "2026-01-26T10:54:09.903382Z"
+                writerId: ce6rzvm5gbjuu52z5ays42oauxrjpxpx
+        m: []
+        python_version: 3.12.3
+        t:
+            "1":
+                - 1
+                - 5
+                - 11
+                - 41
+                - 49
+                - 51
+                - 53
+                - 71
+                - 84
+                - 98
+            "2":
+                - 1
+                - 5
+                - 11
+                - 41
+                - 49
+                - 51
+                - 53
+                - 71
+                - 84
+                - 98
+            "3":
+                - 13
+                - 15
+                - 16
+            "4": 3.12.3
+            "5": 0.23.1
+            "6": 4.57.3
+            "12": 0.23.1
+            "13": linux-x86_64
+data:
+    value:
+        classes:
+            AD: 1
+            CN: 0
+        slice_extraction:
+            n_slices: 3
+            output_size: 448
+            region_end: 0.6
+            region_start: 0.4
+            view: coronal
+        test_csv: ../data/combined/mri_cn_ad_test.csv
+        train_csv: ../data/combined/mri_cn_ad_train.csv
+        val_csv: ../data/combined/mri_cn_ad_val.csv
+experiment:
+    value:
+        description: MedGemma 1.5 4B fine-tuning for Alzheimer's classification using coronal hippocampus slices
+        name: medgemma_alzheimer_cn_ad
+        task: cn_ad_binary
+hardware:
+    value:
+        device_map: auto
+        torch_dtype: bfloat16
+inference:
+    value:
+        do_sample: false
+        max_new_tokens: 10
+        prompt: 'These are 3 coronal MRI slices of the hippocampus region. Based on hippocampal morphology, classify this patient as either cognitively normal (CN) or having Alzheimer''s disease (AD). Respond with only: CN or AD'
+        temperature: 1
+model:
+    value:
+        lora:
+            lora_alpha: 16
+            lora_dropout: 0.05
+            r: 16
+            target_modules: all-linear
+            task_type: CAUSAL_LM
+        name: google/medgemma-1.5-4b-it
+        quantization:
+            bnb_4bit_compute_dtype: bfloat16
+            bnb_4bit_quant_type: nf4
+            bnb_4bit_use_double_quant: true
+            load_in_4bit: true
+training:
+    value:
+        bf16: true
+        effective_batch_size: 16
+        eval_steps: 100
+        eval_strategy: epoch
+        fp16: false
+        gradient_accumulation_steps: 16
+        gradient_checkpointing: true
+        greater_is_better: true
+        learning_rate: 2e-05
+        load_best_model_at_end: true
+        logging_steps: 10
+        lr_scheduler_type: cosine
+        max_grad_norm: 1
+        metric_for_best_model: eval_balanced_accuracy
+        num_epochs: 3
+        output_dir: ./checkpoints
+        per_device_eval_batch_size: 1
+        per_device_train_batch_size: 1
+        save_strategy: epoch
+        save_total_limit: 3
+        seed: 42
+        warmup_ratio: 0.1
+        weight_decay: 0.01
+wandb:
+    value:
+        enabled: true
+        name: medgemma_cn_ad_qlora
+        project: medgemma-alzheimer
+        tags:
+            - medgemma
+            - alzheimer
+            - cn-vs-ad
+            - qlora

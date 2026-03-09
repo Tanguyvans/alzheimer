@@ -1,0 +1,45 @@
+INFO:__main__:Quantization config:
+INFO:__main__:  4-bit: True
+INFO:__main__:  Double quant: True
+INFO:__main__:  Quant type: nf4
+INFO:__main__:  Compute dtype: torch.bfloat16
+INFO:__main__:LoRA config:
+INFO:__main__:  Rank (r): 16
+INFO:__main__:  Alpha: 16
+INFO:__main__:  Dropout: 0.05
+INFO:__main__:  Target modules: all-linear
+INFO:__main__:Loading model: google/medgemma-1.5-4b-it
+INFO:__main__:Device map: auto
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+`torch_dtype` is deprecated! Use `dtype` instead!
+INFO:accelerate.utils.modeling:We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.16s/it]
+INFO:__main__:Model loaded. Parameters: 4,300,079,472
+INFO:__main__:Trainable parameters: 38,497,792 / 2,528,720,752 (1.52%)
+INFO:__main__:Train CSV: medgemma/../experiments/multimodal_fusion/data/combined_trajectory/train.csv
+INFO:__main__:Val CSV: medgemma/../experiments/multimodal_fusion/data/combined_trajectory/val.csv
+INFO:dataset:Loaded 100 samples
+INFO:dataset:  CN: 78 (78.0%)
+INFO:dataset:  AD: 22 (22.0%)
+INFO:dataset:Loaded 100 samples
+INFO:dataset:  CN: 79 (79.0%)
+INFO:dataset:  AD: 21 (21.0%)
+INFO:__main__:Training configuration:
+INFO:__main__:  Epochs: 3
+INFO:__main__:  Batch size: 1
+INFO:__main__:  Gradient accumulation: 16
+INFO:__main__:  Effective batch size: 16
+INFO:__main__:  Gradient checkpointing: True
+INFO:__main__:  Learning rate: 2e-05
+INFO:__main__:  Output dir: medgemma/checkpoints
+INFO:__main__:Starting training...
+The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 1, 'bos_token_id': 2, 'pad_token_id': 0}.
+100%|██████████| 21/21 [15:49<00:00, 45.20s/it]
+INFO:__main__:Saving final model to medgemma/checkpoints/final
+{'eval_loss': 17.2513484954834, 'eval_runtime': 81.3319, 'eval_samples_per_second': 1.23, 'eval_steps_per_second': 1.23, 'eval_entropy': 2.2177047991752623, 'eval_num_tokens': 83400.0, 'eval_mean_token_accuracy': 0.031056422013789414, 'epoch': 1.0}
+{'loss': 19.2779, 'grad_norm': 24.75, 'learning_rate': 1.5000000000000002e-05, 'entropy': 1.8010109904650096, 'num_tokens': 123432.0, 'mean_token_accuracy': 0.030855584902235784, 'epoch': 1.48}
+{'eval_loss': 14.146219253540039, 'eval_runtime': 76.2401, 'eval_samples_per_second': 1.312, 'eval_steps_per_second': 1.312, 'eval_entropy': 3.6110841250419616, 'eval_num_tokens': 166800.0, 'eval_mean_token_accuracy': 0.031464585345238445, 'epoch': 2.0}
+{'loss': 14.2322, 'grad_norm': 16.25, 'learning_rate': 6.030737921409169e-07, 'entropy': 3.57340559443912, 'num_tokens': 246864.0, 'mean_token_accuracy': 0.03142337966710329, 'epoch': 2.96}
+{'eval_loss': 13.680602073669434, 'eval_runtime': 76.5215, 'eval_samples_per_second': 1.307, 'eval_steps_per_second': 1.307, 'eval_entropy': 3.914417073726654, 'eval_num_tokens': 250200.0, 'eval_mean_token_accuracy': 0.0314525805413723, 'epoch': 3.0}
+{'train_runtime': 949.2843, 'train_samples_per_second': 0.316, 'train_steps_per_second': 0.022, 'train_loss': 16.60663704645066, 'epoch': 3.0}
+INFO:__main__:Saving LoRA adapter to medgemma/checkpoints/adapter
