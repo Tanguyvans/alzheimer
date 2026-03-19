@@ -22,6 +22,10 @@
 - Portal: LONI-IDA > My Account > Publication Update
 - Website: https://adni.loni.usc.edu
 
+### Sources
+- Data Use Agreement: https://adni.loni.usc.edu/wp-content/uploads/how_to_apply/ADNI_DSP_Policy.pdf
+- Publication Policy: https://adni.loni.usc.edu/data-samples/adni-data/#702d948726a31291d
+
 ---
 
 ## OASIS-3 (Open Access Series of Imaging Studies)
@@ -97,6 +101,11 @@ SCAN is a multi-institutional project that was funded as a U24 grant (AG067418) 
 - Email: naccmail@uw.edu
 - NACC Contact: Sarah Yasuda (Research Coordinator) - sarahya@uw.edu
 - Ticket reference: #2351
+
+### Sources
+- Publication requirements: https://www.naccdata.org/publish-with-nacc-data/
+- SCAN website: https://scan.naccdata.org/
+- Data request: https://naccdata.org/requesting-data/nacc-data/
 
 ---
 
