@@ -535,7 +535,7 @@ def main():
         logger.info(f"{name:<35} {m['accuracy']:5.1f}% {m['balanced_accuracy']:5.1f}% "
                      f"{m['sensitivity']:5.1f}% {m['specificity']:5.1f}% {m['auc']:5.3f}")
 
-    # Save
+    # Save models
     results = {
         'mri_only': mri_metrics,
         'tabular_only': tab_metrics,
@@ -553,6 +553,20 @@ def main():
         json.dump(results, f, indent=2)
 
     torch.save(best_mlp_state, output_dir / 'tabular_mlp.pth')
+    if best_state is not None:
+        torch.save(best_state, output_dir / 'resnet3d_finetuned.pth')
+
+    # Save predictions for analysis (DeLong, confusion matrices)
+    np.save(output_dir / 'y_true_test.npy', y_test)
+    np.save(output_dir / 'y_proba_mri_test.npy', proba_mri_test)
+    np.save(output_dir / 'y_proba_tab_test.npy', proba_tab_test)
+    np.save(output_dir / 'y_proba_avg_test.npy', proba_avg)
+    np.save(output_dir / 'y_proba_weighted_test.npy', proba_weighted)
+    np.save(output_dir / 'y_proba_stacking_test.npy', proba_stack)
+    # Val predictions
+    np.save(output_dir / 'y_true_val.npy', y_val)
+    np.save(output_dir / 'y_proba_mri_val.npy', proba_mri_val)
+    np.save(output_dir / 'y_proba_tab_val.npy', proba_tab_val)
 
     logger.info(f"\nResults saved to {output_dir}")
 

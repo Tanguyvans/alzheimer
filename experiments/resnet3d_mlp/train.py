@@ -303,11 +303,26 @@ def main():
         metrics = evaluate(model, loader, criterion, device, use_amp=use_amp)
         log_metrics(f"{split_name} Results", metrics)
 
-    # Save
+    # Save model
     test_metrics = evaluate(model, test_loader, criterion, device, use_amp=use_amp)
     torch.save({'model_state_dict': best_state, 'config': config}, output_dir / 'best_model.pth')
     with open(output_dir / 'test_metrics.json', 'w') as f:
         json.dump(test_metrics, f, indent=2)
+
+    # Save predictions for analysis (DeLong, confusion matrices)
+    for split_name, loader in [('val', val_loader), ('test', test_loader)]:
+        model.eval()
+        all_labels, all_probs = [], []
+        with torch.no_grad():
+            for mri, tabular, labels in loader:
+                mri, tabular = mri.to(device), tabular.to(device)
+                with torch.amp.autocast('cuda', enabled=use_amp):
+                    outputs = model(mri, tabular)
+                probs = torch.softmax(outputs.float(), dim=1)
+                all_labels.extend(labels.numpy())
+                all_probs.extend(probs[:, 1].cpu().numpy())
+        np.save(output_dir / f'y_true_{split_name}.npy', np.array(all_labels))
+        np.save(output_dir / f'y_proba_{split_name}.npy', np.array(all_probs))
 
     logger.info(f"\nResults saved to {output_dir}")
 

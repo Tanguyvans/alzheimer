@@ -381,6 +381,13 @@ def main():
     with open(output_dir / 'test_metrics.json', 'w') as f:
         json.dump(test_metrics, f, indent=2)
 
+    # Save predictions for analysis (DeLong, confusion matrices)
+    np.save(output_dir / 'y_true_test.npy', y_test)
+    np.save(output_dir / 'y_proba_test.npy', test_proba)
+    val_proba = xgb_model.predict(dval)
+    np.save(output_dir / 'y_true_val.npy', y_val)
+    np.save(output_dir / 'y_proba_val.npy', val_proba)
+
     logger.info(f"\nResults saved to {output_dir}")
 
 
