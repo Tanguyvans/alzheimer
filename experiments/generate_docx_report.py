@@ -109,6 +109,10 @@ def compute_metrics(y_true, all_preds, seed_counts):
             specs.append(tn / (tn + fp) * 100 if (tn + fp) > 0 else 0)
             aucs.append(roc_auc_score(y_true, y_proba))
 
+        # AUC ensemble = AUC(mean probabilities) — same as DeLong heatmap
+        mean_proba = np.mean(proba_list, axis=0)
+        auc_ensemble = roc_auc_score(y_true, mean_proba)
+
         rows.append({
             'key': key,
             'Method': display_name,
@@ -120,6 +124,7 @@ def compute_metrics(y_true, all_preds, seed_counts):
             'Sens_mean': np.mean(senss), 'Sens_std': np.std(senss) if n_seeds > 1 else None,
             'Spec_mean': np.mean(specs), 'Spec_std': np.std(specs) if n_seeds > 1 else None,
             'AUC_mean': np.mean(aucs), 'AUC_std': np.std(aucs) if n_seeds > 1 else None,
+            'AUC_ensemble': auc_ensemble,
         })
 
     return rows
@@ -165,7 +170,7 @@ def generate_report():
     best_bacc = max(r['BAcc_mean'] for r in complete_metrics)
     best_sens = max(r['Sens_mean'] for r in complete_metrics)
     best_spec = max(r['Spec_mean'] for r in complete_metrics)
-    best_auc = max(r['AUC_mean'] for r in complete_metrics)
+    best_auc = max(r['AUC_ensemble'] for r in complete_metrics)
 
     doc = Document()
 
@@ -272,6 +277,8 @@ def generate_report():
     caption_text = (
         f"Tableau : R\u00e9sultats sur l'ensemble de test pour toutes les m\u00e9thodes de fusion "
         f"multimodale ResNet3D (moyenne \u00b1 \u00e9cart-type sur {TARGET_SEEDS} seeds). "
+        f"L'AUC est calcul\u00e9e sur les probabilit\u00e9s moyenn\u00e9es (ensemble), "
+        f"ce qui correspond aux valeurs du test de DeLong. "
         f"Les valeurs en gras indiquent la meilleure performance par m\u00e9trique."
     )
     if n_incomplete > 0:
@@ -319,9 +326,9 @@ def generate_report():
         bold = (row['Spec_mean'] == best_spec and row['complete'])
         set_cell_font(cells[5], text, bold=bold, size=8)
 
-        # AUC
-        text = fmt_auc(row['AUC_mean'], row['AUC_std'], row['complete'])
-        bold = (row['AUC_mean'] == best_auc and row['complete'])
+        # AUC (ensemble = AUC of mean probabilities)
+        text = f"{row['AUC_ensemble']:.3f}"
+        bold = (row['AUC_ensemble'] == best_auc and row['complete'])
         set_cell_font(cells[6], text, bold=bold, size=8)
 
     # ── Test de DeLong ──
