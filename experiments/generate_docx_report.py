@@ -326,8 +326,13 @@ def generate_report():
         bold = (row['Spec_mean'] == best_spec and row['complete'])
         set_cell_font(cells[5], text, bold=bold, size=8)
 
-        # AUC (ensemble = AUC of mean probabilities)
-        text = f"{row['AUC_ensemble']:.3f}"
+        # AUC: ensemble value + per-seed std
+        if row['AUC_std'] is not None:
+            text = f"{row['AUC_ensemble']:.3f} \u00b1 {row['AUC_std']:.3f}"
+        elif not row['complete']:
+            text = f"{row['AUC_ensemble']:.3f}*"
+        else:
+            text = f"{row['AUC_ensemble']:.3f}"
         bold = (row['AUC_ensemble'] == best_auc and row['complete'])
         set_cell_font(cells[6], text, bold=bold, size=8)
 
