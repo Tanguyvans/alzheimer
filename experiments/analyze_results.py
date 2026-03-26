@@ -5,15 +5,16 @@ Post-training analysis: DeLong test, confusion matrices, XAI (GradCAM + feature 
 Run AFTER all training scripts have completed (run_all.sh).
 
 Usage:
-    python analyze_results.py                  # CPU analyses only (DeLong, confusion, ROC, feature importance)
-    python analyze_results.py --gradcam        # include GradCAM (needs GPU + model weights)
+    python analyze_results.py                  # CPU analyses only
+    python analyze_results.py --gradcam        # include GradCAM (needs GPU)
 """
 
 import numpy as np
-import json
+import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 import seaborn as sns
 from pathlib import Path
 from scipy import stats
@@ -38,6 +39,7 @@ REPORT_DIR.mkdir(exist_ok=True)
 def load_predictions():
     """Load all y_true and y_proba arrays from saved .npy files."""
     preds = {}
+    y_true = None
 
     # MLP early fusion
     p = MLP_DIR / "results_early"
@@ -79,7 +81,6 @@ def load_predictions():
 # ═══════════════════════════════════════════════════════
 
 def compute_midrank(x):
-    """Compute midranks for DeLong test."""
     j = np.argsort(x)
     z = x[j]
     n = len(x)
@@ -96,7 +97,7 @@ def compute_midrank(x):
 
 
 def fastDeLong(predictions_sorted_transposed, label_1_count):
-    """Fast DeLong AUC computation (Sun & Xu 2014, corrected)."""
+    """Fast DeLong AUC computation (Sun & Xu 2014)."""
     m = label_1_count
     n = predictions_sorted_transposed.shape[1] - m
     k = predictions_sorted_transposed.shape[0]
@@ -127,20 +128,27 @@ def delong_test(y_true, y_score1, y_score2):
     """Two-sided DeLong test for two correlated ROC AUCs."""
     order = (-y_true).argsort()
     label_1_count = int(y_true.sum())
-
     predictions = np.vstack([y_score1, y_score2])
     predictions_sorted = predictions[:, order]
-
     aucs, S = fastDeLong(predictions_sorted, label_1_count)
     diff = aucs[0] - aucs[1]
     var = S[0, 0] + S[1, 1] - 2 * S[0, 1]
-
     if var <= 0:
         return aucs[0], aucs[1], 0.0, 1.0
-
     z = diff / np.sqrt(var)
     p = 2 * stats.norm.sf(abs(z))
     return aucs[0], aucs[1], z, p
+
+
+def _order_key(name, auc_values):
+    """Sort key: unimodal (0) → early (1) → late (2), then by AUC desc."""
+    if 'only' in name.lower():
+        group = 0
+    elif 'Early' in name:
+        group = 1
+    else:
+        group = 2
+    return (group, -auc_values[name])
 
 
 def run_delong_analysis(y_true, preds):
@@ -149,70 +157,100 @@ def run_delong_analysis(y_true, preds):
     print("DeLong Test - Pairwise AUC comparison")
     print("=" * 60)
 
-    names = list(preds.keys())
-    n = len(names)
-    p_matrix = np.ones((n, n))
-    auc_values = {}
+    # Compute AUCs
+    auc_values = {name: roc_auc_score(y_true, preds[name]) for name in preds}
 
+    # Sort: unimodal → early → late, then by AUC
+    sorted_names = sorted(preds.keys(), key=lambda x: _order_key(x, auc_values))
+    n = len(sorted_names)
+
+    # Pairwise DeLong
+    p_matrix = np.ones((n, n))
     for i in range(n):
-        auc_values[names[i]] = roc_auc_score(y_true, preds[names[i]])
         for j in range(i + 1, n):
-            _, _, z, p_val = delong_test(y_true, preds[names[i]], preds[names[j]])
+            _, _, z, p_val = delong_test(y_true, preds[sorted_names[i]], preds[sorted_names[j]])
             p_matrix[i, j] = p_val
             p_matrix[j, i] = p_val
 
-    # Print AUCs
+    # Print
     print(f"\n{'Method':<20} {'AUC':>6}")
     print("-" * 28)
-    for name in sorted(names, key=lambda x: auc_values[x], reverse=True):
+    for name in sorted(sorted_names, key=lambda x: auc_values[x], reverse=True):
         print(f"{name:<20} {auc_values[name]:.4f}")
 
-    # Significant comparisons
     print("\nSignificant differences (p < 0.05):")
     found = False
     for i in range(n):
         for j in range(i + 1, n):
             if p_matrix[i, j] < 0.05:
                 found = True
-                diff = auc_values[names[i]] - auc_values[names[j]]
-                print(f"  {names[i]} vs {names[j]}: p={p_matrix[i,j]:.4f}, AUC diff={diff:+.4f}")
+                diff = auc_values[sorted_names[i]] - auc_values[sorted_names[j]]
+                print(f"  {sorted_names[i]} vs {sorted_names[j]}: p={p_matrix[i,j]:.4f}, AUC diff={diff:+.4f}")
     if not found:
-        print("  None - all AUC differences are not statistically significant")
+        print("  None")
 
-    # Save p-value heatmap
-    fig, ax = plt.subplots(figsize=(12, 10))
-
-    annot = np.full_like(p_matrix, "", dtype=object)
+    # ── Heatmap ──
+    annot = np.full((n, n), "", dtype=object)
     for i in range(n):
         for j in range(n):
             if i == j:
-                annot[i, j] = f"AUC\n{auc_values[names[i]]:.3f}"
+                annot[i, j] = f"AUC\n{auc_values[sorted_names[i]]:.3f}"
             else:
                 p = p_matrix[i, j]
                 if p < 0.001:
-                    annot[i, j] = f"{p:.1e}\n***"
+                    annot[i, j] = "p<.001\n***"
                 elif p < 0.01:
-                    annot[i, j] = f"{p:.3f}\n**"
+                    annot[i, j] = f"p={p:.3f}\n**"
                 elif p < 0.05:
-                    annot[i, j] = f"{p:.3f}\n*"
+                    annot[i, j] = f"p={p:.3f}\n*"
                 else:
-                    annot[i, j] = f"{p:.3f}\nns"
+                    annot[i, j] = f"p={p:.2f}\nns"
 
-    sns.heatmap(p_matrix, xticklabels=names, yticklabels=names,
-                annot=annot, fmt='', cmap='RdYlGn', vmin=0, vmax=0.1,
-                square=True, ax=ax, cbar_kws={'label': 'p-value'})
-    ax.set_title('DeLong Test - Pairwise p-values\n(* p<0.05, ** p<0.01, *** p<0.001, ns = not significant)',
-                 fontsize=13)
-    plt.xticks(rotation=45, ha='right')
-    plt.yticks(rotation=0)
+    color_matrix = np.full((n, n), np.nan)
+    for i in range(n):
+        for j in range(n):
+            if i != j:
+                color_matrix[i, j] = -np.log10(max(p_matrix[i, j], 1e-10))
+
+    fig, ax = plt.subplots(figsize=(max(10, n * 1.1), max(9, n * 1.0)))
+
+    cmap = LinearSegmentedColormap.from_list(
+        'significance', ['#2ecc71', '#f1c40f', '#e67e22', '#e74c3c', '#8e44ad'], N=256)
+
+    sns.heatmap(color_matrix, xticklabels=sorted_names, yticklabels=sorted_names,
+                annot=annot, fmt='', cmap=cmap, vmin=0, vmax=5,
+                mask=np.eye(n, dtype=bool), square=True, ax=ax,
+                cbar_kws={'label': 'Significativite  (-log10 p)', 'shrink': 0.7},
+                annot_kws={'size': 8},
+                linewidths=1.5, linecolor='white')
+
+    # Diagonal: light gray + bold AUC
+    for i in range(n):
+        ax.add_patch(plt.Rectangle((i, i), 1, 1, fill=True,
+                     facecolor='#ecf0f1', edgecolor='white', lw=1.5))
+        ax.text(i + 0.5, i + 0.5, f"AUC\n{auc_values[sorted_names[i]]:.3f}",
+                ha='center', va='center', fontsize=9, fontweight='bold', color='#2c3e50')
+
+    # Group separators (unimodal / early / late)
+    prev_group = None
+    for i, name in enumerate(sorted_names):
+        g = 0 if 'only' in name.lower() else (1 if 'Early' in name else 2)
+        if prev_group is not None and g != prev_group:
+            ax.axhline(y=i, color='#2c3e50', linewidth=2.5)
+            ax.axvline(x=i, color='#2c3e50', linewidth=2.5)
+        prev_group = g
+
+    ax.set_title('Test de DeLong - Comparaison par paires\n'
+                 '* p<0.05   ** p<0.01   *** p<0.001   ns = non significatif',
+                 fontsize=11, fontweight='bold', pad=12)
+    plt.xticks(rotation=40, ha='right', fontsize=9)
+    plt.yticks(rotation=0, fontsize=9)
     plt.tight_layout()
     fig.savefig(REPORT_DIR / "delong_test.png", dpi=200, bbox_inches='tight')
     plt.close()
     print(f"\nSaved: {REPORT_DIR / 'delong_test.png'}")
 
-    # Save CSV
-    import pandas as pd
-    df = pd.DataFrame(p_matrix, index=names, columns=names)
+    df = pd.DataFrame(p_matrix, index=sorted_names, columns=sorted_names)
     df.to_csv(REPORT_DIR / "delong_pvalues.csv")
     print(f"Saved: {REPORT_DIR / 'delong_pvalues.csv'}")
 
@@ -222,7 +260,6 @@ def run_delong_analysis(y_true, preds):
 # ═══════════════════════════════════════════════════════
 
 def plot_confusion_matrices(y_true, preds):
-    """Plot confusion matrices for all methods."""
     print("\n" + "=" * 60)
     print("Confusion Matrices")
     print("=" * 60)
@@ -240,7 +277,6 @@ def plot_confusion_matrices(y_true, preds):
 
     available = [(key, label) for key, label in methods if key in preds]
     n_methods = len(available)
-
     ncols = 4
     nrows = (n_methods + ncols - 1) // ncols
     fig, axes = plt.subplots(nrows, ncols, figsize=(4.5 * ncols, 4.5 * nrows))
@@ -250,7 +286,6 @@ def plot_confusion_matrices(y_true, preds):
     for idx, (key, label) in enumerate(available):
         row, col = idx // ncols, idx % ncols
         ax = axes[row, col]
-
         y_pred = (preds[key] >= 0.5).astype(int)
         cm = confusion_matrix(y_true, y_pred)
         cm_pct = cm.astype(float) / cm.sum(axis=1, keepdims=True) * 100
@@ -258,8 +293,6 @@ def plot_confusion_matrices(y_true, preds):
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax,
                     xticklabels=['CN', 'AD'], yticklabels=['CN', 'AD'],
                     cbar=False, annot_kws={'size': 16, 'weight': 'bold'}, square=True)
-
-        # Add percentages
         for i in range(2):
             for j in range(2):
                 ax.text(j + 0.5, i + 0.75, f'({cm_pct[i, j]:.1f}%)',
@@ -274,7 +307,9 @@ def plot_confusion_matrices(y_true, preds):
         row, col = idx // ncols, idx % ncols
         axes[row, col].set_visible(False)
 
-    plt.suptitle('Confusion Matrices - Test Set (712 CN, 198 AD)',
+    n_cn = int((y_true == 0).sum())
+    n_ad = int((y_true == 1).sum())
+    plt.suptitle(f'Confusion Matrices - Test Set ({n_cn} CN, {n_ad} AD)',
                  fontsize=14, fontweight='bold', y=1.02)
     plt.tight_layout()
     fig.savefig(REPORT_DIR / "confusion_matrices.png", dpi=200, bbox_inches='tight')
@@ -287,52 +322,40 @@ def plot_confusion_matrices(y_true, preds):
 # ═══════════════════════════════════════════════════════
 
 def plot_roc_curves(y_true, preds):
-    """Plot ROC curves for all methods."""
     print("\n" + "=" * 60)
     print("ROC Curves")
     print("=" * 60)
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
 
-    # ResNet3D + MLP
-    mlp_methods = [
+    def _plot_methods(ax, method_list, title):
+        for key, label, ls, color in method_list:
+            if key in preds:
+                fpr, tpr, _ = roc_curve(y_true, preds[key])
+                auc_val = auc(fpr, tpr)
+                ax.plot(fpr, tpr, ls=ls, color=color, label=f"{label} ({auc_val:.3f})", linewidth=2)
+        ax.plot([0, 1], [0, 1], 'k--', alpha=0.3)
+        ax.set_xlabel('False Positive Rate')
+        ax.set_ylabel('True Positive Rate')
+        ax.set_title(title, fontweight='bold')
+        ax.legend(loc='lower right', fontsize=9)
+        ax.grid(alpha=0.3)
+
+    _plot_methods(ax1, [
         ("MRI only (MLP)", "MRI only", "--", 'gray'),
         ("Tab only (MLP)", "Tabular MLP", "--", 'steelblue'),
         ("MLP Early", "Early Fusion", "-", 'darkorange'),
         ("MLP Late Wt", "Late Weighted", "-", 'green'),
         ("MLP Late Stack", "Late Stacking", "-.", 'purple'),
-    ]
-    for key, label, ls, color in mlp_methods:
-        if key in preds:
-            fpr, tpr, _ = roc_curve(y_true, preds[key])
-            auc_val = auc(fpr, tpr)
-            ax1.plot(fpr, tpr, ls=ls, color=color, label=f"{label} ({auc_val:.3f})", linewidth=2)
-    ax1.plot([0, 1], [0, 1], 'k--', alpha=0.3)
-    ax1.set_xlabel('False Positive Rate')
-    ax1.set_ylabel('True Positive Rate')
-    ax1.set_title('ResNet3D + MLP', fontweight='bold')
-    ax1.legend(loc='lower right', fontsize=9)
-    ax1.grid(alpha=0.3)
+    ], 'ResNet3D + MLP')
 
-    # ResNet3D + XGBoost
-    xgb_methods = [
+    _plot_methods(ax2, [
         ("MRI only (XGB)", "MRI only", "--", 'gray'),
         ("Tab only (XGB)", "Tabular XGBoost", "--", 'steelblue'),
         ("XGB Early", "Early Fusion", "-", 'darkorange'),
         ("XGB Late Wt", "Late Weighted", "-", 'green'),
         ("XGB Late Stack", "Late Stacking", "-.", 'purple'),
-    ]
-    for key, label, ls, color in xgb_methods:
-        if key in preds:
-            fpr, tpr, _ = roc_curve(y_true, preds[key])
-            auc_val = auc(fpr, tpr)
-            ax2.plot(fpr, tpr, ls=ls, color=color, label=f"{label} ({auc_val:.3f})", linewidth=2)
-    ax2.plot([0, 1], [0, 1], 'k--', alpha=0.3)
-    ax2.set_xlabel('False Positive Rate')
-    ax2.set_ylabel('True Positive Rate')
-    ax2.set_title('ResNet3D + XGBoost', fontweight='bold')
-    ax2.legend(loc='lower right', fontsize=9)
-    ax2.grid(alpha=0.3)
+    ], 'ResNet3D + XGBoost')
 
     plt.suptitle('ROC Curves - Test Set', fontsize=14, fontweight='bold')
     plt.tight_layout()
@@ -346,7 +369,6 @@ def plot_roc_curves(y_true, preds):
 # ═══════════════════════════════════════════════════════
 
 def plot_xgboost_importance():
-    """Plot feature importance for XGBoost models."""
     print("\n" + "=" * 60)
     print("XGBoost Feature Importance")
     print("=" * 60)
@@ -359,33 +381,30 @@ def plot_xgboost_importance():
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
-    # 1. Tabular-only XGBoost (from late fusion)
+    # Tabular-only XGBoost
     xgb_tab_path = XGB_DIR / "results_late_fusion" / "xgboost_tabular.json"
     if xgb_tab_path.exists():
         model_tab = xgb.Booster()
         model_tab.load_model(str(xgb_tab_path))
         importance = model_tab.get_score(importance_type='gain')
-
         if importance:
             features = sorted(importance.items(), key=lambda x: x[1])
-            names, values = zip(*features)
-            colors = plt.cm.viridis(np.linspace(0.3, 0.9, len(names)))
-
-            axes[0].barh(range(len(names)), values, color=colors)
-            axes[0].set_yticks(range(len(names)))
-            axes[0].set_yticklabels(names, fontsize=9)
+            feat_names, values = zip(*features)
+            colors = plt.cm.viridis(np.linspace(0.3, 0.9, len(feat_names)))
+            axes[0].barh(range(len(feat_names)), values, color=colors)
+            axes[0].set_yticks(range(len(feat_names)))
+            axes[0].set_yticklabels(feat_names, fontsize=9)
             axes[0].set_xlabel('Gain')
             axes[0].set_title('Tabular XGBoost\n(Late Fusion Branch)', fontweight='bold')
             axes[0].grid(axis='x', alpha=0.3)
         print(f"  Tabular XGBoost: {len(importance)} features")
 
-    # 2. Early fusion XGBoost (embeddings + tabular)
+    # Early fusion XGBoost (embeddings + tabular)
     xgb_early_path = XGB_DIR / "results_finetuned" / "xgboost_model.json"
     if xgb_early_path.exists():
         model_early = xgb.Booster()
         model_early.load_model(str(xgb_early_path))
         importance = model_early.get_score(importance_type='gain')
-
         if importance:
             cnn_gain = sum(v for k, v in importance.items() if k.startswith('cnn_'))
             tab_features = {k: v for k, v in importance.items() if not k.startswith('cnn_')}
@@ -394,12 +413,12 @@ def plot_xgboost_importance():
             combined = {'CNN embeddings\n(2048-d aggregate)': cnn_gain}
             combined.update(tab_features)
             features = sorted(combined.items(), key=lambda x: x[1])
-            names, values = zip(*features)
-            colors = ['#e74c3c' if 'CNN' in n else '#3498db' for n in names]
+            feat_names, values = zip(*features)
+            colors = ['#e74c3c' if 'CNN' in n else '#3498db' for n in feat_names]
 
-            axes[1].barh(range(len(names)), values, color=colors)
-            axes[1].set_yticks(range(len(names)))
-            axes[1].set_yticklabels(names, fontsize=9)
+            axes[1].barh(range(len(feat_names)), values, color=colors)
+            axes[1].set_yticks(range(len(feat_names)))
+            axes[1].set_yticklabels(feat_names, fontsize=9)
             axes[1].set_xlabel('Gain')
             axes[1].set_title('Early Fusion XGBoost\n(CNN emb + Tabular)', fontweight='bold')
             axes[1].grid(axis='x', alpha=0.3)
@@ -422,32 +441,26 @@ def plot_xgboost_importance():
 # ═══════════════════════════════════════════════════════
 
 def gradcam_resnet3d():
-    """Generate GradCAM heatmaps for ResNet3D predictions."""
     print("\n" + "=" * 60)
     print("GradCAM - ResNet3D Explainability")
     print("=" * 60)
 
     import torch
-    import torch.nn as nn
     import yaml
     import importlib.util
-    from torch.utils.data import DataLoader
     from scipy.ndimage import zoom
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"Using device: {device}")
 
-    # Import model
     _spec = importlib.util.spec_from_file_location("model", MLP_DIR / "model.py")
     _mod = importlib.util.module_from_spec(_spec)
     _spec.loader.exec_module(_mod)
 
-    # Import dataset
     _spec_ds = importlib.util.spec_from_file_location("dataset", BASE / "multimodal_fusion" / "dataset.py")
     _ds_mod = importlib.util.module_from_spec(_spec_ds)
     _spec_ds.loader.exec_module(_ds_mod)
 
-    # Load config
     with open(MLP_DIR / "config.yaml") as f:
         config = yaml.safe_load(f)
 
@@ -455,7 +468,6 @@ def gradcam_resnet3d():
     target_shape = tuple(preproc.get('target_shape', [128, 128, 128]))
     tabular_features = config['data']['tabular_features']
 
-    # Load model
     model_path = MLP_DIR / "results_early" / "best_model.pth"
     if not model_path.exists():
         print("  No early fusion model found, skipping GradCAM.")
@@ -474,7 +486,6 @@ def gradcam_resnet3d():
     model = model.to(device)
     model.eval()
 
-    # Hooks
     activations = {}
     gradients = {}
 
@@ -488,7 +499,6 @@ def gradcam_resnet3d():
     fwd_handle = target_layer.register_forward_hook(forward_hook)
     bwd_handle = target_layer.register_full_backward_hook(backward_hook)
 
-    # Load test dataset with proper scaler
     train_dataset = _ds_mod.MultiModalDataset(
         config['data']['train_csv'], tabular_features=tabular_features,
         target_shape=target_shape, augment=False, normalize_tabular=True,
@@ -504,7 +514,6 @@ def gradcam_resnet3d():
         target_spacing=preproc.get('target_spacing', 1.75)
     )
 
-    # Collect examples: TP, TN, FP, FN
     examples = {'TP': [], 'TN': [], 'FP': [], 'FN': []}
     target_counts = {'TP': 3, 'TN': 3, 'FP': 2, 'FN': 2}
 
@@ -534,9 +543,7 @@ def gradcam_resnet3d():
         if len(examples[cat]) >= target_counts[cat]:
             continue
 
-        # Backward for AD class
         output[0, 1].backward()
-
         grads = gradients['value']
         acts = activations['value']
         weights = grads.mean(dim=[2, 3, 4], keepdim=True)
@@ -558,7 +565,6 @@ def gradcam_resnet3d():
     fwd_handle.remove()
     bwd_handle.remove()
 
-    # Plot
     all_examples = []
     for cat in ['TP', 'TN', 'FP', 'FN']:
         all_examples.extend([(cat, ex) for ex in examples[cat]])
@@ -573,7 +579,6 @@ def gradcam_resnet3d():
         axes = axes.reshape(1, -1)
 
     slice_names = ['Sagittal', 'Coronal', 'Axial']
-
     for row, (cat, ex) in enumerate(all_examples):
         mri = ex['mri']
         cam = ex['cam']
@@ -589,7 +594,6 @@ def gradcam_resnet3d():
             ax.imshow(slices_mri[col].T, cmap='gray', origin='lower', aspect='auto')
             ax.imshow(slices_cam[col].T, cmap='jet', alpha=0.4, origin='lower', aspect='auto')
             ax.axis('off')
-
             if col == 0:
                 color = 'green' if cat in ('TP', 'TN') else 'red'
                 ax.set_ylabel(f'{cat}\nTrue={true_label}\nPred={pred_label}\np(AD)={ex["prob"]:.2f}',
@@ -615,12 +619,9 @@ def gradcam_resnet3d():
 # ═══════════════════════════════════════════════════════
 
 def generate_summary(y_true, preds):
-    """Print and save summary comparison table."""
     print("\n" + "=" * 60)
     print("SUMMARY TABLE")
     print("=" * 60)
-
-    import pandas as pd
 
     rows = []
     for method, y_proba in preds.items():
@@ -654,27 +655,16 @@ if __name__ == '__main__':
     print("ResNet3D Fusion - Post-training Analysis")
     print("=" * 60)
 
-    # Load all predictions
     print("Loading predictions...")
     y_true, preds = load_predictions()
     print(f"Loaded {len(preds)} methods, {len(y_true)} test samples\n")
 
-    # 1. Summary
     generate_summary(y_true, preds)
-
-    # 2. DeLong test
     run_delong_analysis(y_true, preds)
-
-    # 3. Confusion matrices
     plot_confusion_matrices(y_true, preds)
-
-    # 4. ROC curves
     plot_roc_curves(y_true, preds)
-
-    # 5. XGBoost feature importance
     plot_xgboost_importance()
 
-    # 6. GradCAM (optional)
     if args.gradcam:
         gradcam_resnet3d()
     else:

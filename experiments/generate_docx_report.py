@@ -34,6 +34,8 @@ def load_all_seeds():
         if method not in all_preds:
             all_preds[method] = []
             seed_counts[method] = []
+        if len(all_preds[method]) >= TARGET_SEEDS:
+            return  # cap at TARGET_SEEDS
         all_preds[method].append(proba)
         seed_counts[method].append(seed)
 

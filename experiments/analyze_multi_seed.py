@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Multi-seed analysis: aggregate results across 15 seeds, DeLong tests, GradCAM.
+Multi-seed analysis: aggregate results across seeds, DeLong tests, GradCAM.
 
-Loads predictions from seed_0..seed_14 subdirectories, computes mean +/- std
+Loads predictions from seed_* subdirectories, computes mean +/- std
 for all metrics, runs DeLong tests on mean probabilities, and GradCAM from
-the best-AUC seed.
+the best-AUC seed. Methods with fewer than EXPECTED_SEEDS seeds show NaN.
 
 Usage:
     python analyze_multi_seed.py                  # CPU analyses only
@@ -33,7 +33,8 @@ XGB_DIR = BASE / "resnet3d_xgboost"
 REPORT_DIR = BASE / "report_multi_seed"
 REPORT_DIR.mkdir(exist_ok=True)
 
-MAX_SEED = 20  # scan up to seed_20
+MAX_SEED = 20   # scan up to seed_20
+EXPECTED_SEEDS = 5  # number of seeds expected per method
 
 
 # ═══════════════════════════════════════════════════════
@@ -66,6 +67,8 @@ def load_all_seeds():
         if method not in all_preds:
             all_preds[method] = []
             seed_counts[method] = []
+        if len(all_preds[method]) >= EXPECTED_SEEDS:
+            return  # cap at EXPECTED_SEEDS
         all_preds[method].append(proba)
         seed_counts[method].append(seed)
 
@@ -202,14 +205,14 @@ def plot_boxplots(metrics_df):
                 palette='viridis', orient='h')
     sns.stripplot(data=metrics_df, x='AUC', y='Method', order=order, ax=ax1,
                   color='black', size=3, alpha=0.5, orient='h')
-    ax1.set_title('AUC Distribution (15 seeds)', fontweight='bold')
+    ax1.set_title(f'AUC Distribution ({EXPECTED_SEEDS} seeds)', fontweight='bold')
     ax1.grid(axis='x', alpha=0.3)
 
     sns.boxplot(data=metrics_df, x='Bal Acc', y='Method', order=order, ax=ax2,
                 palette='viridis', orient='h')
     sns.stripplot(data=metrics_df, x='Bal Acc', y='Method', order=order, ax=ax2,
                   color='black', size=3, alpha=0.5, orient='h')
-    ax2.set_title('Balanced Accuracy Distribution (15 seeds)', fontweight='bold')
+    ax2.set_title(f'Balanced Accuracy Distribution ({EXPECTED_SEEDS} seeds)', fontweight='bold')
     ax2.set_xlabel('Balanced Accuracy (%)')
     ax2.grid(axis='x', alpha=0.3)
 
@@ -296,7 +299,7 @@ def run_delong_analysis(y_true, all_preds, seed_counts=None):
         else:
             n_seeds[method] = len(all_preds[method])
 
-    MIN_SEEDS_FOR_DELONG = 2  # need at least 2 seeds for a reliable comparison
+    MIN_SEEDS_FOR_DELONG = EXPECTED_SEEDS  # need all expected seeds for comparison
 
     # Compute mean probabilities across seeds
     mean_preds = {}
@@ -318,11 +321,11 @@ def run_delong_analysis(y_true, all_preds, seed_counts=None):
                 p_matrix[i, j] = p_val
                 p_matrix[j, i] = p_val
 
-    # Display names: only add suffix for incomplete (single-seed) methods
+    # Display names: add suffix for incomplete methods
     display_names = []
     for name in names:
         if n_seeds[name] < MIN_SEEDS_FOR_DELONG:
-            display_names.append(f"{name} (1 seed)")
+            display_names.append(f"{name} ({n_seeds[name]}/{EXPECTED_SEEDS} seeds)")
         else:
             display_names.append(name)
 
@@ -344,36 +347,110 @@ def run_delong_analysis(y_true, all_preds, seed_counts=None):
     if not found:
         print("  None - all AUC differences are not statistically significant")
 
-    # Heatmap
-    fig, ax = plt.subplots(figsize=(12, 10))
-    # Use a masked array for NaN values (will appear as white cells)
-    p_display = np.where(np.isnan(p_matrix), 0.5, p_matrix)  # neutral color for NaN
-    annot = np.full_like(p_matrix, "", dtype=object)
-    for i in range(n):
-        for j in range(n):
-            if i == j:
-                annot[i, j] = f"AUC\n{auc_values[names[i]]:.3f}"
-            elif np.isnan(p_matrix[i, j]):
-                annot[i, j] = "N/A"
-            else:
-                p = p_matrix[i, j]
-                if p < 0.001:
-                    annot[i, j] = f"{p:.1e}\n***"
-                elif p < 0.01:
-                    annot[i, j] = f"{p:.3f}\n**"
-                elif p < 0.05:
-                    annot[i, j] = f"{p:.3f}\n*"
-                else:
-                    annot[i, j] = f"{p:.3f}\nns"
+    # ── Heatmap: all methods, ordered by category then AUC ──
+    from matplotlib.colors import LinearSegmentedColormap
 
-    sns.heatmap(p_display, xticklabels=display_names, yticklabels=display_names,
-                annot=annot, fmt='', cmap='RdYlGn', vmin=0, vmax=0.1,
-                square=True, ax=ax, cbar_kws={'label': 'p-value'})
-    ax.set_title('DeLong Test (mean probabilities)\n'
-                 '(* p<0.05, ** p<0.01, *** p<0.001, ns = not significant, N/A = single seed)',
-                 fontsize=13)
-    plt.xticks(rotation=45, ha='right')
-    plt.yticks(rotation=0)
+    # Logical ordering: unimodal → early fusion → late fusion
+    def _order_key(name):
+        if 'only' in name.lower():
+            group = 0  # unimodal
+        elif 'Early' in name:
+            group = 1  # early fusion
+        else:
+            group = 2  # late fusion
+        return (group, -auc_values[name])
+
+    sorted_names = sorted(names, key=_order_key)
+    nc = len(sorted_names)
+
+    # Reorder p_matrix — compute DeLong for ALL pairs (including 1-seed methods)
+    idx_map = [names.index(s) for s in sorted_names]
+    p_sorted = np.full((nc, nc), np.nan)
+    for i in range(nc):
+        p_sorted[i, i] = 1.0
+        for j in range(i + 1, nc):
+            ci, cj = idx_map[i], idx_map[j]
+            # Compute DeLong for all pairs (even 1-seed methods)
+            _, _, z, p_val = delong_test(y_true, mean_preds[sorted_names[i]], mean_preds[sorted_names[j]])
+            p_sorted[i, j] = p_val
+            p_sorted[j, i] = p_val
+
+    # Labels: mark 1-seed methods
+    labels = []
+    for name in sorted_names:
+        if n_seeds[name] < EXPECTED_SEEDS:
+            labels.append(f"{name} (1 seed)")
+        else:
+            labels.append(name)
+
+    # Annotations
+    annot = np.full((nc, nc), "", dtype=object)
+    for i in range(nc):
+        for j in range(nc):
+            if i == j:
+                annot[i, j] = f"AUC\n{auc_values[sorted_names[i]]:.3f}"
+            else:
+                p = p_sorted[i, j]
+                if p < 0.001:
+                    annot[i, j] = "p<.001\n***"
+                elif p < 0.01:
+                    annot[i, j] = f"p={p:.3f}\n**"
+                elif p < 0.05:
+                    annot[i, j] = f"p={p:.3f}\n*"
+                else:
+                    annot[i, j] = f"p={p:.2f}\nns"
+
+    # Color matrix: -log10(p), diagonal masked
+    color_matrix = np.full((nc, nc), np.nan)
+    for i in range(nc):
+        for j in range(nc):
+            if i != j:
+                color_matrix[i, j] = -np.log10(max(p_sorted[i, j], 1e-10))
+
+    mask = np.eye(nc, dtype=bool)
+
+    fig, ax = plt.subplots(figsize=(max(10, nc * 1.1), max(9, nc * 1.0)))
+
+    colors_list = ['#2ecc71', '#f1c40f', '#e67e22', '#e74c3c', '#8e44ad']
+    cmap = LinearSegmentedColormap.from_list('significance', colors_list, N=256)
+
+    sns.heatmap(color_matrix, xticklabels=labels, yticklabels=labels,
+                annot=annot, fmt='', cmap=cmap, vmin=0, vmax=5,
+                mask=mask, square=True, ax=ax,
+                cbar_kws={'label': 'Significativite  (-log10 p)', 'shrink': 0.7},
+                annot_kws={'size': 8},
+                linewidths=1.5, linecolor='white')
+
+    # Diagonal cells: light gray + bold AUC
+    for i in range(nc):
+        ax.add_patch(plt.Rectangle((i, i), 1, 1, fill=True,
+                     facecolor='#ecf0f1', edgecolor='white', lw=1.5))
+        ax.text(i + 0.5, i + 0.5, f"AUC\n{auc_values[sorted_names[i]]:.3f}",
+                ha='center', va='center', fontsize=9, fontweight='bold', color='#2c3e50')
+
+    # Group separators (thick lines between unimodal / early / late)
+    group_boundaries = []
+    prev_group = None
+    for i, name in enumerate(sorted_names):
+        if 'only' in name.lower():
+            g = 0
+        elif 'Early' in name:
+            g = 1
+        else:
+            g = 2
+        if prev_group is not None and g != prev_group:
+            group_boundaries.append(i)
+        prev_group = g
+    for b in group_boundaries:
+        ax.axhline(y=b, color='#2c3e50', linewidth=2.5)
+        ax.axvline(x=b, color='#2c3e50', linewidth=2.5)
+
+    ax.set_title(f'Test de DeLong - Comparaison par paires\n'
+                 f'(probabilites moyennees sur {EXPECTED_SEEDS} seeds)\n'
+                 f'* p<0.05   ** p<0.01   *** p<0.001   ns = non significatif',
+                 fontsize=11, fontweight='bold', pad=12)
+    plt.xticks(rotation=40, ha='right', fontsize=9)
+    plt.yticks(rotation=0, fontsize=9)
     plt.tight_layout()
     fig.savefig(REPORT_DIR / "delong_test.png", dpi=200, bbox_inches='tight')
     plt.close()
@@ -453,7 +530,7 @@ def plot_roc_curves(y_true, all_preds):
     ax2.legend(loc='lower right', fontsize=8)
     ax2.grid(alpha=0.3)
 
-    plt.suptitle('ROC Curves (mean +/- std, 15 seeds)', fontsize=14, fontweight='bold')
+    plt.suptitle(f'ROC Curves (mean +/- std, {EXPECTED_SEEDS} seeds)', fontsize=14, fontweight='bold')
     plt.tight_layout()
     fig.savefig(REPORT_DIR / "roc_curves.png", dpi=200, bbox_inches='tight')
     plt.close()
@@ -729,7 +806,7 @@ if __name__ == '__main__':
     parser.add_argument('--gradcam', action='store_true', help='Include GradCAM (needs GPU)')
     args = parser.parse_args()
 
-    print("ResNet3D Fusion - Multi-Seed Analysis (15 seeds)")
+    print(f"ResNet3D Fusion - Multi-Seed Analysis ({EXPECTED_SEEDS} seeds)")
     print("=" * 60)
 
     # Load all seeds
