@@ -81,7 +81,7 @@ def load_all_seeds():
         p = MLP_DIR / "results_late_fusion" / f"seed_{seed}"
         if (p / "y_true_test.npy").exists():
             yt = np.load(p / "y_true_test.npy")
-            _add("MRI only (MLP)", seed, np.load(p / "y_proba_mri_test.npy"), yt)
+            # MRI only (MLP) skipped — redundant with MRI only
             _add("Tab only (MLP)", seed, np.load(p / "y_proba_tab_test.npy"), yt)
             _add("MLP Late Avg", seed, np.load(p / "y_proba_avg_test.npy"), yt)
             _add("MLP Late Wt", seed, np.load(p / "y_proba_weighted_test.npy"), yt)
@@ -99,7 +99,7 @@ def load_all_seeds():
         p = XGB_DIR / "results_late_fusion" / f"seed_{seed}"
         if (p / "y_true_test.npy").exists():
             yt = np.load(p / "y_true_test.npy")
-            _add("MRI only (XGB)", seed, np.load(p / "y_proba_mri_test.npy"), yt)
+            _add("MRI only", seed, np.load(p / "y_proba_mri_test.npy"), yt)
             _add("Tab only (XGB)", seed, np.load(p / "y_proba_tab_test.npy"), yt)
             _add("XGB Late Avg", seed, np.load(p / "y_proba_avg_test.npy"), yt)
             _add("XGB Late Wt", seed, np.load(p / "y_proba_weighted_test.npy"), yt)
@@ -240,20 +240,30 @@ def compute_midrank(x):
 
 
 def fastDeLong(predictions_sorted_transposed, label_1_count):
+    """Fast DeLong AUC computation (Sun & Xu 2014, corrected)."""
     m = label_1_count
     n = predictions_sorted_transposed.shape[1] - m
     k = predictions_sorted_transposed.shape[0]
-    aucs = np.zeros(k)
-    score = np.zeros((k, m))
-    score_n = np.zeros((k, n))
-    for j in range(k):
-        r = compute_midrank(predictions_sorted_transposed[j, :])
-        aucs[j] = (np.sum(r[:m]) - m * (m + 1) / 2.0) / (m * n)
-        score[j] = r[:m] - np.arange(1, m + 1)
-        score_n[j] = r[m:] - np.arange(1, n + 1)
-    S10 = np.cov(score) if k > 1 else np.atleast_2d(np.var(score, axis=1))
-    S01 = np.cov(score_n) if k > 1 else np.atleast_2d(np.var(score_n, axis=1))
-    S = S10 / m + S01 / n
+
+    positive_examples = predictions_sorted_transposed[:, :m]
+    negative_examples = predictions_sorted_transposed[:, m:]
+
+    tx = np.empty([k, m], dtype=np.float64)
+    ty = np.empty([k, n], dtype=np.float64)
+    tz = np.empty([k, m + n], dtype=np.float64)
+
+    for r in range(k):
+        tx[r, :] = compute_midrank(positive_examples[r, :])
+        ty[r, :] = compute_midrank(negative_examples[r, :])
+        tz[r, :] = compute_midrank(predictions_sorted_transposed[r, :])
+
+    aucs = tz[:, :m].sum(axis=1) / m / n - float(m + 1.0) / 2.0 / n
+    v01 = (tz[:, :m] - tx) / n
+    v10 = 1.0 - (tz[:, m:] - ty) / m
+
+    sx = np.cov(v01) if k > 1 else np.atleast_2d(np.var(v01, axis=1))
+    sy = np.cov(v10) if k > 1 else np.atleast_2d(np.var(v10, axis=1))
+    S = sx / m + sy / n
     return aucs, S
 
 
@@ -308,13 +318,13 @@ def run_delong_analysis(y_true, all_preds, seed_counts=None):
                 p_matrix[i, j] = p_val
                 p_matrix[j, i] = p_val
 
-    # Display names with seed count suffix for single-seed methods
+    # Display names: only add suffix for incomplete (single-seed) methods
     display_names = []
     for name in names:
         if n_seeds[name] < MIN_SEEDS_FOR_DELONG:
             display_names.append(f"{name} (1 seed)")
         else:
-            display_names.append(f"{name} ({n_seeds[name]} seeds)")
+            display_names.append(name)
 
     # Print
     print(f"\n{'Method':<30} {'AUC (mean proba)':>16} {'Seeds':>6}")
@@ -397,7 +407,7 @@ def plot_roc_curves(y_true, all_preds):
         ("MLP Late Stack", "Late Stacking", "-.", 'purple'),
     ]
     xgb_methods = [
-        ("MRI only (XGB)", "MRI only", "--", 'gray'),
+        ("MRI only", "MRI only", "--", 'gray'),
         ("Tab only (XGB)", "Tabular XGBoost", "--", 'steelblue'),
         ("XGB Early", "Early Fusion", "-", 'darkorange'),
         ("XGB Late Wt", "Late Weighted", "-", 'green'),
@@ -461,7 +471,7 @@ def plot_confusion_matrices(y_true, mean_preds):
     print("=" * 60)
 
     methods = [
-        ("MRI only (XGB)", "MRI only\n(ResNet3D)"),
+        ("MRI only", "MRI only\n(ResNet3D)"),
         ("Tab only (XGB)", "Tabular only\n(XGBoost)"),
         ("Tab only (MLP)", "Tabular only\n(MLP)"),
         ("XGB Early", "Early Fusion\n(ResNet3D+XGB)"),

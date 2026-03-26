@@ -47,7 +47,7 @@ def load_all_seeds():
         p = MLP_DIR / "results_late_fusion" / f"seed_{seed}"
         if (p / "y_true_test.npy").exists():
             yt = np.load(p / "y_true_test.npy")
-            _add("MRI only (MLP)", seed, np.load(p / "y_proba_mri_test.npy"), yt)
+            # MRI only (MLP) skipped — redundant with MRI only
             _add("Tab only (MLP)", seed, np.load(p / "y_proba_tab_test.npy"), yt)
             _add("MLP Late Avg", seed, np.load(p / "y_proba_avg_test.npy"), yt)
             _add("MLP Late Wt", seed, np.load(p / "y_proba_weighted_test.npy"), yt)
@@ -63,7 +63,7 @@ def load_all_seeds():
         p = XGB_DIR / "results_late_fusion" / f"seed_{seed}"
         if (p / "y_true_test.npy").exists():
             yt = np.load(p / "y_true_test.npy")
-            _add("MRI only (XGB)", seed, np.load(p / "y_proba_mri_test.npy"), yt)
+            _add("MRI only", seed, np.load(p / "y_proba_mri_test.npy"), yt)
             _add("Tab only (XGB)", seed, np.load(p / "y_proba_tab_test.npy"), yt)
             _add("XGB Late Avg", seed, np.load(p / "y_proba_avg_test.npy"), yt)
             _add("XGB Late Wt", seed, np.load(p / "y_proba_weighted_test.npy"), yt)
@@ -77,8 +77,7 @@ def compute_metrics(y_true, all_preds, seed_counts):
     rows = []
 
     method_info = [
-        ("MRI only (XGB)",  "IRM seule (ResNet3D)",           "\u2014"),
-        ("MRI only (MLP)",  "IRM seule (ResNet3D)",           "\u2014"),
+        ("MRI only",        "IRM seule (ResNet3D)",           "\u2014"),
         ("Tab only (XGB)",  "Tabulaire seul (XGBoost)",       "\u2014"),
         ("Tab only (MLP)",  "Tabulaire seul (MLP)",           "\u2014"),
         ("MLP Early",       "ResNet3D + MLP concat",          "Early"),

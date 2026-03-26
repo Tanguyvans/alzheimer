@@ -96,24 +96,30 @@ def compute_midrank(x):
 
 
 def fastDeLong(predictions_sorted_transposed, label_1_count):
-    """Fast DeLong AUC computation."""
+    """Fast DeLong AUC computation (Sun & Xu 2014, corrected)."""
     m = label_1_count
     n = predictions_sorted_transposed.shape[1] - m
     k = predictions_sorted_transposed.shape[0]
 
-    aucs = np.zeros(k)
-    score = np.zeros((k, m))
-    score_n = np.zeros((k, n))
+    positive_examples = predictions_sorted_transposed[:, :m]
+    negative_examples = predictions_sorted_transposed[:, m:]
 
-    for j in range(k):
-        r = compute_midrank(predictions_sorted_transposed[j, :])
-        aucs[j] = (np.sum(r[:m]) - m * (m + 1) / 2.0) / (m * n)
-        score[j] = r[:m] - np.arange(1, m + 1)
-        score_n[j] = r[m:] - np.arange(1, n + 1)
+    tx = np.empty([k, m], dtype=np.float64)
+    ty = np.empty([k, n], dtype=np.float64)
+    tz = np.empty([k, m + n], dtype=np.float64)
 
-    S10 = np.cov(score) if k > 1 else np.atleast_2d(np.var(score, axis=1))
-    S01 = np.cov(score_n) if k > 1 else np.atleast_2d(np.var(score_n, axis=1))
-    S = S10 / m + S01 / n
+    for r in range(k):
+        tx[r, :] = compute_midrank(positive_examples[r, :])
+        ty[r, :] = compute_midrank(negative_examples[r, :])
+        tz[r, :] = compute_midrank(predictions_sorted_transposed[r, :])
+
+    aucs = tz[:, :m].sum(axis=1) / m / n - float(m + 1.0) / 2.0 / n
+    v01 = (tz[:, :m] - tx) / n
+    v10 = 1.0 - (tz[:, m:] - ty) / m
+
+    sx = np.cov(v01) if k > 1 else np.atleast_2d(np.var(v01, axis=1))
+    sy = np.cov(v10) if k > 1 else np.atleast_2d(np.var(v10, axis=1))
+    S = sx / m + sy / n
     return aucs, S
 
 
