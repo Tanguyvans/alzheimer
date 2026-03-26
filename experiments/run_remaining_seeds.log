@@ -1,0 +1,1871 @@
+nohup: les entrées sont ignorées
+============================================
+Remaining experiments (5 seeds each)
+Seeds: 0 1 2 3 4
+Total runs: 15
+Started: dim 22 mar 2026 14:07:02 CET
+============================================
+
+==========================================
+2/4 — XGBoost Late Fusion (5 seeds)
+==========================================
+[14:07:02] Seed 0 ...
+[0;93m2026-03-22 14:07:04.306083317 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"[m
+INFO:__main__:Loading datasets...
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:multimodal_fusion_dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 101 missing values in 'CATANIMSC' with 21.00
+INFO:multimodal_fusion_dataset:Filled 102 missing values in 'TRAASCOR' with 30.00
+INFO:multimodal_fusion_dataset:Filled 107 missing values in 'TRABSCOR' with 73.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 167 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 26 missing values in 'VSWEIGHT' with 166.00
+INFO:multimodal_fusion_dataset:Filled 1 missing values in 'BMI' with 27.80
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:multimodal_fusion_dataset:Filled 6 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 91 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 92 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 100 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 179 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 33 missing values in 'VSWEIGHT' with 164.00
+INFO:multimodal_fusion_dataset:Filled 2 missing values in 'BMI' with 28.20
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:__main__:============================================================
+INFO:__main__:BRANCH 1: ResNet3D on MRI
+INFO:__main__:============================================================
+INFO:monai.networks.nets.resnet:Loading MedicalNet pretrained model from https://huggingface.co/TencentMedicalNet/MedicalNet-Resnet50
+INFO:monai.networks.nets.resnet:resnet_50_23dataset.pth downloaded
+INFO:__main__:Backbone frozen for first 3 epochs
+INFO:__main__:Epoch 1/30: train_acc=54.7%  val_acc=46.7% val_bal_acc=57.6% val_auc=0.591 [frozen]
+INFO:__main__:Epoch 2/30: train_acc=51.7%  val_acc=55.6% val_bal_acc=55.6% val_auc=0.591 [frozen]
+INFO:__main__:Epoch 3/30: train_acc=53.3%  val_acc=54.1% val_bal_acc=57.3% val_auc=0.592 [frozen]
+INFO:__main__:Backbone unfrozen at epoch 4
+INFO:__main__:Epoch 4/30: train_acc=77.2%  val_acc=83.4% val_bal_acc=72.8% val_auc=0.825
+INFO:__main__:Epoch 5/30: train_acc=82.2%  val_acc=81.2% val_bal_acc=77.2% val_auc=0.854
+INFO:__main__:Epoch 6/30: train_acc=83.6%  val_acc=86.4% val_bal_acc=78.3% val_auc=0.894
+INFO:__main__:Epoch 7/30: train_acc=85.1%  val_acc=87.5% val_bal_acc=78.1% val_auc=0.903
+INFO:__main__:Epoch 8/30: train_acc=87.1%  val_acc=88.0% val_bal_acc=77.4% val_auc=0.902
+INFO:__main__:Epoch 9/30: train_acc=86.5%  val_acc=88.9% val_bal_acc=79.2% val_auc=0.916
+INFO:__main__:Epoch 10/30: train_acc=88.0%  val_acc=87.4% val_bal_acc=74.4% val_auc=0.901
+INFO:__main__:Epoch 11/30: train_acc=88.3%  val_acc=88.9% val_bal_acc=77.4% val_auc=0.909
+INFO:__main__:Epoch 12/30: train_acc=88.4%  val_acc=88.6% val_bal_acc=78.8% val_auc=0.913
+INFO:__main__:Epoch 13/30: train_acc=89.4%  val_acc=89.0% val_bal_acc=83.1% val_auc=0.917
+INFO:__main__:Epoch 14/30: train_acc=89.8%  val_acc=88.5% val_bal_acc=83.3% val_auc=0.926
+INFO:__main__:Epoch 15/30: train_acc=90.0%  val_acc=88.5% val_bal_acc=78.2% val_auc=0.923
+INFO:__main__:Epoch 16/30: train_acc=90.1%  val_acc=89.1% val_bal_acc=82.5% val_auc=0.922
+INFO:__main__:Epoch 17/30: train_acc=90.8%  val_acc=89.0% val_bal_acc=83.1% val_auc=0.918
+INFO:__main__:Epoch 18/30: train_acc=91.3%  val_acc=88.6% val_bal_acc=78.3% val_auc=0.924
+INFO:__main__:Epoch 19/30: train_acc=91.5%  val_acc=90.0% val_bal_acc=83.8% val_auc=0.927
+INFO:__main__:Epoch 20/30: train_acc=91.9%  val_acc=86.2% val_bal_acc=85.7% val_auc=0.930
+INFO:__main__:Epoch 21/30: train_acc=92.6%  val_acc=89.0% val_bal_acc=84.6% val_auc=0.930
+INFO:__main__:Epoch 22/30: train_acc=93.0%  val_acc=88.7% val_bal_acc=84.2% val_auc=0.924
+INFO:__main__:Epoch 23/30: train_acc=92.8%  val_acc=89.2% val_bal_acc=84.4% val_auc=0.921
+INFO:__main__:Epoch 24/30: train_acc=92.8%  val_acc=89.5% val_bal_acc=84.5% val_auc=0.928
+INFO:__main__:Epoch 25/30: train_acc=93.7%  val_acc=89.7% val_bal_acc=81.2% val_auc=0.933
+INFO:__main__:Epoch 26/30: train_acc=94.0%  val_acc=89.6% val_bal_acc=84.8% val_auc=0.928
+INFO:__main__:Epoch 27/30: train_acc=93.9%  val_acc=89.7% val_bal_acc=84.1% val_auc=0.932
+INFO:__main__:Epoch 28/30: train_acc=93.9%  val_acc=89.5% val_bal_acc=85.8% val_auc=0.929
+INFO:__main__:Epoch 29/30: train_acc=94.4%  val_acc=89.5% val_bal_acc=84.7% val_auc=0.930
+INFO:__main__:Epoch 30/30: train_acc=94.4%  val_acc=89.8% val_bal_acc=83.8% val_auc=0.931
+INFO:__main__:Best val balanced accuracy: 85.8%
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:__main__:Getting MRI probabilities...
+INFO:__main__:
+BRANCH 1 — MRI only (TEST):
+INFO:__main__:  Accuracy:     87.5%
+INFO:__main__:  Balanced Acc: 82.2%
+INFO:__main__:  Sensitivity:  72.7%
+INFO:__main__:  Specificity:  91.6%
+INFO:__main__:  AUC:          0.908
+INFO:__main__:  Confusion:    [[652, 60], [54, 144]]
+INFO:__main__:
+============================================================
+INFO:__main__:BRANCH 2: XGBoost on Tabular features only
+INFO:__main__:============================================================
+INFO:__main__:Training XGBoost (tabular only)...
+[0]	train-logloss:0.64164	val-logloss:0.63982
+[50]	train-logloss:0.21109	val-logloss:0.31900
+[86]	train-logloss:0.16003	val-logloss:0.31795
+INFO:__main__:
+BRANCH 2 — Tabular only (TEST):
+INFO:__main__:  Accuracy:     89.1%
+INFO:__main__:  Balanced Acc: 85.8%
+INFO:__main__:  Sensitivity:  79.8%
+INFO:__main__:  Specificity:  91.7%
+INFO:__main__:  AUC:          0.939
+INFO:__main__:  Confusion:    [[653, 59], [40, 158]]
+INFO:__main__:
+============================================================
+INFO:__main__:LATE FUSION: Combining predictions
+INFO:__main__:============================================================
+INFO:__main__:
+LATE FUSION — Simple Average (TEST):
+INFO:__main__:  Accuracy:     90.2%
+INFO:__main__:  Balanced Acc: 85.0%
+INFO:__main__:  Sensitivity:  75.8%
+INFO:__main__:  Specificity:  94.2%
+INFO:__main__:  AUC:          0.948
+INFO:__main__:  Confusion:    [[671, 41], [48, 150]]
+INFO:__main__:
+Best weight (MRI): 0.45 (val AUC: 0.960)
+INFO:__main__:
+LATE FUSION — Weighted Average w_mri=0.45 (TEST):
+INFO:__main__:  Accuracy:     92.5%
+INFO:__main__:  Balanced Acc: 88.3%
+INFO:__main__:  Sensitivity:  80.8%
+INFO:__main__:  Specificity:  95.8%
+INFO:__main__:  AUC:          0.951
+INFO:__main__:  Confusion:    [[682, 30], [38, 160]]
+INFO:__main__:
+Stacking weights: MRI=1.985, Tab=1.930, bias=-2.724
+INFO:__main__:
+LATE FUSION — Learned Stacking C=0.01 (TEST):
+INFO:__main__:  Accuracy:     90.9%
+INFO:__main__:  Balanced Acc: 82.0%
+INFO:__main__:  Sensitivity:  66.2%
+INFO:__main__:  Specificity:  97.8%
+INFO:__main__:  AUC:          0.948
+INFO:__main__:  Confusion:    [[696, 16], [67, 131]]
+INFO:__main__:
+============================================================
+INFO:__main__:SUMMARY
+INFO:__main__:============================================================
+INFO:__main__:Method                                 Acc  BalAcc   Sens   Spec    AUC
+INFO:__main__:----------------------------------------------------------------------
+INFO:__main__:MRI only (ResNet3D)                  87.5%  82.2%  72.7%  91.6% 0.908
+INFO:__main__:Tabular only (XGBoost)               89.1%  85.8%  79.8%  91.7% 0.939
+INFO:__main__:Late Fusion: Average                 90.2%  85.0%  75.8%  94.2% 0.948
+INFO:__main__:Late Fusion: Weighted                92.5%  88.3%  80.8%  95.8% 0.951
+INFO:__main__:Late Fusion: Stacking                90.9%  82.0%  66.2%  97.8% 0.948
+INFO:__main__:
+Results saved to results_late_fusion/seed_0
+  -> Done (seed 0)
+[18:31:16] Seed 1 ...
+[0;93m2026-03-22 18:31:18.198338417 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"[m
+INFO:__main__:Loading datasets...
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:multimodal_fusion_dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 101 missing values in 'CATANIMSC' with 21.00
+INFO:multimodal_fusion_dataset:Filled 102 missing values in 'TRAASCOR' with 30.00
+INFO:multimodal_fusion_dataset:Filled 107 missing values in 'TRABSCOR' with 73.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 167 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 26 missing values in 'VSWEIGHT' with 166.00
+INFO:multimodal_fusion_dataset:Filled 1 missing values in 'BMI' with 27.80
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:multimodal_fusion_dataset:Filled 6 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 91 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 92 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 100 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 179 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 33 missing values in 'VSWEIGHT' with 164.00
+INFO:multimodal_fusion_dataset:Filled 2 missing values in 'BMI' with 28.20
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:__main__:============================================================
+INFO:__main__:BRANCH 1: ResNet3D on MRI
+INFO:__main__:============================================================
+INFO:monai.networks.nets.resnet:Loading MedicalNet pretrained model from https://huggingface.co/TencentMedicalNet/MedicalNet-Resnet50
+INFO:monai.networks.nets.resnet:resnet_50_23dataset.pth downloaded
+INFO:__main__:Backbone frozen for first 3 epochs
+INFO:__main__:Epoch 1/30: train_acc=54.1%  val_acc=55.1% val_bal_acc=55.4% val_auc=0.588 [frozen]
+INFO:__main__:Epoch 2/30: train_acc=52.0%  val_acc=55.3% val_bal_acc=55.9% val_auc=0.589 [frozen]
+INFO:__main__:Epoch 3/30: train_acc=50.9%  val_acc=56.0% val_bal_acc=55.9% val_auc=0.591 [frozen]
+INFO:__main__:Backbone unfrozen at epoch 4
+INFO:__main__:Epoch 4/30: train_acc=77.4%  val_acc=78.2% val_bal_acc=74.2% val_auc=0.825
+INFO:__main__:Epoch 5/30: train_acc=82.6%  val_acc=84.7% val_bal_acc=69.3% val_auc=0.866
+INFO:__main__:Epoch 6/30: train_acc=84.0%  val_acc=82.0% val_bal_acc=81.6% val_auc=0.882
+INFO:__main__:Epoch 7/30: train_acc=85.5%  val_acc=87.8% val_bal_acc=80.7% val_auc=0.901
+INFO:__main__:Epoch 8/30: train_acc=86.4%  val_acc=87.5% val_bal_acc=74.9% val_auc=0.895
+INFO:__main__:Epoch 9/30: train_acc=86.7%  val_acc=88.1% val_bal_acc=77.6% val_auc=0.895
+INFO:__main__:Epoch 10/30: train_acc=87.0%  val_acc=85.7% val_bal_acc=69.4% val_auc=0.899
+INFO:__main__:Epoch 11/30: train_acc=87.5%  val_acc=87.1% val_bal_acc=74.1% val_auc=0.914
+INFO:__main__:Epoch 12/30: train_acc=88.3%  val_acc=88.2% val_bal_acc=80.3% val_auc=0.915
+INFO:__main__:Epoch 13/30: train_acc=88.5%  val_acc=88.9% val_bal_acc=80.9% val_auc=0.917
+INFO:__main__:Epoch 14/30: train_acc=89.3%  val_acc=86.9% val_bal_acc=74.3% val_auc=0.913
+INFO:__main__:Epoch 15/30: train_acc=89.2%  val_acc=87.9% val_bal_acc=78.4% val_auc=0.917
+INFO:__main__:Epoch 16/30: train_acc=89.8%  val_acc=85.3% val_bal_acc=84.4% val_auc=0.917
+INFO:__main__:Epoch 17/30: train_acc=90.2%  val_acc=86.7% val_bal_acc=85.3% val_auc=0.920
+INFO:__main__:Epoch 18/30: train_acc=90.2%  val_acc=88.9% val_bal_acc=82.2% val_auc=0.921
+INFO:__main__:Epoch 19/30: train_acc=91.0%  val_acc=88.9% val_bal_acc=81.1% val_auc=0.917
+INFO:__main__:Epoch 20/30: train_acc=91.4%  val_acc=88.7% val_bal_acc=79.8% val_auc=0.923
+INFO:__main__:Epoch 21/30: train_acc=91.6%  val_acc=87.5% val_bal_acc=84.5% val_auc=0.919
+INFO:__main__:Epoch 22/30: train_acc=92.0%  val_acc=89.1% val_bal_acc=81.6% val_auc=0.917
+INFO:__main__:Epoch 23/30: train_acc=92.7%  val_acc=89.3% val_bal_acc=81.3% val_auc=0.920
+INFO:__main__:Epoch 24/30: train_acc=93.0%  val_acc=89.0% val_bal_acc=82.4% val_auc=0.915
+INFO:__main__:Epoch 25/30: train_acc=93.2%  val_acc=89.0% val_bal_acc=83.0% val_auc=0.921
+INFO:__main__:Epoch 26/30: train_acc=93.4%  val_acc=87.5% val_bal_acc=82.0% val_auc=0.905
+INFO:__main__:Epoch 27/30: train_acc=93.4%  val_acc=88.9% val_bal_acc=82.3% val_auc=0.913
+INFO:__main__:Epoch 28/30: train_acc=94.4%  val_acc=89.2% val_bal_acc=80.2% val_auc=0.913
+INFO:__main__:Epoch 29/30: train_acc=94.1%  val_acc=89.0% val_bal_acc=83.0% val_auc=0.918
+INFO:__main__:Epoch 30/30: train_acc=94.1%  val_acc=88.8% val_bal_acc=84.1% val_auc=0.918
+INFO:__main__:Best val balanced accuracy: 85.3%
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:__main__:Getting MRI probabilities...
+INFO:__main__:
+BRANCH 1 — MRI only (TEST):
+INFO:__main__:  Accuracy:     85.6%
+INFO:__main__:  Balanced Acc: 83.3%
+INFO:__main__:  Sensitivity:  79.3%
+INFO:__main__:  Specificity:  87.4%
+INFO:__main__:  AUC:          0.899
+INFO:__main__:  Confusion:    [[622, 90], [41, 157]]
+INFO:__main__:
+============================================================
+INFO:__main__:BRANCH 2: XGBoost on Tabular features only
+INFO:__main__:============================================================
+INFO:__main__:Training XGBoost (tabular only)...
+[0]	train-logloss:0.64227	val-logloss:0.64137
+[50]	train-logloss:0.21301	val-logloss:0.32280
+[69]	train-logloss:0.18307	val-logloss:0.32426
+INFO:__main__:
+BRANCH 2 — Tabular only (TEST):
+INFO:__main__:  Accuracy:     88.8%
+INFO:__main__:  Balanced Acc: 86.5%
+INFO:__main__:  Sensitivity:  82.3%
+INFO:__main__:  Specificity:  90.6%
+INFO:__main__:  AUC:          0.939
+INFO:__main__:  Confusion:    [[645, 67], [35, 163]]
+INFO:__main__:
+============================================================
+INFO:__main__:LATE FUSION: Combining predictions
+INFO:__main__:============================================================
+INFO:__main__:
+LATE FUSION — Simple Average (TEST):
+INFO:__main__:  Accuracy:     88.1%
+INFO:__main__:  Balanced Acc: 85.9%
+INFO:__main__:  Sensitivity:  81.8%
+INFO:__main__:  Specificity:  89.9%
+INFO:__main__:  AUC:          0.946
+INFO:__main__:  Confusion:    [[640, 72], [36, 162]]
+INFO:__main__:
+Best weight (MRI): 0.45 (val AUC: 0.953)
+INFO:__main__:
+LATE FUSION — Weighted Average w_mri=0.45 (TEST):
+INFO:__main__:  Accuracy:     91.4%
+INFO:__main__:  Balanced Acc: 88.9%
+INFO:__main__:  Sensitivity:  84.3%
+INFO:__main__:  Specificity:  93.4%
+INFO:__main__:  AUC:          0.949
+INFO:__main__:  Confusion:    [[665, 47], [31, 167]]
+INFO:__main__:
+Stacking weights: MRI=1.703, Tab=2.045, bias=-2.783
+INFO:__main__:
+LATE FUSION — Learned Stacking C=0.01 (TEST):
+INFO:__main__:  Accuracy:     91.3%
+INFO:__main__:  Balanced Acc: 83.0%
+INFO:__main__:  Sensitivity:  68.2%
+INFO:__main__:  Specificity:  97.8%
+INFO:__main__:  AUC:          0.949
+INFO:__main__:  Confusion:    [[696, 16], [63, 135]]
+INFO:__main__:
+============================================================
+INFO:__main__:SUMMARY
+INFO:__main__:============================================================
+INFO:__main__:Method                                 Acc  BalAcc   Sens   Spec    AUC
+INFO:__main__:----------------------------------------------------------------------
+INFO:__main__:MRI only (ResNet3D)                  85.6%  83.3%  79.3%  87.4% 0.899
+INFO:__main__:Tabular only (XGBoost)               88.8%  86.5%  82.3%  90.6% 0.939
+INFO:__main__:Late Fusion: Average                 88.1%  85.9%  81.8%  89.9% 0.946
+INFO:__main__:Late Fusion: Weighted                91.4%  88.9%  84.3%  93.4% 0.949
+INFO:__main__:Late Fusion: Stacking                91.3%  83.0%  68.2%  97.8% 0.949
+INFO:__main__:
+Results saved to results_late_fusion/seed_1
+  -> Done (seed 1)
+[22:54:55] Seed 2 ...
+[0;93m2026-03-22 22:54:57.104224805 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"[m
+INFO:__main__:Loading datasets...
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:multimodal_fusion_dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 101 missing values in 'CATANIMSC' with 21.00
+INFO:multimodal_fusion_dataset:Filled 102 missing values in 'TRAASCOR' with 30.00
+INFO:multimodal_fusion_dataset:Filled 107 missing values in 'TRABSCOR' with 73.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 167 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 26 missing values in 'VSWEIGHT' with 166.00
+INFO:multimodal_fusion_dataset:Filled 1 missing values in 'BMI' with 27.80
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:multimodal_fusion_dataset:Filled 6 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 91 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 92 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 100 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 179 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 33 missing values in 'VSWEIGHT' with 164.00
+INFO:multimodal_fusion_dataset:Filled 2 missing values in 'BMI' with 28.20
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:__main__:============================================================
+INFO:__main__:BRANCH 1: ResNet3D on MRI
+INFO:__main__:============================================================
+INFO:monai.networks.nets.resnet:Loading MedicalNet pretrained model from https://huggingface.co/TencentMedicalNet/MedicalNet-Resnet50
+INFO:monai.networks.nets.resnet:resnet_50_23dataset.pth downloaded
+INFO:__main__:Backbone frozen for first 3 epochs
+INFO:__main__:Epoch 1/30: train_acc=54.0%  val_acc=58.7% val_bal_acc=54.8% val_auc=0.592 [frozen]
+INFO:__main__:Epoch 2/30: train_acc=52.9%  val_acc=56.6% val_bal_acc=55.3% val_auc=0.590 [frozen]
+INFO:__main__:Epoch 3/30: train_acc=52.6%  val_acc=52.1% val_bal_acc=57.5% val_auc=0.591 [frozen]
+INFO:__main__:Backbone unfrozen at epoch 4
+INFO:__main__:Epoch 4/30: train_acc=76.8%  val_acc=83.0% val_bal_acc=65.1% val_auc=0.834
+INFO:__main__:Epoch 5/30: train_acc=82.9%  val_acc=84.0% val_bal_acc=69.5% val_auc=0.857
+INFO:__main__:Epoch 6/30: train_acc=83.7%  val_acc=83.4% val_bal_acc=62.8% val_auc=0.872
+INFO:__main__:Epoch 7/30: train_acc=84.6%  val_acc=82.2% val_bal_acc=80.4% val_auc=0.882
+INFO:__main__:Epoch 8/30: train_acc=85.9%  val_acc=86.9% val_bal_acc=73.2% val_auc=0.907
+INFO:__main__:Epoch 9/30: train_acc=87.3%  val_acc=88.4% val_bal_acc=80.5% val_auc=0.899
+INFO:__main__:Epoch 10/30: train_acc=87.7%  val_acc=86.3% val_bal_acc=82.1% val_auc=0.899
+INFO:__main__:Epoch 11/30: train_acc=87.8%  val_acc=86.2% val_bal_acc=70.4% val_auc=0.910
+INFO:__main__:Epoch 12/30: train_acc=88.1%  val_acc=89.2% val_bal_acc=80.2% val_auc=0.910
+INFO:__main__:Epoch 13/30: train_acc=88.5%  val_acc=89.3% val_bal_acc=81.7% val_auc=0.917
+INFO:__main__:Epoch 14/30: train_acc=89.4%  val_acc=87.5% val_bal_acc=75.0% val_auc=0.916
+INFO:__main__:Epoch 15/30: train_acc=89.5%  val_acc=89.0% val_bal_acc=82.8% val_auc=0.920
+INFO:__main__:Epoch 16/30: train_acc=90.4%  val_acc=88.9% val_bal_acc=82.0% val_auc=0.918
+INFO:__main__:Epoch 17/30: train_acc=90.1%  val_acc=88.5% val_bal_acc=79.3% val_auc=0.923
+INFO:__main__:Epoch 18/30: train_acc=90.6%  val_acc=85.7% val_bal_acc=82.3% val_auc=0.910
+INFO:__main__:Epoch 19/30: train_acc=91.2%  val_acc=89.0% val_bal_acc=81.1% val_auc=0.918
+INFO:__main__:Epoch 20/30: train_acc=92.7%  val_acc=88.4% val_bal_acc=78.5% val_auc=0.926
+INFO:__main__:Epoch 21/30: train_acc=93.0%  val_acc=89.0% val_bal_acc=81.5% val_auc=0.916
+INFO:__main__:Epoch 22/30: train_acc=93.3%  val_acc=88.7% val_bal_acc=79.3% val_auc=0.920
+INFO:__main__:Epoch 23/30: train_acc=93.4%  val_acc=88.7% val_bal_acc=82.0% val_auc=0.920
+INFO:__main__:Epoch 24/30: train_acc=94.1%  val_acc=88.2% val_bal_acc=79.5% val_auc=0.923
+INFO:__main__:Epoch 25/30: train_acc=94.8%  val_acc=89.6% val_bal_acc=83.1% val_auc=0.923
+INFO:__main__:Epoch 26/30: train_acc=94.6%  val_acc=88.0% val_bal_acc=84.9% val_auc=0.914
+INFO:__main__:Epoch 27/30: train_acc=94.9%  val_acc=89.1% val_bal_acc=82.5% val_auc=0.918
+INFO:__main__:Epoch 28/30: train_acc=94.9%  val_acc=89.3% val_bal_acc=84.1% val_auc=0.920
+INFO:__main__:Epoch 29/30: train_acc=95.6%  val_acc=88.9% val_bal_acc=83.4% val_auc=0.917
+INFO:__main__:Epoch 30/30: train_acc=95.0%  val_acc=89.5% val_bal_acc=84.0% val_auc=0.914
+INFO:__main__:Best val balanced accuracy: 84.9%
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:__main__:Getting MRI probabilities...
+INFO:__main__:
+BRANCH 1 — MRI only (TEST):
+INFO:__main__:  Accuracy:     86.8%
+INFO:__main__:  Balanced Acc: 83.0%
+INFO:__main__:  Sensitivity:  76.3%
+INFO:__main__:  Specificity:  89.7%
+INFO:__main__:  AUC:          0.885
+INFO:__main__:  Confusion:    [[639, 73], [47, 151]]
+INFO:__main__:
+============================================================
+INFO:__main__:BRANCH 2: XGBoost on Tabular features only
+INFO:__main__:============================================================
+INFO:__main__:Training XGBoost (tabular only)...
+[0]	train-logloss:0.63964	val-logloss:0.63669
+[50]	train-logloss:0.20920	val-logloss:0.31538
+[100]	train-logloss:0.14813	val-logloss:0.31977
+[105]	train-logloss:0.14270	val-logloss:0.32077
+INFO:__main__:
+BRANCH 2 — Tabular only (TEST):
+INFO:__main__:  Accuracy:     88.7%
+INFO:__main__:  Balanced Acc: 85.7%
+INFO:__main__:  Sensitivity:  80.3%
+INFO:__main__:  Specificity:  91.0%
+INFO:__main__:  AUC:          0.936
+INFO:__main__:  Confusion:    [[648, 64], [39, 159]]
+INFO:__main__:
+============================================================
+INFO:__main__:LATE FUSION: Combining predictions
+INFO:__main__:============================================================
+INFO:__main__:
+LATE FUSION — Simple Average (TEST):
+INFO:__main__:  Accuracy:     89.1%
+INFO:__main__:  Balanced Acc: 85.2%
+INFO:__main__:  Sensitivity:  78.3%
+INFO:__main__:  Specificity:  92.1%
+INFO:__main__:  AUC:          0.942
+INFO:__main__:  Confusion:    [[656, 56], [43, 155]]
+INFO:__main__:
+Best weight (MRI): 0.45 (val AUC: 0.956)
+INFO:__main__:
+LATE FUSION — Weighted Average w_mri=0.45 (TEST):
+INFO:__main__:  Accuracy:     92.2%
+INFO:__main__:  Balanced Acc: 88.8%
+INFO:__main__:  Sensitivity:  82.8%
+INFO:__main__:  Specificity:  94.8%
+INFO:__main__:  AUC:          0.945
+INFO:__main__:  Confusion:    [[675, 37], [34, 164]]
+INFO:__main__:
+Stacking weights: MRI=3.266, Tab=4.696, bias=-4.818
+INFO:__main__:
+LATE FUSION — Learned Stacking C=0.1 (TEST):
+INFO:__main__:  Accuracy:     91.4%
+INFO:__main__:  Balanced Acc: 84.7%
+INFO:__main__:  Sensitivity:  72.7%
+INFO:__main__:  Specificity:  96.6%
+INFO:__main__:  AUC:          0.946
+INFO:__main__:  Confusion:    [[688, 24], [54, 144]]
+INFO:__main__:
+============================================================
+INFO:__main__:SUMMARY
+INFO:__main__:============================================================
+INFO:__main__:Method                                 Acc  BalAcc   Sens   Spec    AUC
+INFO:__main__:----------------------------------------------------------------------
+INFO:__main__:MRI only (ResNet3D)                  86.8%  83.0%  76.3%  89.7% 0.885
+INFO:__main__:Tabular only (XGBoost)               88.7%  85.7%  80.3%  91.0% 0.936
+INFO:__main__:Late Fusion: Average                 89.1%  85.2%  78.3%  92.1% 0.942
+INFO:__main__:Late Fusion: Weighted                92.2%  88.8%  82.8%  94.8% 0.945
+INFO:__main__:Late Fusion: Stacking                91.4%  84.7%  72.7%  96.6% 0.946
+INFO:__main__:
+Results saved to results_late_fusion/seed_2
+  -> Done (seed 2)
+[03:18:09] Seed 3 ...
+[0;93m2026-03-23 03:18:11.293588297 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"[m
+INFO:__main__:Loading datasets...
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:multimodal_fusion_dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 101 missing values in 'CATANIMSC' with 21.00
+INFO:multimodal_fusion_dataset:Filled 102 missing values in 'TRAASCOR' with 30.00
+INFO:multimodal_fusion_dataset:Filled 107 missing values in 'TRABSCOR' with 73.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 167 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 26 missing values in 'VSWEIGHT' with 166.00
+INFO:multimodal_fusion_dataset:Filled 1 missing values in 'BMI' with 27.80
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:multimodal_fusion_dataset:Filled 6 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 91 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 92 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 100 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 179 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 33 missing values in 'VSWEIGHT' with 164.00
+INFO:multimodal_fusion_dataset:Filled 2 missing values in 'BMI' with 28.20
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:__main__:============================================================
+INFO:__main__:BRANCH 1: ResNet3D on MRI
+INFO:__main__:============================================================
+INFO:monai.networks.nets.resnet:Loading MedicalNet pretrained model from https://huggingface.co/TencentMedicalNet/MedicalNet-Resnet50
+INFO:monai.networks.nets.resnet:resnet_50_23dataset.pth downloaded
+INFO:__main__:Backbone frozen for first 3 epochs
+INFO:__main__:Epoch 1/30: train_acc=52.2%  val_acc=55.7% val_bal_acc=55.7% val_auc=0.590 [frozen]
+INFO:__main__:Epoch 2/30: train_acc=54.0%  val_acc=52.5% val_bal_acc=57.3% val_auc=0.591 [frozen]
+INFO:__main__:Epoch 3/30: train_acc=52.4%  val_acc=49.0% val_bal_acc=57.4% val_auc=0.592 [frozen]
+INFO:__main__:Backbone unfrozen at epoch 4
+INFO:__main__:Epoch 4/30: train_acc=76.6%  val_acc=82.2% val_bal_acc=69.8% val_auc=0.829
+INFO:__main__:Epoch 5/30: train_acc=82.4%  val_acc=84.7% val_bal_acc=73.6% val_auc=0.858
+INFO:__main__:Epoch 6/30: train_acc=83.7%  val_acc=85.3% val_bal_acc=79.5% val_auc=0.872
+INFO:__main__:Epoch 7/30: train_acc=83.8%  val_acc=87.1% val_bal_acc=75.2% val_auc=0.887
+INFO:__main__:Epoch 8/30: train_acc=85.1%  val_acc=85.1% val_bal_acc=80.6% val_auc=0.888
+INFO:__main__:Epoch 9/30: train_acc=86.3%  val_acc=87.0% val_bal_acc=75.7% val_auc=0.888
+INFO:__main__:Epoch 10/30: train_acc=87.4%  val_acc=88.6% val_bal_acc=79.6% val_auc=0.914
+INFO:__main__:Epoch 11/30: train_acc=87.5%  val_acc=88.6% val_bal_acc=79.6% val_auc=0.908
+INFO:__main__:Epoch 12/30: train_acc=88.3%  val_acc=88.6% val_bal_acc=82.1% val_auc=0.914
+INFO:__main__:Epoch 13/30: train_acc=88.1%  val_acc=88.0% val_bal_acc=80.1% val_auc=0.914
+INFO:__main__:Epoch 14/30: train_acc=88.7%  val_acc=87.6% val_bal_acc=74.6% val_auc=0.914
+INFO:__main__:Epoch 15/30: train_acc=88.8%  val_acc=88.8% val_bal_acc=82.8% val_auc=0.917
+INFO:__main__:Epoch 16/30: train_acc=89.2%  val_acc=88.9% val_bal_acc=79.4% val_auc=0.921
+INFO:__main__:Epoch 17/30: train_acc=90.3%  val_acc=88.8% val_bal_acc=79.5% val_auc=0.914
+INFO:__main__:Epoch 18/30: train_acc=90.5%  val_acc=84.9% val_bal_acc=84.2% val_auc=0.914
+INFO:__main__:Epoch 19/30: train_acc=89.7%  val_acc=89.5% val_bal_acc=85.1% val_auc=0.924
+INFO:__main__:Epoch 20/30: train_acc=90.6%  val_acc=88.4% val_bal_acc=79.1% val_auc=0.921
+INFO:__main__:Epoch 21/30: train_acc=91.2%  val_acc=89.1% val_bal_acc=81.6% val_auc=0.918
+INFO:__main__:Epoch 22/30: train_acc=91.6%  val_acc=89.2% val_bal_acc=82.7% val_auc=0.924
+INFO:__main__:Epoch 23/30: train_acc=91.8%  val_acc=89.2% val_bal_acc=81.8% val_auc=0.924
+INFO:__main__:Epoch 24/30: train_acc=92.2%  val_acc=89.1% val_bal_acc=82.5% val_auc=0.919
+INFO:__main__:Epoch 25/30: train_acc=92.6%  val_acc=89.2% val_bal_acc=80.7% val_auc=0.923
+INFO:__main__:Epoch 26/30: train_acc=93.3%  val_acc=88.9% val_bal_acc=84.3% val_auc=0.925
+INFO:__main__:Epoch 27/30: train_acc=92.9%  val_acc=87.9% val_bal_acc=82.8% val_auc=0.921
+INFO:__main__:Epoch 28/30: train_acc=92.8%  val_acc=89.7% val_bal_acc=82.1% val_auc=0.924
+INFO:__main__:Epoch 29/30: train_acc=93.4%  val_acc=89.8% val_bal_acc=83.3% val_auc=0.925
+INFO:__main__:Epoch 30/30: train_acc=93.6%  val_acc=89.3% val_bal_acc=82.6% val_auc=0.917
+INFO:__main__:Best val balanced accuracy: 85.1%
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:__main__:Getting MRI probabilities...
+INFO:__main__:
+BRANCH 1 — MRI only (TEST):
+INFO:__main__:  Accuracy:     87.3%
+INFO:__main__:  Balanced Acc: 82.0%
+INFO:__main__:  Sensitivity:  72.7%
+INFO:__main__:  Specificity:  91.3%
+INFO:__main__:  AUC:          0.908
+INFO:__main__:  Confusion:    [[650, 62], [54, 144]]
+INFO:__main__:
+============================================================
+INFO:__main__:BRANCH 2: XGBoost on Tabular features only
+INFO:__main__:============================================================
+INFO:__main__:Training XGBoost (tabular only)...
+[0]	train-logloss:0.63999	val-logloss:0.64044
+[50]	train-logloss:0.21047	val-logloss:0.31995
+[92]	train-logloss:0.15186	val-logloss:0.32141
+INFO:__main__:
+BRANCH 2 — Tabular only (TEST):
+INFO:__main__:  Accuracy:     88.9%
+INFO:__main__:  Balanced Acc: 85.8%
+INFO:__main__:  Sensitivity:  80.3%
+INFO:__main__:  Specificity:  91.3%
+INFO:__main__:  AUC:          0.939
+INFO:__main__:  Confusion:    [[650, 62], [39, 159]]
+INFO:__main__:
+============================================================
+INFO:__main__:LATE FUSION: Combining predictions
+INFO:__main__:============================================================
+INFO:__main__:
+LATE FUSION — Simple Average (TEST):
+INFO:__main__:  Accuracy:     91.1%
+INFO:__main__:  Balanced Acc: 87.4%
+INFO:__main__:  Sensitivity:  80.8%
+INFO:__main__:  Specificity:  94.0%
+INFO:__main__:  AUC:          0.949
+INFO:__main__:  Confusion:    [[669, 43], [38, 160]]
+INFO:__main__:
+Best weight (MRI): 0.45 (val AUC: 0.955)
+INFO:__main__:
+LATE FUSION — Weighted Average w_mri=0.45 (TEST):
+INFO:__main__:  Accuracy:     92.9%
+INFO:__main__:  Balanced Acc: 89.4%
+INFO:__main__:  Sensitivity:  83.3%
+INFO:__main__:  Specificity:  95.5%
+INFO:__main__:  AUC:          0.950
+INFO:__main__:  Confusion:    [[680, 32], [33, 165]]
+INFO:__main__:
+Stacking weights: MRI=1.700, Tab=2.133, bias=-2.707
+INFO:__main__:
+LATE FUSION — Learned Stacking C=0.01 (TEST):
+INFO:__main__:  Accuracy:     90.7%
+INFO:__main__:  Balanced Acc: 81.1%
+INFO:__main__:  Sensitivity:  64.1%
+INFO:__main__:  Specificity:  98.0%
+INFO:__main__:  AUC:          0.951
+INFO:__main__:  Confusion:    [[698, 14], [71, 127]]
+INFO:__main__:
+============================================================
+INFO:__main__:SUMMARY
+INFO:__main__:============================================================
+INFO:__main__:Method                                 Acc  BalAcc   Sens   Spec    AUC
+INFO:__main__:----------------------------------------------------------------------
+INFO:__main__:MRI only (ResNet3D)                  87.3%  82.0%  72.7%  91.3% 0.908
+INFO:__main__:Tabular only (XGBoost)               88.9%  85.8%  80.3%  91.3% 0.939
+INFO:__main__:Late Fusion: Average                 91.1%  87.4%  80.8%  94.0% 0.949
+INFO:__main__:Late Fusion: Weighted                92.9%  89.4%  83.3%  95.5% 0.950
+INFO:__main__:Late Fusion: Stacking                90.7%  81.1%  64.1%  98.0% 0.951
+INFO:__main__:
+Results saved to results_late_fusion/seed_3
+  -> Done (seed 3)
+[07:41:25] Seed 4 ...
+[0;93m2026-03-23 07:41:26.888869456 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"[m
+INFO:__main__:Loading datasets...
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:multimodal_fusion_dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 101 missing values in 'CATANIMSC' with 21.00
+INFO:multimodal_fusion_dataset:Filled 102 missing values in 'TRAASCOR' with 30.00
+INFO:multimodal_fusion_dataset:Filled 107 missing values in 'TRABSCOR' with 73.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 167 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 26 missing values in 'VSWEIGHT' with 166.00
+INFO:multimodal_fusion_dataset:Filled 1 missing values in 'BMI' with 27.80
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:multimodal_fusion_dataset:Filled 6 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 91 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 92 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 100 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 179 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 33 missing values in 'VSWEIGHT' with 164.00
+INFO:multimodal_fusion_dataset:Filled 2 missing values in 'BMI' with 28.20
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:__main__:============================================================
+INFO:__main__:BRANCH 1: ResNet3D on MRI
+INFO:__main__:============================================================
+INFO:monai.networks.nets.resnet:Loading MedicalNet pretrained model from https://huggingface.co/TencentMedicalNet/MedicalNet-Resnet50
+INFO:monai.networks.nets.resnet:resnet_50_23dataset.pth downloaded
+INFO:__main__:Backbone frozen for first 3 epochs
+INFO:__main__:Epoch 1/30: train_acc=52.5%  val_acc=48.8% val_bal_acc=57.2% val_auc=0.590 [frozen]
+INFO:__main__:Epoch 2/30: train_acc=52.4%  val_acc=54.1% val_bal_acc=57.2% val_auc=0.590 [frozen]
+INFO:__main__:Epoch 3/30: train_acc=50.8%  val_acc=48.9% val_bal_acc=57.3% val_auc=0.593 [frozen]
+INFO:__main__:Backbone unfrozen at epoch 4
+INFO:__main__:Epoch 4/30: train_acc=76.4%  val_acc=83.5% val_bal_acc=72.0% val_auc=0.832
+INFO:__main__:Epoch 5/30: train_acc=82.1%  val_acc=82.3% val_bal_acc=76.3% val_auc=0.834
+INFO:__main__:Epoch 6/30: train_acc=83.9%  val_acc=86.9% val_bal_acc=73.6% val_auc=0.897
+INFO:__main__:Epoch 7/30: train_acc=85.8%  val_acc=88.5% val_bal_acc=80.6% val_auc=0.895
+INFO:__main__:Epoch 8/30: train_acc=87.0%  val_acc=87.7% val_bal_acc=77.7% val_auc=0.904
+INFO:__main__:Epoch 9/30: train_acc=87.3%  val_acc=85.4% val_bal_acc=83.0% val_auc=0.903
+INFO:__main__:Epoch 10/30: train_acc=88.3%  val_acc=87.7% val_bal_acc=83.4% val_auc=0.917
+INFO:__main__:Epoch 11/30: train_acc=88.5%  val_acc=87.3% val_bal_acc=73.1% val_auc=0.917
+INFO:__main__:Epoch 12/30: train_acc=89.0%  val_acc=87.9% val_bal_acc=80.2% val_auc=0.905
+INFO:__main__:Epoch 13/30: train_acc=89.3%  val_acc=88.0% val_bal_acc=77.0% val_auc=0.923
+INFO:__main__:Epoch 14/30: train_acc=89.8%  val_acc=88.7% val_bal_acc=85.7% val_auc=0.916
+INFO:__main__:Epoch 15/30: train_acc=90.7%  val_acc=89.8% val_bal_acc=84.7% val_auc=0.926
+INFO:__main__:Epoch 16/30: train_acc=90.7%  val_acc=89.9% val_bal_acc=83.9% val_auc=0.925
+INFO:__main__:Epoch 17/30: train_acc=91.0%  val_acc=88.6% val_bal_acc=79.8% val_auc=0.928
+INFO:__main__:Epoch 18/30: train_acc=91.9%  val_acc=89.5% val_bal_acc=82.7% val_auc=0.933
+INFO:__main__:Epoch 19/30: train_acc=92.4%  val_acc=89.8% val_bal_acc=82.0% val_auc=0.933
+INFO:__main__:Epoch 20/30: train_acc=93.1%  val_acc=89.6% val_bal_acc=83.7% val_auc=0.922
+INFO:__main__:Epoch 21/30: train_acc=93.8%  val_acc=90.2% val_bal_acc=83.4% val_auc=0.930
+INFO:__main__:Epoch 22/30: train_acc=93.9%  val_acc=89.5% val_bal_acc=81.2% val_auc=0.928
+INFO:__main__:Epoch 23/30: train_acc=94.1%  val_acc=90.2% val_bal_acc=84.1% val_auc=0.925
+INFO:__main__:Epoch 24/30: train_acc=94.8%  val_acc=89.0% val_bal_acc=84.4% val_auc=0.924
+INFO:__main__:Epoch 25/30: train_acc=95.3%  val_acc=90.1% val_bal_acc=85.1% val_auc=0.927
+INFO:__main__:Epoch 26/30: train_acc=95.6%  val_acc=90.1% val_bal_acc=84.6% val_auc=0.921
+INFO:__main__:Epoch 27/30: train_acc=96.0%  val_acc=89.0% val_bal_acc=84.2% val_auc=0.920
+INFO:__main__:Epoch 28/30: train_acc=95.8%  val_acc=89.8% val_bal_acc=84.2% val_auc=0.927
+INFO:__main__:Epoch 29/30: train_acc=96.3%  val_acc=90.4% val_bal_acc=84.6% val_auc=0.924
+INFO:__main__:Early stopping at epoch 29
+INFO:__main__:Best val balanced accuracy: 85.7%
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:__main__:Getting MRI probabilities...
+INFO:__main__:
+BRANCH 1 — MRI only (TEST):
+INFO:__main__:  Accuracy:     86.4%
+INFO:__main__:  Balanced Acc: 82.9%
+INFO:__main__:  Sensitivity:  76.8%
+INFO:__main__:  Specificity:  89.0%
+INFO:__main__:  AUC:          0.908
+INFO:__main__:  Confusion:    [[634, 78], [46, 152]]
+INFO:__main__:
+============================================================
+INFO:__main__:BRANCH 2: XGBoost on Tabular features only
+INFO:__main__:============================================================
+INFO:__main__:Training XGBoost (tabular only)...
+[0]	train-logloss:0.64085	val-logloss:0.63883
+[50]	train-logloss:0.20866	val-logloss:0.32012
+[85]	train-logloss:0.16222	val-logloss:0.32380
+INFO:__main__:
+BRANCH 2 — Tabular only (TEST):
+INFO:__main__:  Accuracy:     88.6%
+INFO:__main__:  Balanced Acc: 86.1%
+INFO:__main__:  Sensitivity:  81.8%
+INFO:__main__:  Specificity:  90.4%
+INFO:__main__:  AUC:          0.933
+INFO:__main__:  Confusion:    [[644, 68], [36, 162]]
+INFO:__main__:
+============================================================
+INFO:__main__:LATE FUSION: Combining predictions
+INFO:__main__:============================================================
+INFO:__main__:
+LATE FUSION — Simple Average (TEST):
+INFO:__main__:  Accuracy:     90.1%
+INFO:__main__:  Balanced Acc: 87.1%
+INFO:__main__:  Sensitivity:  81.8%
+INFO:__main__:  Specificity:  92.4%
+INFO:__main__:  AUC:          0.947
+INFO:__main__:  Confusion:    [[658, 54], [36, 162]]
+INFO:__main__:
+Best weight (MRI): 0.45 (val AUC: 0.953)
+INFO:__main__:
+LATE FUSION — Weighted Average w_mri=0.45 (TEST):
+INFO:__main__:  Accuracy:     91.0%
+INFO:__main__:  Balanced Acc: 87.7%
+INFO:__main__:  Sensitivity:  81.8%
+INFO:__main__:  Specificity:  93.5%
+INFO:__main__:  AUC:          0.949
+INFO:__main__:  Confusion:    [[666, 46], [36, 162]]
+INFO:__main__:
+Stacking weights: MRI=1.667, Tab=2.131, bias=-2.753
+INFO:__main__:
+LATE FUSION — Learned Stacking C=0.01 (TEST):
+INFO:__main__:  Accuracy:     90.9%
+INFO:__main__:  Balanced Acc: 82.0%
+INFO:__main__:  Sensitivity:  66.2%
+INFO:__main__:  Specificity:  97.8%
+INFO:__main__:  AUC:          0.950
+INFO:__main__:  Confusion:    [[696, 16], [67, 131]]
+INFO:__main__:
+============================================================
+INFO:__main__:SUMMARY
+INFO:__main__:============================================================
+INFO:__main__:Method                                 Acc  BalAcc   Sens   Spec    AUC
+INFO:__main__:----------------------------------------------------------------------
+INFO:__main__:MRI only (ResNet3D)                  86.4%  82.9%  76.8%  89.0% 0.908
+INFO:__main__:Tabular only (XGBoost)               88.6%  86.1%  81.8%  90.4% 0.933
+INFO:__main__:Late Fusion: Average                 90.1%  87.1%  81.8%  92.4% 0.947
+INFO:__main__:Late Fusion: Weighted                91.0%  87.7%  81.8%  93.5% 0.949
+INFO:__main__:Late Fusion: Stacking                90.9%  82.0%  66.2%  97.8% 0.950
+INFO:__main__:
+Results saved to results_late_fusion/seed_4
+  -> Done (seed 4)
+DONE: XGBoost Late Fusion (all seeds)
+
+==========================================
+3/4 — MLP Early Fusion (5 seeds)
+==========================================
+[11:55:33] Seed 0 ...
+[0;93m2026-03-23 11:55:34.789481994 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"[m
+INFO:__main__:Loading datasets...
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:multimodal_fusion_dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 101 missing values in 'CATANIMSC' with 21.00
+INFO:multimodal_fusion_dataset:Filled 102 missing values in 'TRAASCOR' with 30.00
+INFO:multimodal_fusion_dataset:Filled 107 missing values in 'TRABSCOR' with 73.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 167 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 26 missing values in 'VSWEIGHT' with 166.00
+INFO:multimodal_fusion_dataset:Filled 1 missing values in 'BMI' with 27.80
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:multimodal_fusion_dataset:Filled 6 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 91 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 92 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 100 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 179 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 33 missing values in 'VSWEIGHT' with 164.00
+INFO:multimodal_fusion_dataset:Filled 2 missing values in 'BMI' with 28.20
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:monai.networks.nets.resnet:Loading MedicalNet pretrained model from https://huggingface.co/TencentMedicalNet/MedicalNet-Resnet50
+INFO:monai.networks.nets.resnet:resnet_50_23dataset.pth downloaded
+INFO:__main__:EarlyFusionModel params: 46,725,090
+INFO:__main__:Backbone frozen for first 3 epochs
+INFO:__main__:Mixed precision (AMP) enabled
+INFO:__main__:Gradient accumulation: 2 steps (effective batch=4)
+INFO:__main__:
+Training for up to 100 epochs (patience=20, min_epochs=30)
+INFO:__main__:============================================================
+INFO:__main__:Epoch 1/100: train_acc=72.8%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.544 [frozen]
+INFO:__main__:Epoch 2/100: train_acc=78.3%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.792 [frozen]
+INFO:__main__:Epoch 3/100: train_acc=78.2%  val_acc=84.5% val_bal_acc=74.6% val_auc=0.825 [frozen]
+INFO:__main__:Backbone unfrozen at epoch 4
+INFO:__main__:Epoch 4/100: train_acc=82.2%  val_acc=85.5% val_bal_acc=72.5% val_auc=0.840
+INFO:__main__:Epoch 5/100: train_acc=84.2%  val_acc=86.5% val_bal_acc=72.4% val_auc=0.881
+INFO:__main__:Epoch 6/100: train_acc=85.6%  val_acc=87.9% val_bal_acc=77.7% val_auc=0.883
+INFO:__main__:Epoch 7/100: train_acc=86.2%  val_acc=88.9% val_bal_acc=80.5% val_auc=0.909
+INFO:__main__:Epoch 8/100: train_acc=86.9%  val_acc=90.1% val_bal_acc=83.1% val_auc=0.914
+INFO:__main__:Epoch 9/100: train_acc=87.9%  val_acc=89.5% val_bal_acc=84.7% val_auc=0.931
+INFO:__main__:Epoch 10/100: train_acc=88.3%  val_acc=89.8% val_bal_acc=87.3% val_auc=0.936
+INFO:__main__:Epoch 11/100: train_acc=88.9%  val_acc=90.2% val_bal_acc=86.6% val_auc=0.937
+INFO:__main__:Epoch 12/100: train_acc=88.8%  val_acc=91.0% val_bal_acc=82.9% val_auc=0.930
+INFO:__main__:Epoch 13/100: train_acc=90.3%  val_acc=89.7% val_bal_acc=89.0% val_auc=0.945
+INFO:__main__:Epoch 14/100: train_acc=90.5%  val_acc=92.0% val_bal_acc=88.7% val_auc=0.941
+INFO:__main__:Epoch 15/100: train_acc=90.9%  val_acc=91.4% val_bal_acc=88.7% val_auc=0.938
+INFO:__main__:Epoch 16/100: train_acc=91.4%  val_acc=89.2% val_bal_acc=88.9% val_auc=0.954
+INFO:__main__:Epoch 17/100: train_acc=92.0%  val_acc=90.9% val_bal_acc=89.1% val_auc=0.949
+INFO:__main__:Epoch 18/100: train_acc=92.0%  val_acc=92.2% val_bal_acc=87.9% val_auc=0.945
+INFO:__main__:Epoch 19/100: train_acc=92.4%  val_acc=92.3% val_bal_acc=87.2% val_auc=0.953
+INFO:__main__:Epoch 20/100: train_acc=92.9%  val_acc=93.0% val_bal_acc=88.8% val_auc=0.955
+INFO:__main__:Epoch 21/100: train_acc=92.9%  val_acc=93.4% val_bal_acc=89.6% val_auc=0.957
+INFO:__main__:Epoch 22/100: train_acc=93.5%  val_acc=93.6% val_bal_acc=88.1% val_auc=0.962
+INFO:__main__:Epoch 23/100: train_acc=93.9%  val_acc=93.2% val_bal_acc=87.6% val_auc=0.953
+INFO:__main__:Epoch 24/100: train_acc=94.2%  val_acc=90.2% val_bal_acc=79.0% val_auc=0.958
+INFO:__main__:Epoch 25/100: train_acc=94.3%  val_acc=92.7% val_bal_acc=88.4% val_auc=0.956
+INFO:__main__:Epoch 26/100: train_acc=94.4%  val_acc=93.4% val_bal_acc=89.0% val_auc=0.955
+INFO:__main__:Epoch 27/100: train_acc=95.1%  val_acc=92.4% val_bal_acc=89.9% val_auc=0.956
+INFO:__main__:Epoch 28/100: train_acc=95.8%  val_acc=92.4% val_bal_acc=87.0% val_auc=0.960
+INFO:__main__:Epoch 29/100: train_acc=95.6%  val_acc=92.0% val_bal_acc=85.8% val_auc=0.953
+INFO:__main__:Epoch 30/100: train_acc=96.8%  val_acc=93.2% val_bal_acc=89.3% val_auc=0.954
+INFO:__main__:Epoch 31/100: train_acc=96.5%  val_acc=90.8% val_bal_acc=82.6% val_auc=0.943
+INFO:__main__:Epoch 32/100: train_acc=96.9%  val_acc=92.4% val_bal_acc=88.0% val_auc=0.949
+INFO:__main__:Epoch 33/100: train_acc=97.1%  val_acc=92.3% val_bal_acc=89.4% val_auc=0.951
+INFO:__main__:Epoch 34/100: train_acc=97.5%  val_acc=90.7% val_bal_acc=87.1% val_auc=0.940
+INFO:__main__:Epoch 35/100: train_acc=97.8%  val_acc=91.4% val_bal_acc=85.8% val_auc=0.940
+INFO:__main__:Epoch 36/100: train_acc=97.9%  val_acc=90.7% val_bal_acc=82.4% val_auc=0.938
+INFO:__main__:Epoch 37/100: train_acc=98.2%  val_acc=89.8% val_bal_acc=85.4% val_auc=0.936
+INFO:__main__:Epoch 38/100: train_acc=98.2%  val_acc=91.4% val_bal_acc=86.9% val_auc=0.949
+INFO:__main__:Epoch 39/100: train_acc=98.3%  val_acc=91.0% val_bal_acc=87.9% val_auc=0.947
+INFO:__main__:Epoch 40/100: train_acc=98.5%  val_acc=91.8% val_bal_acc=86.0% val_auc=0.942
+INFO:__main__:Epoch 41/100: train_acc=98.8%  val_acc=93.0% val_bal_acc=86.4% val_auc=0.946
+INFO:__main__:Epoch 42/100: train_acc=98.8%  val_acc=92.5% val_bal_acc=89.0% val_auc=0.957
+INFO:__main__:Epoch 43/100: train_acc=98.6%  val_acc=91.6% val_bal_acc=87.2% val_auc=0.951
+INFO:__main__:Epoch 44/100: train_acc=98.8%  val_acc=89.5% val_bal_acc=89.6% val_auc=0.948
+INFO:__main__:Epoch 45/100: train_acc=99.0%  val_acc=91.2% val_bal_acc=84.2% val_auc=0.945
+INFO:__main__:Epoch 46/100: train_acc=99.1%  val_acc=91.2% val_bal_acc=86.5% val_auc=0.946
+INFO:__main__:Epoch 47/100: train_acc=99.3%  val_acc=91.2% val_bal_acc=86.7% val_auc=0.948
+INFO:__main__:Early stopping at epoch 47
+INFO:__main__:
+Best val balanced accuracy: 89.9%
+INFO:__main__:
+VAL Results:
+INFO:__main__:  Accuracy:     92.4%
+INFO:__main__:  Balanced Acc: 89.9%
+INFO:__main__:  Sensitivity:  85.4%
+INFO:__main__:  Specificity:  94.4%
+INFO:__main__:  AUC:          0.956
+INFO:__main__:  Confusion:    [[672, 40], [29, 169]]
+INFO:__main__:
+TEST Results:
+INFO:__main__:  Accuracy:     92.5%
+INFO:__main__:  Balanced Acc: 89.9%
+INFO:__main__:  Sensitivity:  85.4%
+INFO:__main__:  Specificity:  94.5%
+INFO:__main__:  AUC:          0.946
+INFO:__main__:  Confusion:    [[673, 39], [29, 169]]
+INFO:__main__:
+Results saved to results_early/seed_0
+  -> Done (seed 0)
+[18:47:24] Seed 1 ...
+[0;93m2026-03-23 18:47:26.302042152 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"[m
+INFO:__main__:Loading datasets...
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:multimodal_fusion_dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 101 missing values in 'CATANIMSC' with 21.00
+INFO:multimodal_fusion_dataset:Filled 102 missing values in 'TRAASCOR' with 30.00
+INFO:multimodal_fusion_dataset:Filled 107 missing values in 'TRABSCOR' with 73.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 167 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 26 missing values in 'VSWEIGHT' with 166.00
+INFO:multimodal_fusion_dataset:Filled 1 missing values in 'BMI' with 27.80
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:multimodal_fusion_dataset:Filled 6 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 91 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 92 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 100 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 179 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 33 missing values in 'VSWEIGHT' with 164.00
+INFO:multimodal_fusion_dataset:Filled 2 missing values in 'BMI' with 28.20
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:monai.networks.nets.resnet:Loading MedicalNet pretrained model from https://huggingface.co/TencentMedicalNet/MedicalNet-Resnet50
+INFO:monai.networks.nets.resnet:resnet_50_23dataset.pth downloaded
+INFO:__main__:EarlyFusionModel params: 46,725,090
+INFO:__main__:Backbone frozen for first 3 epochs
+INFO:__main__:Mixed precision (AMP) enabled
+INFO:__main__:Gradient accumulation: 2 steps (effective batch=4)
+INFO:__main__:
+Training for up to 100 epochs (patience=20, min_epochs=30)
+INFO:__main__:============================================================
+INFO:__main__:Epoch 1/100: train_acc=76.9%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.465 [frozen]
+INFO:__main__:Epoch 2/100: train_acc=78.3%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.734 [frozen]
+INFO:__main__:Epoch 3/100: train_acc=78.2%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.834 [frozen]
+INFO:__main__:Backbone unfrozen at epoch 4
+INFO:__main__:Epoch 4/100: train_acc=80.7%  val_acc=87.0% val_bal_acc=80.0% val_auc=0.883
+INFO:__main__:Epoch 5/100: train_acc=84.9%  val_acc=86.9% val_bal_acc=76.0% val_auc=0.853
+INFO:__main__:Epoch 6/100: train_acc=86.1%  val_acc=87.8% val_bal_acc=78.4% val_auc=0.913
+INFO:__main__:Epoch 7/100: train_acc=86.4%  val_acc=88.2% val_bal_acc=75.0% val_auc=0.923
+INFO:__main__:Epoch 8/100: train_acc=86.9%  val_acc=88.6% val_bal_acc=79.2% val_auc=0.901
+INFO:__main__:Epoch 9/100: train_acc=87.5%  val_acc=89.0% val_bal_acc=80.6% val_auc=0.901
+INFO:__main__:Epoch 10/100: train_acc=88.6%  val_acc=90.0% val_bal_acc=84.3% val_auc=0.929
+INFO:__main__:Epoch 11/100: train_acc=88.2%  val_acc=90.1% val_bal_acc=80.2% val_auc=0.901
+INFO:__main__:Epoch 12/100: train_acc=89.1%  val_acc=90.8% val_bal_acc=81.5% val_auc=0.920
+INFO:__main__:Epoch 13/100: train_acc=89.8%  val_acc=92.2% val_bal_acc=86.1% val_auc=0.937
+INFO:__main__:Epoch 14/100: train_acc=90.9%  val_acc=85.4% val_bal_acc=87.4% val_auc=0.936
+INFO:__main__:Epoch 15/100: train_acc=90.6%  val_acc=90.5% val_bal_acc=89.2% val_auc=0.949
+INFO:__main__:Epoch 16/100: train_acc=91.7%  val_acc=90.4% val_bal_acc=89.7% val_auc=0.951
+INFO:__main__:Epoch 17/100: train_acc=92.0%  val_acc=92.3% val_bal_acc=86.7% val_auc=0.935
+INFO:__main__:Epoch 18/100: train_acc=92.6%  val_acc=91.9% val_bal_acc=85.0% val_auc=0.952
+INFO:__main__:Epoch 19/100: train_acc=93.2%  val_acc=93.7% val_bal_acc=89.6% val_auc=0.957
+INFO:__main__:Epoch 20/100: train_acc=93.8%  val_acc=93.1% val_bal_acc=89.2% val_auc=0.953
+INFO:__main__:Epoch 21/100: train_acc=93.9%  val_acc=92.6% val_bal_acc=89.5% val_auc=0.955
+INFO:__main__:Epoch 22/100: train_acc=94.3%  val_acc=93.7% val_bal_acc=91.4% val_auc=0.951
+INFO:__main__:Epoch 23/100: train_acc=95.1%  val_acc=93.1% val_bal_acc=87.2% val_auc=0.958
+INFO:__main__:Epoch 24/100: train_acc=94.8%  val_acc=91.6% val_bal_acc=84.1% val_auc=0.957
+INFO:__main__:Epoch 25/100: train_acc=95.3%  val_acc=91.2% val_bal_acc=81.6% val_auc=0.941
+INFO:__main__:Epoch 26/100: train_acc=95.9%  val_acc=91.6% val_bal_acc=90.5% val_auc=0.952
+INFO:__main__:Epoch 27/100: train_acc=95.8%  val_acc=92.9% val_bal_acc=87.4% val_auc=0.951
+INFO:__main__:Epoch 28/100: train_acc=96.3%  val_acc=92.4% val_bal_acc=89.9% val_auc=0.958
+INFO:__main__:Epoch 29/100: train_acc=96.3%  val_acc=92.0% val_bal_acc=89.6% val_auc=0.948
+INFO:__main__:Epoch 30/100: train_acc=96.9%  val_acc=90.5% val_bal_acc=79.7% val_auc=0.936
+INFO:__main__:Epoch 31/100: train_acc=97.0%  val_acc=93.0% val_bal_acc=88.6% val_auc=0.950
+INFO:__main__:Epoch 32/100: train_acc=97.3%  val_acc=92.1% val_bal_acc=87.5% val_auc=0.942
+INFO:__main__:Epoch 33/100: train_acc=97.8%  val_acc=91.2% val_bal_acc=90.0% val_auc=0.951
+INFO:__main__:Epoch 34/100: train_acc=98.0%  val_acc=92.0% val_bal_acc=87.6% val_auc=0.942
+INFO:__main__:Epoch 35/100: train_acc=97.4%  val_acc=92.7% val_bal_acc=87.5% val_auc=0.940
+INFO:__main__:Epoch 36/100: train_acc=98.0%  val_acc=92.1% val_bal_acc=84.2% val_auc=0.933
+INFO:__main__:Epoch 37/100: train_acc=98.2%  val_acc=91.3% val_bal_acc=82.8% val_auc=0.935
+INFO:__main__:Epoch 38/100: train_acc=98.5%  val_acc=86.6% val_bal_acc=87.2% val_auc=0.934
+INFO:__main__:Epoch 39/100: train_acc=98.7%  val_acc=91.4% val_bal_acc=84.7% val_auc=0.934
+INFO:__main__:Epoch 40/100: train_acc=98.6%  val_acc=91.5% val_bal_acc=89.3% val_auc=0.950
+INFO:__main__:Epoch 41/100: train_acc=98.4%  val_acc=91.1% val_bal_acc=88.5% val_auc=0.947
+INFO:__main__:Epoch 42/100: train_acc=99.0%  val_acc=86.8% val_bal_acc=86.8% val_auc=0.943
+INFO:__main__:Early stopping at epoch 42
+INFO:__main__:
+Best val balanced accuracy: 91.4%
+INFO:__main__:
+VAL Results:
+INFO:__main__:  Accuracy:     93.7%
+INFO:__main__:  Balanced Acc: 91.4%
+INFO:__main__:  Sensitivity:  87.4%
+INFO:__main__:  Specificity:  95.5%
+INFO:__main__:  AUC:          0.951
+INFO:__main__:  Confusion:    [[680, 32], [25, 173]]
+INFO:__main__:
+TEST Results:
+INFO:__main__:  Accuracy:     92.4%
+INFO:__main__:  Balanced Acc: 89.1%
+INFO:__main__:  Sensitivity:  83.3%
+INFO:__main__:  Specificity:  94.9%
+INFO:__main__:  AUC:          0.947
+INFO:__main__:  Confusion:    [[676, 36], [33, 165]]
+INFO:__main__:
+Results saved to results_early/seed_1
+  -> Done (seed 1)
+[00:54:21] Seed 2 ...
+[0;93m2026-03-24 00:54:23.115114058 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"[m
+INFO:__main__:Loading datasets...
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:multimodal_fusion_dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 101 missing values in 'CATANIMSC' with 21.00
+INFO:multimodal_fusion_dataset:Filled 102 missing values in 'TRAASCOR' with 30.00
+INFO:multimodal_fusion_dataset:Filled 107 missing values in 'TRABSCOR' with 73.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 167 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 26 missing values in 'VSWEIGHT' with 166.00
+INFO:multimodal_fusion_dataset:Filled 1 missing values in 'BMI' with 27.80
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:multimodal_fusion_dataset:Filled 6 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 91 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 92 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 100 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 179 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 33 missing values in 'VSWEIGHT' with 164.00
+INFO:multimodal_fusion_dataset:Filled 2 missing values in 'BMI' with 28.20
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:monai.networks.nets.resnet:Loading MedicalNet pretrained model from https://huggingface.co/TencentMedicalNet/MedicalNet-Resnet50
+INFO:monai.networks.nets.resnet:resnet_50_23dataset.pth downloaded
+INFO:__main__:EarlyFusionModel params: 46,725,090
+INFO:__main__:Backbone frozen for first 3 epochs
+INFO:__main__:Mixed precision (AMP) enabled
+INFO:__main__:Gradient accumulation: 2 steps (effective batch=4)
+INFO:__main__:
+Training for up to 100 epochs (patience=20, min_epochs=30)
+INFO:__main__:============================================================
+INFO:__main__:Epoch 1/100: train_acc=72.5%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.605 [frozen]
+INFO:__main__:Epoch 2/100: train_acc=77.6%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.744 [frozen]
+INFO:__main__:Epoch 3/100: train_acc=78.1%  val_acc=84.1% val_bal_acc=65.8% val_auc=0.800 [frozen]
+INFO:__main__:Backbone unfrozen at epoch 4
+INFO:__main__:Epoch 4/100: train_acc=82.4%  val_acc=87.0% val_bal_acc=75.9% val_auc=0.881
+INFO:__main__:Epoch 5/100: train_acc=84.8%  val_acc=87.7% val_bal_acc=77.7% val_auc=0.887
+INFO:__main__:Epoch 6/100: train_acc=85.7%  val_acc=87.7% val_bal_acc=77.7% val_auc=0.899
+INFO:__main__:Epoch 7/100: train_acc=87.1%  val_acc=88.7% val_bal_acc=82.2% val_auc=0.874
+INFO:__main__:Epoch 8/100: train_acc=87.5%  val_acc=89.9% val_bal_acc=82.1% val_auc=0.913
+INFO:__main__:Epoch 9/100: train_acc=88.8%  val_acc=89.5% val_bal_acc=79.4% val_auc=0.913
+INFO:__main__:Epoch 10/100: train_acc=88.2%  val_acc=90.9% val_bal_acc=85.6% val_auc=0.927
+INFO:__main__:Epoch 11/100: train_acc=89.0%  val_acc=90.4% val_bal_acc=83.5% val_auc=0.946
+INFO:__main__:Epoch 12/100: train_acc=89.8%  val_acc=91.1% val_bal_acc=86.8% val_auc=0.947
+INFO:__main__:Epoch 13/100: train_acc=90.1%  val_acc=90.8% val_bal_acc=82.6% val_auc=0.944
+INFO:__main__:Epoch 14/100: train_acc=90.7%  val_acc=92.0% val_bal_acc=85.4% val_auc=0.954
+INFO:__main__:Epoch 15/100: train_acc=90.8%  val_acc=89.7% val_bal_acc=89.4% val_auc=0.953
+INFO:__main__:Epoch 16/100: train_acc=90.8%  val_acc=92.1% val_bal_acc=87.3% val_auc=0.956
+INFO:__main__:Epoch 17/100: train_acc=91.3%  val_acc=91.9% val_bal_acc=84.8% val_auc=0.954
+INFO:__main__:Epoch 18/100: train_acc=91.5%  val_acc=91.8% val_bal_acc=84.3% val_auc=0.957
+INFO:__main__:Epoch 19/100: train_acc=92.2%  val_acc=91.5% val_bal_acc=84.2% val_auc=0.955
+INFO:__main__:Epoch 20/100: train_acc=93.2%  val_acc=92.3% val_bal_acc=89.3% val_auc=0.952
+INFO:__main__:Epoch 21/100: train_acc=92.6%  val_acc=93.1% val_bal_acc=88.8% val_auc=0.962
+INFO:__main__:Epoch 22/100: train_acc=93.2%  val_acc=92.5% val_bal_acc=90.1% val_auc=0.963
+INFO:__main__:Epoch 23/100: train_acc=93.2%  val_acc=93.0% val_bal_acc=87.7% val_auc=0.963
+INFO:__main__:Epoch 24/100: train_acc=94.1%  val_acc=90.9% val_bal_acc=82.0% val_auc=0.957
+INFO:__main__:Epoch 25/100: train_acc=94.2%  val_acc=92.3% val_bal_acc=86.9% val_auc=0.953
+INFO:__main__:Epoch 26/100: train_acc=94.6%  val_acc=93.0% val_bal_acc=91.3% val_auc=0.959
+INFO:__main__:Epoch 27/100: train_acc=94.7%  val_acc=92.9% val_bal_acc=89.8% val_auc=0.964
+INFO:__main__:Epoch 28/100: train_acc=95.1%  val_acc=89.5% val_bal_acc=77.0% val_auc=0.960
+INFO:__main__:Epoch 29/100: train_acc=95.4%  val_acc=92.0% val_bal_acc=88.1% val_auc=0.962
+INFO:__main__:Epoch 30/100: train_acc=96.3%  val_acc=91.8% val_bal_acc=83.8% val_auc=0.957
+INFO:__main__:Epoch 31/100: train_acc=96.2%  val_acc=92.9% val_bal_acc=89.2% val_auc=0.958
+INFO:__main__:Epoch 32/100: train_acc=96.9%  val_acc=92.4% val_bal_acc=88.4% val_auc=0.959
+INFO:__main__:Epoch 33/100: train_acc=96.6%  val_acc=91.8% val_bal_acc=90.5% val_auc=0.960
+INFO:__main__:Epoch 34/100: train_acc=96.5%  val_acc=92.7% val_bal_acc=88.6% val_auc=0.964
+INFO:__main__:Epoch 35/100: train_acc=96.9%  val_acc=91.6% val_bal_acc=90.7% val_auc=0.958
+INFO:__main__:Epoch 36/100: train_acc=97.7%  val_acc=92.5% val_bal_acc=87.8% val_auc=0.953
+INFO:__main__:Epoch 37/100: train_acc=97.9%  val_acc=90.9% val_bal_acc=85.2% val_auc=0.943
+INFO:__main__:Epoch 38/100: train_acc=98.0%  val_acc=91.0% val_bal_acc=84.2% val_auc=0.956
+INFO:__main__:Epoch 39/100: train_acc=98.3%  val_acc=89.8% val_bal_acc=89.8% val_auc=0.955
+INFO:__main__:Epoch 40/100: train_acc=98.1%  val_acc=90.2% val_bal_acc=84.8% val_auc=0.944
+INFO:__main__:Epoch 41/100: train_acc=98.2%  val_acc=91.3% val_bal_acc=85.3% val_auc=0.943
+INFO:__main__:Epoch 42/100: train_acc=98.5%  val_acc=90.7% val_bal_acc=81.8% val_auc=0.959
+INFO:__main__:Epoch 43/100: train_acc=98.6%  val_acc=89.9% val_bal_acc=83.3% val_auc=0.946
+INFO:__main__:Epoch 44/100: train_acc=98.9%  val_acc=91.6% val_bal_acc=87.6% val_auc=0.952
+INFO:__main__:Epoch 45/100: train_acc=98.7%  val_acc=90.3% val_bal_acc=89.1% val_auc=0.953
+INFO:__main__:Epoch 46/100: train_acc=99.3%  val_acc=90.9% val_bal_acc=85.2% val_auc=0.955
+INFO:__main__:Early stopping at epoch 46
+INFO:__main__:
+Best val balanced accuracy: 91.3%
+INFO:__main__:
+VAL Results:
+INFO:__main__:  Accuracy:     93.0%
+INFO:__main__:  Balanced Acc: 91.3%
+INFO:__main__:  Sensitivity:  88.4%
+INFO:__main__:  Specificity:  94.2%
+INFO:__main__:  AUC:          0.959
+INFO:__main__:  Confusion:    [[671, 41], [23, 175]]
+INFO:__main__:
+TEST Results:
+INFO:__main__:  Accuracy:     92.4%
+INFO:__main__:  Balanced Acc: 89.3%
+INFO:__main__:  Sensitivity:  83.8%
+INFO:__main__:  Specificity:  94.8%
+INFO:__main__:  AUC:          0.954
+INFO:__main__:  Confusion:    [[675, 37], [32, 166]]
+INFO:__main__:
+Results saved to results_early/seed_2
+  -> Done (seed 2)
+[07:37:15] Seed 3 ...
+[0;93m2026-03-24 07:37:16.958542848 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"[m
+INFO:__main__:Loading datasets...
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:multimodal_fusion_dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 101 missing values in 'CATANIMSC' with 21.00
+INFO:multimodal_fusion_dataset:Filled 102 missing values in 'TRAASCOR' with 30.00
+INFO:multimodal_fusion_dataset:Filled 107 missing values in 'TRABSCOR' with 73.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 167 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 26 missing values in 'VSWEIGHT' with 166.00
+INFO:multimodal_fusion_dataset:Filled 1 missing values in 'BMI' with 27.80
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:multimodal_fusion_dataset:Filled 6 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 91 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 92 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 100 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 179 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 33 missing values in 'VSWEIGHT' with 164.00
+INFO:multimodal_fusion_dataset:Filled 2 missing values in 'BMI' with 28.20
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:monai.networks.nets.resnet:Loading MedicalNet pretrained model from https://huggingface.co/TencentMedicalNet/MedicalNet-Resnet50
+INFO:monai.networks.nets.resnet:resnet_50_23dataset.pth downloaded
+INFO:__main__:EarlyFusionModel params: 46,725,090
+INFO:__main__:Backbone frozen for first 3 epochs
+INFO:__main__:Mixed precision (AMP) enabled
+INFO:__main__:Gradient accumulation: 2 steps (effective batch=4)
+INFO:__main__:
+Training for up to 100 epochs (patience=20, min_epochs=30)
+INFO:__main__:============================================================
+INFO:__main__:Epoch 1/100: train_acc=63.6%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.628 [frozen]
+INFO:__main__:Epoch 2/100: train_acc=78.0%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.801 [frozen]
+INFO:__main__:Epoch 3/100: train_acc=78.0%  val_acc=81.6% val_bal_acc=67.1% val_auc=0.812 [frozen]
+INFO:__main__:Backbone unfrozen at epoch 4
+INFO:__main__:Epoch 4/100: train_acc=82.2%  val_acc=87.7% val_bal_acc=76.6% val_auc=0.856
+INFO:__main__:Epoch 5/100: train_acc=84.6%  val_acc=86.7% val_bal_acc=72.0% val_auc=0.879
+INFO:__main__:Epoch 6/100: train_acc=85.7%  val_acc=89.0% val_bal_acc=81.1% val_auc=0.878
+INFO:__main__:Epoch 7/100: train_acc=86.6%  val_acc=89.5% val_bal_acc=82.5% val_auc=0.906
+INFO:__main__:Epoch 8/100: train_acc=87.0%  val_acc=88.4% val_bal_acc=85.1% val_auc=0.934
+INFO:__main__:Epoch 9/100: train_acc=88.0%  val_acc=90.9% val_bal_acc=85.6% val_auc=0.939
+INFO:__main__:Epoch 10/100: train_acc=89.0%  val_acc=92.0% val_bal_acc=88.5% val_auc=0.938
+INFO:__main__:Epoch 11/100: train_acc=88.9%  val_acc=90.9% val_bal_acc=88.9% val_auc=0.944
+INFO:__main__:Epoch 12/100: train_acc=90.3%  val_acc=90.4% val_bal_acc=88.6% val_auc=0.942
+INFO:__main__:Epoch 13/100: train_acc=90.9%  val_acc=91.4% val_bal_acc=88.3% val_auc=0.950
+INFO:__main__:Epoch 14/100: train_acc=91.5%  val_acc=91.4% val_bal_acc=85.6% val_auc=0.949
+INFO:__main__:Epoch 15/100: train_acc=92.2%  val_acc=91.9% val_bal_acc=84.2% val_auc=0.952
+INFO:__main__:Epoch 16/100: train_acc=92.5%  val_acc=92.0% val_bal_acc=85.8% val_auc=0.955
+INFO:__main__:Epoch 17/100: train_acc=92.9%  val_acc=93.2% val_bal_acc=90.7% val_auc=0.958
+INFO:__main__:Epoch 18/100: train_acc=93.4%  val_acc=93.5% val_bal_acc=88.0% val_auc=0.957
+INFO:__main__:Epoch 19/100: train_acc=94.0%  val_acc=90.2% val_bal_acc=90.5% val_auc=0.960
+INFO:__main__:Epoch 20/100: train_acc=94.3%  val_acc=93.4% val_bal_acc=88.9% val_auc=0.961
+INFO:__main__:Epoch 21/100: train_acc=94.2%  val_acc=93.2% val_bal_acc=90.2% val_auc=0.957
+INFO:__main__:Epoch 22/100: train_acc=94.9%  val_acc=93.6% val_bal_acc=88.3% val_auc=0.960
+INFO:__main__:Epoch 23/100: train_acc=95.5%  val_acc=92.9% val_bal_acc=87.4% val_auc=0.957
+INFO:__main__:Epoch 24/100: train_acc=95.7%  val_acc=91.2% val_bal_acc=82.5% val_auc=0.957
+INFO:__main__:Epoch 25/100: train_acc=95.9%  val_acc=92.2% val_bal_acc=88.5% val_auc=0.946
+INFO:__main__:Epoch 26/100: train_acc=96.4%  val_acc=92.4% val_bal_acc=84.4% val_auc=0.953
+INFO:__main__:Epoch 27/100: train_acc=97.1%  val_acc=92.7% val_bal_acc=87.5% val_auc=0.956
+INFO:__main__:Epoch 28/100: train_acc=96.9%  val_acc=93.6% val_bal_acc=89.0% val_auc=0.964
+INFO:__main__:Epoch 29/100: train_acc=97.0%  val_acc=91.6% val_bal_acc=89.6% val_auc=0.956
+INFO:__main__:Epoch 30/100: train_acc=97.4%  val_acc=91.4% val_bal_acc=90.5% val_auc=0.949
+INFO:__main__:Epoch 31/100: train_acc=97.1%  val_acc=92.1% val_bal_acc=90.6% val_auc=0.952
+INFO:__main__:Epoch 32/100: train_acc=98.1%  val_acc=91.8% val_bal_acc=84.0% val_auc=0.957
+INFO:__main__:Epoch 33/100: train_acc=98.1%  val_acc=92.0% val_bal_acc=85.4% val_auc=0.944
+INFO:__main__:Epoch 34/100: train_acc=98.3%  val_acc=91.6% val_bal_acc=83.5% val_auc=0.947
+INFO:__main__:Epoch 35/100: train_acc=98.2%  val_acc=92.7% val_bal_acc=87.5% val_auc=0.945
+INFO:__main__:Epoch 36/100: train_acc=98.4%  val_acc=91.9% val_bal_acc=85.7% val_auc=0.952
+INFO:__main__:Epoch 37/100: train_acc=98.5%  val_acc=89.9% val_bal_acc=90.1% val_auc=0.945
+INFO:__main__:Early stopping at epoch 37
+INFO:__main__:
+Best val balanced accuracy: 90.7%
+INFO:__main__:
+VAL Results:
+INFO:__main__:  Accuracy:     93.2%
+INFO:__main__:  Balanced Acc: 90.7%
+INFO:__main__:  Sensitivity:  86.4%
+INFO:__main__:  Specificity:  95.1%
+INFO:__main__:  AUC:          0.958
+INFO:__main__:  Confusion:    [[677, 35], [27, 171]]
+INFO:__main__:
+TEST Results:
+INFO:__main__:  Accuracy:     91.6%
+INFO:__main__:  Balanced Acc: 87.9%
+INFO:__main__:  Sensitivity:  81.3%
+INFO:__main__:  Specificity:  94.5%
+INFO:__main__:  AUC:          0.937
+INFO:__main__:  Confusion:    [[673, 39], [37, 161]]
+INFO:__main__:
+Results saved to results_early/seed_3
+  -> Done (seed 3)
+[12:58:27] Seed 4 ...
+[0;93m2026-03-24 12:58:29.024195833 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"[m
+INFO:__main__:Loading datasets...
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:multimodal_fusion_dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 101 missing values in 'CATANIMSC' with 21.00
+INFO:multimodal_fusion_dataset:Filled 102 missing values in 'TRAASCOR' with 30.00
+INFO:multimodal_fusion_dataset:Filled 107 missing values in 'TRABSCOR' with 73.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 167 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 26 missing values in 'VSWEIGHT' with 166.00
+INFO:multimodal_fusion_dataset:Filled 1 missing values in 'BMI' with 27.80
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:multimodal_fusion_dataset:Filled 6 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 91 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 92 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 100 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 179 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 33 missing values in 'VSWEIGHT' with 164.00
+INFO:multimodal_fusion_dataset:Filled 2 missing values in 'BMI' with 28.20
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:monai.networks.nets.resnet:Loading MedicalNet pretrained model from https://huggingface.co/TencentMedicalNet/MedicalNet-Resnet50
+INFO:monai.networks.nets.resnet:resnet_50_23dataset.pth downloaded
+INFO:__main__:EarlyFusionModel params: 46,725,090
+INFO:__main__:Backbone frozen for first 3 epochs
+INFO:__main__:Mixed precision (AMP) enabled
+INFO:__main__:Gradient accumulation: 2 steps (effective batch=4)
+INFO:__main__:
+Training for up to 100 epochs (patience=20, min_epochs=30)
+INFO:__main__:============================================================
+INFO:__main__:Epoch 1/100: train_acc=75.6%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.581 [frozen]
+INFO:__main__:Epoch 2/100: train_acc=78.3%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.662 [frozen]
+INFO:__main__:Epoch 3/100: train_acc=78.2%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.840 [frozen]
+INFO:__main__:Backbone unfrozen at epoch 4
+INFO:__main__:Epoch 4/100: train_acc=79.4%  val_acc=84.8% val_bal_acc=72.1% val_auc=0.863
+INFO:__main__:Epoch 5/100: train_acc=84.4%  val_acc=85.3% val_bal_acc=68.9% val_auc=0.862
+INFO:__main__:Epoch 6/100: train_acc=86.0%  val_acc=88.9% val_bal_acc=80.1% val_auc=0.889
+INFO:__main__:Epoch 7/100: train_acc=86.5%  val_acc=88.8% val_bal_acc=80.4% val_auc=0.901
+INFO:__main__:Epoch 8/100: train_acc=87.3%  val_acc=89.2% val_bal_acc=82.0% val_auc=0.900
+INFO:__main__:Epoch 9/100: train_acc=87.7%  val_acc=89.5% val_bal_acc=81.0% val_auc=0.895
+INFO:__main__:Epoch 10/100: train_acc=88.6%  val_acc=91.0% val_bal_acc=84.0% val_auc=0.924
+INFO:__main__:Epoch 11/100: train_acc=88.9%  val_acc=91.9% val_bal_acc=87.0% val_auc=0.942
+INFO:__main__:Epoch 12/100: train_acc=89.0%  val_acc=91.9% val_bal_acc=87.1% val_auc=0.940
+INFO:__main__:Epoch 13/100: train_acc=89.5%  val_acc=91.9% val_bal_acc=88.1% val_auc=0.940
+INFO:__main__:Epoch 14/100: train_acc=89.8%  val_acc=91.6% val_bal_acc=83.9% val_auc=0.938
+INFO:__main__:Epoch 15/100: train_acc=90.4%  val_acc=91.9% val_bal_acc=84.6% val_auc=0.928
+INFO:__main__:Epoch 16/100: train_acc=90.8%  val_acc=93.2% val_bal_acc=88.0% val_auc=0.952
+INFO:__main__:Epoch 17/100: train_acc=91.2%  val_acc=93.1% val_bal_acc=87.4% val_auc=0.944
+INFO:__main__:Epoch 18/100: train_acc=91.4%  val_acc=89.1% val_bal_acc=89.0% val_auc=0.950
+INFO:__main__:Epoch 19/100: train_acc=92.4%  val_acc=92.7% val_bal_acc=86.3% val_auc=0.944
+INFO:__main__:Epoch 20/100: train_acc=91.9%  val_acc=92.3% val_bal_acc=86.3% val_auc=0.943
+INFO:__main__:Epoch 21/100: train_acc=93.1%  val_acc=92.4% val_bal_acc=85.3% val_auc=0.955
+INFO:__main__:Epoch 22/100: train_acc=93.9%  val_acc=91.6% val_bal_acc=90.3% val_auc=0.954
+INFO:__main__:Epoch 23/100: train_acc=94.4%  val_acc=92.2% val_bal_acc=89.4% val_auc=0.960
+INFO:__main__:Epoch 24/100: train_acc=94.8%  val_acc=89.0% val_bal_acc=89.9% val_auc=0.952
+INFO:__main__:Epoch 25/100: train_acc=94.8%  val_acc=92.6% val_bal_acc=88.5% val_auc=0.954
+INFO:__main__:Epoch 26/100: train_acc=95.5%  val_acc=91.5% val_bal_acc=89.1% val_auc=0.951
+INFO:__main__:Epoch 27/100: train_acc=95.8%  val_acc=92.3% val_bal_acc=84.7% val_auc=0.945
+INFO:__main__:Epoch 28/100: train_acc=95.9%  val_acc=91.5% val_bal_acc=85.7% val_auc=0.953
+INFO:__main__:Epoch 29/100: train_acc=96.7%  val_acc=91.9% val_bal_acc=87.3% val_auc=0.940
+INFO:__main__:Epoch 30/100: train_acc=96.8%  val_acc=91.2% val_bal_acc=88.4% val_auc=0.950
+INFO:__main__:Epoch 31/100: train_acc=97.3%  val_acc=90.1% val_bal_acc=86.2% val_auc=0.943
+INFO:__main__:Epoch 32/100: train_acc=97.4%  val_acc=92.3% val_bal_acc=88.2% val_auc=0.935
+INFO:__main__:Epoch 33/100: train_acc=97.8%  val_acc=92.0% val_bal_acc=87.6% val_auc=0.949
+INFO:__main__:Epoch 34/100: train_acc=97.7%  val_acc=91.5% val_bal_acc=82.0% val_auc=0.930
+INFO:__main__:Epoch 35/100: train_acc=98.0%  val_acc=91.1% val_bal_acc=81.0% val_auc=0.897
+INFO:__main__:Epoch 36/100: train_acc=98.0%  val_acc=90.4% val_bal_acc=88.8% val_auc=0.945
+INFO:__main__:Epoch 37/100: train_acc=98.2%  val_acc=91.4% val_bal_acc=88.3% val_auc=0.953
+INFO:__main__:Epoch 38/100: train_acc=98.5%  val_acc=90.9% val_bal_acc=87.1% val_auc=0.935
+INFO:__main__:Epoch 39/100: train_acc=98.6%  val_acc=87.0% val_bal_acc=90.1% val_auc=0.952
+INFO:__main__:Epoch 40/100: train_acc=98.4%  val_acc=91.1% val_bal_acc=82.6% val_auc=0.931
+INFO:__main__:Epoch 41/100: train_acc=98.9%  val_acc=90.2% val_bal_acc=80.8% val_auc=0.934
+INFO:__main__:Epoch 42/100: train_acc=98.8%  val_acc=90.8% val_bal_acc=82.3% val_auc=0.923
+INFO:__main__:Early stopping at epoch 42
+INFO:__main__:
+Best val balanced accuracy: 90.3%
+INFO:__main__:
+VAL Results:
+INFO:__main__:  Accuracy:     91.6%
+INFO:__main__:  Balanced Acc: 90.3%
+INFO:__main__:  Sensitivity:  87.9%
+INFO:__main__:  Specificity:  92.7%
+INFO:__main__:  AUC:          0.954
+INFO:__main__:  Confusion:    [[660, 52], [24, 174]]
+INFO:__main__:
+TEST Results:
+INFO:__main__:  Accuracy:     90.7%
+INFO:__main__:  Balanced Acc: 89.1%
+INFO:__main__:  Sensitivity:  86.4%
+INFO:__main__:  Specificity:  91.9%
+INFO:__main__:  AUC:          0.946
+INFO:__main__:  Confusion:    [[654, 58], [27, 171]]
+INFO:__main__:
+Results saved to results_early/seed_4
+  -> Done (seed 4)
+DONE: MLP Early Fusion (all seeds)
+
+==========================================
+4/4 — MLP Late Fusion (5 seeds)
+==========================================
+[19:09:08] Seed 0 ...
+[0;93m2026-03-24 19:09:10.886709573 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"[m
+INFO:__main__:Loading datasets...
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:multimodal_fusion_dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 101 missing values in 'CATANIMSC' with 21.00
+INFO:multimodal_fusion_dataset:Filled 102 missing values in 'TRAASCOR' with 30.00
+INFO:multimodal_fusion_dataset:Filled 107 missing values in 'TRABSCOR' with 73.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 167 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 26 missing values in 'VSWEIGHT' with 166.00
+INFO:multimodal_fusion_dataset:Filled 1 missing values in 'BMI' with 27.80
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:multimodal_fusion_dataset:Filled 6 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 91 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 92 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 100 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 179 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 33 missing values in 'VSWEIGHT' with 164.00
+INFO:multimodal_fusion_dataset:Filled 2 missing values in 'BMI' with 28.20
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:__main__:============================================================
+INFO:__main__:BRANCH 1: ResNet3D on MRI
+INFO:__main__:============================================================
+INFO:monai.networks.nets.resnet:Loading MedicalNet pretrained model from https://huggingface.co/TencentMedicalNet/MedicalNet-Resnet50
+INFO:monai.networks.nets.resnet:resnet_50_23dataset.pth downloaded
+INFO:__main__:Backbone frozen for first 3 epochs
+INFO:__main__:Epoch 1/30: train_acc=78.3%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.586 [frozen]
+INFO:__main__:Epoch 2/30: train_acc=78.3%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.592 [frozen]
+INFO:__main__:Epoch 3/30: train_acc=78.3%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.598 [frozen]
+INFO:__main__:Backbone unfrozen at epoch 4
+INFO:__main__:Epoch 4/30: train_acc=78.3%  val_acc=81.4% val_bal_acc=57.7% val_auc=0.811
+INFO:__main__:Epoch 5/30: train_acc=79.3%  val_acc=84.7% val_bal_acc=71.3% val_auc=0.850
+INFO:__main__:Epoch 6/30: train_acc=81.8%  val_acc=84.0% val_bal_acc=79.7% val_auc=0.875
+INFO:__main__:Epoch 7/30: train_acc=83.5%  val_acc=86.3% val_bal_acc=76.8% val_auc=0.877
+INFO:__main__:Epoch 8/30: train_acc=85.6%  val_acc=86.4% val_bal_acc=75.8% val_auc=0.880
+INFO:__main__:Epoch 9/30: train_acc=86.4%  val_acc=86.9% val_bal_acc=81.1% val_auc=0.893
+INFO:__main__:Epoch 10/30: train_acc=86.5%  val_acc=87.0% val_bal_acc=77.9% val_auc=0.900
+INFO:__main__:Epoch 11/30: train_acc=87.0%  val_acc=88.2% val_bal_acc=76.4% val_auc=0.908
+INFO:__main__:Epoch 12/30: train_acc=87.1%  val_acc=87.6% val_bal_acc=75.8% val_auc=0.906
+INFO:__main__:Epoch 13/30: train_acc=88.1%  val_acc=87.3% val_bal_acc=73.6% val_auc=0.921
+INFO:__main__:Epoch 14/30: train_acc=88.7%  val_acc=87.1% val_bal_acc=72.6% val_auc=0.908
+INFO:__main__:Epoch 15/30: train_acc=88.6%  val_acc=86.3% val_bal_acc=70.3% val_auc=0.913
+INFO:__main__:Epoch 16/30: train_acc=88.6%  val_acc=86.2% val_bal_acc=70.0% val_auc=0.909
+INFO:__main__:Epoch 17/30: train_acc=89.0%  val_acc=86.7% val_bal_acc=71.8% val_auc=0.913
+INFO:__main__:Epoch 18/30: train_acc=88.8%  val_acc=86.8% val_bal_acc=72.1% val_auc=0.913
+INFO:__main__:Epoch 19/30: train_acc=89.3%  val_acc=87.4% val_bal_acc=73.1% val_auc=0.921
+INFO:__main__:Epoch 20/30: train_acc=89.6%  val_acc=88.2% val_bal_acc=75.9% val_auc=0.923
+INFO:__main__:Epoch 21/30: train_acc=90.2%  val_acc=88.4% val_bal_acc=77.1% val_auc=0.920
+INFO:__main__:Epoch 22/30: train_acc=90.6%  val_acc=87.9% val_bal_acc=75.3% val_auc=0.923
+INFO:__main__:Epoch 23/30: train_acc=90.7%  val_acc=86.5% val_bal_acc=70.6% val_auc=0.908
+INFO:__main__:Epoch 24/30: train_acc=90.6%  val_acc=86.4% val_bal_acc=69.8% val_auc=0.919
+INFO:__main__:Early stopping at epoch 24
+INFO:__main__:Best val balanced accuracy: 81.1%
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:__main__:Getting MRI probabilities...
+INFO:__main__:
+BRANCH 1 — MRI only (TEST):
+INFO:__main__:  Accuracy:     86.3%
+INFO:__main__:  Balanced Acc: 80.5%
+INFO:__main__:  Sensitivity:  70.2%
+INFO:__main__:  Specificity:  90.7%
+INFO:__main__:  AUC:          0.887
+INFO:__main__:  Confusion:    [[646, 66], [59, 139]]
+INFO:__main__:
+============================================================
+INFO:__main__:BRANCH 2: MLP on Tabular features only
+INFO:__main__:============================================================
+INFO:__main__:TabularMLP params: 13,026
+INFO:__main__:MLP Epoch 1/200: train_acc=73.1%  val_acc=83.7% val_bal_acc=84.0% val_auc=0.913
+INFO:__main__:MLP Epoch 21/200: train_acc=84.1%  val_acc=85.8% val_bal_acc=84.4% val_auc=0.922
+INFO:__main__:MLP Epoch 41/200: train_acc=86.1%  val_acc=86.4% val_bal_acc=84.0% val_auc=0.919
+INFO:__main__:MLP early stopping at epoch 51
+INFO:__main__:Best MLP val balanced accuracy: 87.1%
+INFO:__main__:
+BRANCH 2 — Tabular MLP only (TEST):
+INFO:__main__:  Accuracy:     83.8%
+INFO:__main__:  Balanced Acc: 84.9%
+INFO:__main__:  Sensitivity:  86.9%
+INFO:__main__:  Specificity:  83.0%
+INFO:__main__:  AUC:          0.932
+INFO:__main__:  Confusion:    [[591, 121], [26, 172]]
+INFO:__main__:
+============================================================
+INFO:__main__:LATE FUSION: Combining predictions
+INFO:__main__:============================================================
+INFO:__main__:
+LATE FUSION — Simple Average (TEST):
+INFO:__main__:  Accuracy:     88.6%
+INFO:__main__:  Balanced Acc: 84.1%
+INFO:__main__:  Sensitivity:  76.3%
+INFO:__main__:  Specificity:  92.0%
+INFO:__main__:  AUC:          0.941
+INFO:__main__:  Confusion:    [[655, 57], [47, 151]]
+INFO:__main__:
+Best weight (MRI): 0.35 (val AUC: 0.953)
+INFO:__main__:
+LATE FUSION — Weighted Average w_mri=0.35 (TEST):
+INFO:__main__:  Accuracy:     89.3%
+INFO:__main__:  Balanced Acc: 88.6%
+INFO:__main__:  Sensitivity:  87.4%
+INFO:__main__:  Specificity:  89.9%
+INFO:__main__:  AUC:          0.948
+INFO:__main__:  Confusion:    [[640, 72], [25, 173]]
+INFO:__main__:
+Stacking weights: MRI=3.568, Tab=0.189, bias=-2.676
+INFO:__main__:
+LATE FUSION — Learned Stacking C=10.0 (TEST):
+INFO:__main__:  Accuracy:     87.3%
+INFO:__main__:  Balanced Acc: 80.4%
+INFO:__main__:  Sensitivity:  68.2%
+INFO:__main__:  Specificity:  92.6%
+INFO:__main__:  AUC:          0.926
+INFO:__main__:  Confusion:    [[659, 53], [63, 135]]
+INFO:__main__:
+============================================================
+INFO:__main__:SUMMARY
+INFO:__main__:============================================================
+INFO:__main__:Method                                 Acc  BalAcc   Sens   Spec    AUC
+INFO:__main__:----------------------------------------------------------------------
+INFO:__main__:MRI only (ResNet3D)                  86.3%  80.5%  70.2%  90.7% 0.887
+INFO:__main__:Tabular only (MLP)                   83.8%  84.9%  86.9%  83.0% 0.932
+INFO:__main__:Late Fusion: Average                 88.6%  84.1%  76.3%  92.0% 0.941
+INFO:__main__:Late Fusion: Weighted                89.3%  88.6%  87.4%  89.9% 0.948
+INFO:__main__:Late Fusion: Stacking                87.3%  80.4%  68.2%  92.6% 0.926
+INFO:__main__:
+Results saved to results_late_fusion/seed_0
+  -> Done (seed 0)
+[23:44:29] Seed 1 ...
+[0;93m2026-03-24 23:44:31.496195600 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"[m
+INFO:__main__:Loading datasets...
+INFO:multimodal_fusion_dataset:Filled 4 missing values in 'AGE' with 69.00
+INFO:multimodal_fusion_dataset:Filled 7 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 492 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 499 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 546 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 845 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 850 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 838 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 141 missing values in 'VSWEIGHT' with 167.00
+INFO:multimodal_fusion_dataset:Filled 241 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 239 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 4245 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 3323 (78.3%)
+INFO:multimodal_fusion_dataset:  Class 1: 922 (21.7%)
+INFO:multimodal_fusion_dataset:Filled 3 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 101 missing values in 'CATANIMSC' with 21.00
+INFO:multimodal_fusion_dataset:Filled 102 missing values in 'TRAASCOR' with 30.00
+INFO:multimodal_fusion_dataset:Filled 107 missing values in 'TRABSCOR' with 73.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 168 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 167 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 26 missing values in 'VSWEIGHT' with 166.00
+INFO:multimodal_fusion_dataset:Filled 1 missing values in 'BMI' with 27.80
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 48 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:multimodal_fusion_dataset:Filled 6 missing values in 'PTEDUCAT' with 16.00
+INFO:multimodal_fusion_dataset:Filled 91 missing values in 'CATANIMSC' with 20.00
+INFO:multimodal_fusion_dataset:Filled 92 missing values in 'TRAASCOR' with 31.00
+INFO:multimodal_fusion_dataset:Filled 100 missing values in 'TRABSCOR' with 78.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANFOR' with -4.00
+INFO:multimodal_fusion_dataset:Filled 184 missing values in 'DSPANBAC' with -4.00
+INFO:multimodal_fusion_dataset:Filled 179 missing values in 'BNTTOTAL' with -4.00
+INFO:multimodal_fusion_dataset:Filled 33 missing values in 'VSWEIGHT' with 164.00
+INFO:multimodal_fusion_dataset:Filled 2 missing values in 'BMI' with 28.20
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH14ALCH' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH16SMOK' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH4CARD' with 0.00
+INFO:multimodal_fusion_dataset:Filled 60 missing values in 'MH2NEURL' with -4.00
+INFO:multimodal_fusion_dataset:Loaded 910 samples
+INFO:multimodal_fusion_dataset:Tabular features (16): ['AGE', 'PTGENDER', 'PTEDUCAT', 'PTMARRY', 'CATANIMSC', 'TRAASCOR', 'TRABSCOR', 'DSPANFOR', 'DSPANBAC', 'BNTTOTAL', 'VSWEIGHT', 'BMI', 'MH14ALCH', 'MH16SMOK', 'MH4CARD', 'MH2NEURL']
+INFO:multimodal_fusion_dataset:  Class 0: 712 (78.2%)
+INFO:multimodal_fusion_dataset:  Class 1: 198 (21.8%)
+INFO:__main__:============================================================
+INFO:__main__:BRANCH 1: ResNet3D on MRI
+INFO:__main__:============================================================
+INFO:monai.networks.nets.resnet:Loading MedicalNet pretrained model from https://huggingface.co/TencentMedicalNet/MedicalNet-Resnet50
+INFO:monai.networks.nets.resnet:resnet_50_23dataset.pth downloaded
+INFO:__main__:Backbone frozen for first 3 epochs
+INFO:__main__:Epoch 1/30: train_acc=78.1%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.585 [frozen]
+INFO:__main__:Epoch 2/30: train_acc=78.3%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.584 [frozen]
+INFO:__main__:Epoch 3/30: train_acc=78.3%  val_acc=78.2% val_bal_acc=50.0% val_auc=0.588 [frozen]
+INFO:__main__:Backbone unfrozen at epoch 4
+Traceback (most recent call last):
+  File "/home/tanguy/medical/alzheimer/experiments/resnet3d_mlp/train_late_fusion.py", line 575, in <module>
+    main()
+  File "/home/tanguy/medical/alzheimer/experiments/resnet3d_mlp/train_late_fusion.py", line 239, in main
+    outputs = model(mri)
+              ^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/experiments/resnet3d_mlp/train_late_fusion.py", line 75, in forward
+    features = self.backbone(x)
+               ^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/experiments/resnet3d_mlp/model.py", line 42, in forward
+    return self.net(x)
+           ^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/monai/networks/nets/resnet.py", line 353, in forward
+    x = self.layer1(x)
+        ^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/container.py", line 250, in forward
+    input = module(input)
+            ^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/monai/networks/nets/resnet.py", line 171, in forward
+    out = self.conv2(out)
+          ^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/conv.py", line 717, in forward
+    return self._conv_forward(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanguy/medical/alzheimer/env/lib/python3.12/site-packages/torch/nn/modules/conv.py", line 712, in _conv_forward
+    return F.conv3d(
+           ^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 864.00 MiB. GPU 0 has a total capacity of 15.70 GiB of which 580.38 MiB is free. Including non-PyTorch memory, this process has 3.27 GiB memory in use. Process 3222108 has 11.80 GiB memory in use. Of the allocated memory 1.76 GiB is allocated by PyTorch, and 1.17 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
