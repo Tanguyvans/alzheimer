@@ -4,7 +4,8 @@ Multi-seed analysis: aggregate results across seeds, DeLong tests, GradCAM.
 
 Loads predictions from seed_* subdirectories, computes mean +/- std
 for all metrics, runs DeLong tests on mean probabilities, and GradCAM from
-the best-AUC seed. Methods with fewer than EXPECTED_SEEDS seeds show NaN.
+the best-AUC seed. Methods with fewer than EXPECTED_SEEDS seeds are marked
+"(1 seed)" in the heatmap.
 
 Usage:
     python analyze_multi_seed.py                  # CPU analyses only
@@ -12,7 +13,6 @@ Usage:
 """
 
 import numpy as np
-import json
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -40,20 +40,6 @@ EXPECTED_SEEDS = 5  # number of seeds expected per method
 # ═══════════════════════════════════════════════════════
 # Load predictions across all seeds
 # ═══════════════════════════════════════════════════════
-
-def _load_method_seeds(base_dir, result_subdir, method_name, loader_fn):
-    """Scan seed_* dirs under base_dir/result_subdir and load predictions."""
-    results = []
-    parent = base_dir / result_subdir
-    for seed in range(MAX_SEED):
-        p = parent / f"seed_{seed}"
-        if not p.exists():
-            continue
-        loaded = loader_fn(p)
-        if loaded is not None:
-            results.append((seed, loaded))
-    return results
-
 
 def load_all_seeds():
     """Load predictions for all seeds per method (supports different seed counts)."""
@@ -291,6 +277,8 @@ def run_delong_analysis(y_true, all_preds, seed_counts=None):
     print("DeLong Test - Pairwise AUC comparison (mean probabilities)")
     print("=" * 60)
 
+    from matplotlib.colors import LinearSegmentedColormap
+
     # Number of seeds per method
     n_seeds = {}
     for method in all_preds:
@@ -299,83 +287,53 @@ def run_delong_analysis(y_true, all_preds, seed_counts=None):
         else:
             n_seeds[method] = len(all_preds[method])
 
-    MIN_SEEDS_FOR_DELONG = EXPECTED_SEEDS  # need all expected seeds for comparison
-
-    # Compute mean probabilities across seeds
+    # Compute mean probabilities and AUCs
     mean_preds = {}
+    auc_values = {}
     for method, proba_list in all_preds.items():
         mean_preds[method] = np.mean(proba_list, axis=0)
+        auc_values[method] = roc_auc_score(y_true, mean_preds[method])
 
-    names = list(mean_preds.keys())
-    n = len(names)
-    p_matrix = np.full((n, n), np.nan)
-    auc_values = {}
-
-    for i in range(n):
-        auc_values[names[i]] = roc_auc_score(y_true, mean_preds[names[i]])
-        p_matrix[i, i] = 1.0
-        for j in range(i + 1, n):
-            # Only compute DeLong if both methods have enough seeds
-            if n_seeds[names[i]] >= MIN_SEEDS_FOR_DELONG and n_seeds[names[j]] >= MIN_SEEDS_FOR_DELONG:
-                _, _, z, p_val = delong_test(y_true, mean_preds[names[i]], mean_preds[names[j]])
-                p_matrix[i, j] = p_val
-                p_matrix[j, i] = p_val
-
-    # Display names: add suffix for incomplete methods
-    display_names = []
-    for name in names:
-        if n_seeds[name] < MIN_SEEDS_FOR_DELONG:
-            display_names.append(f"{name} ({n_seeds[name]}/{EXPECTED_SEEDS} seeds)")
+    # Logical ordering: unimodal → early fusion → late fusion, then AUC desc
+    def _order_key(name):
+        if 'only' in name.lower():
+            group = 0
+        elif 'Early' in name:
+            group = 1
         else:
-            display_names.append(name)
+            group = 2
+        return (group, -auc_values[name])
+
+    sorted_names = sorted(all_preds.keys(), key=_order_key)
+    nc = len(sorted_names)
+
+    # Compute DeLong for ALL pairs (single pass)
+    p_matrix = np.full((nc, nc), np.nan)
+    for i in range(nc):
+        p_matrix[i, i] = 1.0
+        for j in range(i + 1, nc):
+            _, _, z, p_val = delong_test(y_true, mean_preds[sorted_names[i]], mean_preds[sorted_names[j]])
+            p_matrix[i, j] = p_val
+            p_matrix[j, i] = p_val
 
     # Print
     print(f"\n{'Method':<30} {'AUC (mean proba)':>16} {'Seeds':>6}")
     print("-" * 54)
-    for idx in sorted(range(len(names)), key=lambda i: auc_values[names[i]], reverse=True):
-        name = names[idx]
+    for name in sorted(sorted_names, key=lambda x: auc_values[x], reverse=True):
         print(f"{name:<30} {auc_values[name]:.4f} {n_seeds[name]:>6}")
 
     print("\nSignificant differences (p < 0.05):")
     found = False
-    for i in range(n):
-        for j in range(i + 1, n):
-            if not np.isnan(p_matrix[i, j]) and p_matrix[i, j] < 0.05:
+    for i in range(nc):
+        for j in range(i + 1, nc):
+            if p_matrix[i, j] < 0.05:
                 found = True
-                diff = auc_values[names[i]] - auc_values[names[j]]
-                print(f"  {names[i]} vs {names[j]}: p={p_matrix[i,j]:.4f}, AUC diff={diff:+.4f}")
+                diff = auc_values[sorted_names[i]] - auc_values[sorted_names[j]]
+                print(f"  {sorted_names[i]} vs {sorted_names[j]}: p={p_matrix[i,j]:.4f}, AUC diff={diff:+.4f}")
     if not found:
         print("  None - all AUC differences are not statistically significant")
 
-    # ── Heatmap: all methods, ordered by category then AUC ──
-    from matplotlib.colors import LinearSegmentedColormap
-
-    # Logical ordering: unimodal → early fusion → late fusion
-    def _order_key(name):
-        if 'only' in name.lower():
-            group = 0  # unimodal
-        elif 'Early' in name:
-            group = 1  # early fusion
-        else:
-            group = 2  # late fusion
-        return (group, -auc_values[name])
-
-    sorted_names = sorted(names, key=_order_key)
-    nc = len(sorted_names)
-
-    # Reorder p_matrix — compute DeLong for ALL pairs (including 1-seed methods)
-    idx_map = [names.index(s) for s in sorted_names]
-    p_sorted = np.full((nc, nc), np.nan)
-    for i in range(nc):
-        p_sorted[i, i] = 1.0
-        for j in range(i + 1, nc):
-            ci, cj = idx_map[i], idx_map[j]
-            # Compute DeLong for all pairs (even 1-seed methods)
-            _, _, z, p_val = delong_test(y_true, mean_preds[sorted_names[i]], mean_preds[sorted_names[j]])
-            p_sorted[i, j] = p_val
-            p_sorted[j, i] = p_val
-
-    # Labels: mark 1-seed methods
+    # Labels: mark incomplete methods
     labels = []
     for name in sorted_names:
         if n_seeds[name] < EXPECTED_SEEDS:
@@ -390,7 +348,7 @@ def run_delong_analysis(y_true, all_preds, seed_counts=None):
             if i == j:
                 annot[i, j] = f"AUC\n{auc_values[sorted_names[i]]:.3f}"
             else:
-                p = p_sorted[i, j]
+                p = p_matrix[i, j]
                 if p < 0.001:
                     annot[i, j] = "p<.001\n***"
                 elif p < 0.01:
@@ -405,7 +363,7 @@ def run_delong_analysis(y_true, all_preds, seed_counts=None):
     for i in range(nc):
         for j in range(nc):
             if i != j:
-                color_matrix[i, j] = -np.log10(max(p_sorted[i, j], 1e-10))
+                color_matrix[i, j] = -np.log10(max(p_matrix[i, j], 1e-10))
 
     mask = np.eye(nc, dtype=bool)
 
@@ -456,7 +414,7 @@ def run_delong_analysis(y_true, all_preds, seed_counts=None):
     plt.close()
     print(f"\nSaved: {REPORT_DIR / 'delong_test.png'}")
 
-    df = pd.DataFrame(p_matrix, index=display_names, columns=display_names)
+    df = pd.DataFrame(p_matrix, index=labels, columns=labels)
     df.to_csv(REPORT_DIR / "delong_pvalues.csv", na_rep='N/A')
     print(f"Saved: {REPORT_DIR / 'delong_pvalues.csv'}")
 
@@ -619,7 +577,6 @@ def gradcam_resnet3d(all_preds, y_true):
     print(f"  Best seed: {best_seed} (AUC={aucs[best_seed]:.4f})")
 
     import torch
-    import torch.nn as nn
     import yaml
     import importlib.util
     from scipy.ndimage import zoom

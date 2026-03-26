@@ -5,10 +5,9 @@ of report_old/resnet3d_fusion_report.docx. Report in French.
 """
 
 import numpy as np
-import pandas as pd
 from pathlib import Path
 from docx import Document
-from docx.shared import Inches, Pt, RGBColor
+from docx.shared import Inches, Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from sklearn.metrics import roc_auc_score, accuracy_score, balanced_accuracy_score, confusion_matrix
@@ -137,15 +136,6 @@ def fmt_pct(mean, std, complete):
     if std is None:
         return f"{mean:.1f}"
     return f"{mean:.1f} \u00b1 {std:.1f}"
-
-
-def fmt_auc(mean, std, complete):
-    """Format AUC metric."""
-    if not complete and std is None:
-        return f"{mean:.3f}*"
-    if std is None:
-        return f"{mean:.3f}"
-    return f"{mean:.3f} \u00b1 {std:.3f}"
 
 
 def set_cell_font(cell, text, bold=False, size=8):
@@ -341,8 +331,8 @@ def generate_report():
     if delong_img.exists():
         doc.add_heading("Test de DeLong", level=2)
         doc.add_paragraph(
-            "Test de DeLong par paires sur les probabilit\u00e9s moyenn\u00e9es. Les m\u00e9thodes avec un seul seed "
-            "sont marqu\u00e9es N/A car la comparaison n'est pas fiable sans ex\u00e9cutions r\u00e9p\u00e9t\u00e9es."
+            "Test de DeLong par paires sur les probabilit\u00e9s moyenn\u00e9es (AUC ensemble). "
+            "Les m\u00e9thodes avec un seul seed sont indiqu\u00e9es par \u00ab 1 seed \u00bb."
         )
         doc.add_picture(str(delong_img), width=Inches(5.5))
 
