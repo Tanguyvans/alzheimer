@@ -558,43 +558,37 @@ def plot_confusion_matrices(y_true, mean_preds):
 
 
 # ═══════════════════════════════════════════════════════
-# 6. GradCAM (best seed)
+# 6. Interpretability: Integrated Gradients (best seed)
+#    - Individual images (5 AD + 5 CN)
+#    - Group average maps (AD vs CN)
+#    - Difference map (AD - CN)
 # ═══════════════════════════════════════════════════════
 
-def gradcam_resnet3d(all_preds, y_true):
-    """GradCAM from the best-AUC seed for MLP Early Fusion."""
-    print("\n" + "=" * 60)
-    print("GradCAM - ResNet3D (best seed)")
-    print("=" * 60)
+def _load_model_and_data(all_preds, y_true):
+    """Load best-seed model and datasets."""
+    import torch
+    import yaml
+    import importlib.util
 
     if "MLP Early" not in all_preds:
-        print("  No MLP Early predictions found, skipping GradCAM.")
-        return
+        print("  No MLP Early predictions found, skipping.")
+        return None
 
-    # Find best seed by AUC
     aucs = [roc_auc_score(y_true, p) for p in all_preds["MLP Early"]]
     best_seed = int(np.argmax(aucs))
     print(f"  Best seed: {best_seed} (AUC={aucs[best_seed]:.4f})")
 
-    import torch
-    import yaml
-    import importlib.util
-    from scipy.ndimage import zoom
-
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"  Using device: {device}")
 
-    # Import model
     _spec = importlib.util.spec_from_file_location("model", MLP_DIR / "model.py")
     _mod = importlib.util.module_from_spec(_spec)
     _spec.loader.exec_module(_mod)
 
-    # Import dataset
     _spec_ds = importlib.util.spec_from_file_location("dataset", BASE / "multimodal_fusion" / "dataset.py")
     _ds_mod = importlib.util.module_from_spec(_spec_ds)
     _spec_ds.loader.exec_module(_ds_mod)
 
-    # Load config
     with open(MLP_DIR / "config.yaml") as f:
         config = yaml.safe_load(f)
 
@@ -602,11 +596,10 @@ def gradcam_resnet3d(all_preds, y_true):
     target_shape = tuple(preproc.get('target_shape', [128, 128, 128]))
     tabular_features = config['data']['tabular_features']
 
-    # Load best model
     model_path = MLP_DIR / "results_early" / f"seed_{best_seed}" / "best_model.pth"
     if not model_path.exists():
-        print(f"  No model found at {model_path}, skipping GradCAM.")
-        return
+        print(f"  No model found at {model_path}, skipping.")
+        return None
 
     checkpoint = torch.load(model_path, map_location=device, weights_only=False)
     model = _mod.EarlyFusionModel(
@@ -621,21 +614,6 @@ def gradcam_resnet3d(all_preds, y_true):
     model = model.to(device)
     model.eval()
 
-    # Hooks
-    activations = {}
-    gradients = {}
-
-    def forward_hook(module, input, output):
-        activations['value'] = output.detach()
-
-    def backward_hook(module, grad_input, grad_output):
-        gradients['value'] = grad_output[0].detach()
-
-    target_layer = model.backbone.net.layer4
-    fwd_handle = target_layer.register_forward_hook(forward_hook)
-    bwd_handle = target_layer.register_full_backward_hook(backward_hook)
-
-    # Load test dataset
     train_dataset = _ds_mod.MultiModalDataset(
         config['data']['train_csv'], tabular_features=tabular_features,
         target_shape=target_shape, augment=False, normalize_tabular=True,
@@ -651,103 +629,316 @@ def gradcam_resnet3d(all_preds, y_true):
         target_spacing=preproc.get('target_spacing', 1.75)
     )
 
-    # Collect examples
-    examples = {'TP': [], 'TN': [], 'FP': [], 'FN': []}
-    target_counts = {'TP': 3, 'TN': 3, 'FP': 2, 'FN': 2}
+    return {
+        'model': model, 'device': device, 'test_dataset': test_dataset,
+        'target_shape': target_shape, 'best_seed': best_seed,
+    }
 
-    print("  Collecting GradCAM examples...")
-    for idx in range(len(test_dataset)):
-        if all(len(examples[k]) >= target_counts[k] for k in examples):
-            break
 
-        mri, tabular, label_val = test_dataset[idx]
-        mri_gpu = mri.unsqueeze(0).to(device).requires_grad_(True)
-        tabular_gpu = tabular.unsqueeze(0).to(device)
+def _compute_ig(model, mri_gpu, tabular_gpu, device, n_steps=100):
+    """Compute Integrated Gradients attribution for a single sample."""
+    import torch
+    from scipy.ndimage import gaussian_filter
+
+    baseline_mri = torch.zeros_like(mri_gpu)
+    baseline_tab = torch.zeros_like(tabular_gpu)
+
+    ig_grads = torch.zeros_like(mri_gpu)
+    for step in range(n_steps):
+        alpha = step / n_steps
+        interp_mri = (baseline_mri + alpha * (mri_gpu - baseline_mri)).requires_grad_(True)
+        interp_tab = (baseline_tab + alpha * (tabular_gpu - baseline_tab)).requires_grad_(True)
 
         model.zero_grad()
-        output = model(mri_gpu, tabular_gpu)
-        pred = output.argmax(dim=1).item()
-        prob = torch.softmax(output, dim=1)[0, 1].item()
+        out = model(interp_mri, interp_tab)
+        out[0, 1].backward()
+        ig_grads += interp_mri.grad.detach()
 
-        if pred == 1 and label_val == 1:
-            cat = 'TP'
-        elif pred == 0 and label_val == 0:
-            cat = 'TN'
-        elif pred == 1 and label_val == 0:
-            cat = 'FP'
-        else:
-            cat = 'FN'
+    ig_attr = ((mri_gpu - baseline_mri) * ig_grads / n_steps).squeeze().cpu().numpy()
+    ig_attr = np.abs(ig_attr)
+    ig_attr = gaussian_filter(ig_attr, sigma=2.0)
+    ig_attr = (ig_attr - ig_attr.min()) / (ig_attr.max() - ig_attr.min() + 1e-8)
+    return ig_attr
 
-        if len(examples[cat]) >= target_counts[cat]:
-            continue
 
-        output[0, 1].backward()
-        grads = gradients['value']
-        acts = activations['value']
-        weights = grads.mean(dim=[2, 3, 4], keepdim=True)
-        cam = (weights * acts).sum(dim=1, keepdim=True)
-        cam = torch.relu(cam).squeeze().cpu().numpy()
-
-        zoom_factors = [s / c for s, c in zip(target_shape, cam.shape)]
-        cam_up = zoom(cam, zoom_factors, order=1)
-        cam_up = (cam_up - cam_up.min()) / (cam_up.max() - cam_up.min() + 1e-8)
-
-        examples[cat].append({
-            'mri': mri.squeeze().numpy(),
-            'cam': cam_up,
-            'label': label_val,
-            'pred': pred,
-            'prob': prob,
-        })
-
-    fwd_handle.remove()
-    bwd_handle.remove()
-
-    # Plot
-    all_examples = []
-    for cat in ['TP', 'TN', 'FP', 'FN']:
-        all_examples.extend([(cat, ex) for ex in examples[cat]])
-
-    n_ex = len(all_examples)
-    if n_ex == 0:
-        print("  No examples collected.")
-        return
-
-    fig, axes = plt.subplots(n_ex, 3, figsize=(12, 3.5 * n_ex))
-    if n_ex == 1:
-        axes = axes.reshape(1, -1)
-
+def _plot_individual(mri, ig, label, prob, out_path):
+    """Save a single patient figure: 3 slices (sagittal, coronal, axial) with IG overlay."""
+    d, h, w = mri.shape
+    fig, axes = plt.subplots(1, 3, figsize=(12, 4))
     slice_names = ['Sagittal', 'Coronal', 'Axial']
-    for row, (cat, ex) in enumerate(all_examples):
-        mri = ex['mri']
-        cam = ex['cam']
-        d, h, w = mri.shape
-        true_label = 'AD' if ex['label'] == 1 else 'CN'
-        pred_label = 'AD' if ex['pred'] == 1 else 'CN'
+    slices_mri = [mri[d // 2, :, :], mri[:, h // 2, :], mri[:, :, w // 2]]
+    slices_ig = [ig[d // 2, :, :], ig[:, h // 2, :], ig[:, :, w // 2]]
 
+    for col in range(3):
+        axes[col].imshow(slices_mri[col].T, cmap='gray', origin='lower', aspect='auto')
+        axes[col].imshow(slices_ig[col].T, cmap='hot', alpha=0.5, origin='lower', aspect='auto')
+        axes[col].set_title(slice_names[col], fontsize=12, fontweight='bold')
+        axes[col].axis('off')
+
+    diag = 'AD' if label == 1 else 'CN'
+    fig.suptitle(f'{diag} — p(AD)={prob:.3f}', fontsize=14, fontweight='bold')
+    plt.tight_layout()
+    fig.savefig(out_path, dpi=200, bbox_inches='tight')
+    plt.close()
+
+
+def _plot_group_average(avg_map, mri_template, title, out_path):
+    """Plot group-average attribution map overlaid on a template MRI."""
+    d, h, w = mri_template.shape
+    fig, axes = plt.subplots(1, 3, figsize=(14, 4.5))
+    slice_names = ['Sagittal', 'Coronal', 'Axial']
+    slices_mri = [mri_template[d // 2, :, :], mri_template[:, h // 2, :], mri_template[:, :, w // 2]]
+    slices_attr = [avg_map[d // 2, :, :], avg_map[:, h // 2, :], avg_map[:, :, w // 2]]
+
+    for col in range(3):
+        axes[col].imshow(slices_mri[col].T, cmap='gray', origin='lower', aspect='auto')
+        im = axes[col].imshow(slices_attr[col].T, cmap='hot', alpha=0.55, origin='lower',
+                              aspect='auto', vmin=0, vmax=1)
+        axes[col].set_title(slice_names[col], fontsize=12, fontweight='bold')
+        axes[col].axis('off')
+
+    cbar = fig.colorbar(im, ax=axes, fraction=0.02, pad=0.04)
+    cbar.set_label('Mean attribution', fontsize=10)
+    fig.suptitle(title, fontsize=14, fontweight='bold')
+    plt.tight_layout()
+    fig.savefig(out_path, dpi=200, bbox_inches='tight')
+    plt.close()
+
+
+def _plot_difference_map(diff_map, mri_template, best_seed, out_path):
+    """Plot AD - CN difference map (diverging colormap)."""
+    d, h, w = mri_template.shape
+    fig, axes = plt.subplots(1, 3, figsize=(14, 4.5))
+    slice_names = ['Sagittal', 'Coronal', 'Axial']
+    slices_mri = [mri_template[d // 2, :, :], mri_template[:, h // 2, :], mri_template[:, :, w // 2]]
+    slices_diff = [diff_map[d // 2, :, :], diff_map[:, h // 2, :], diff_map[:, :, w // 2]]
+
+    vmax = np.percentile(np.abs(diff_map), 99)
+    for col in range(3):
+        axes[col].imshow(slices_mri[col].T, cmap='gray', origin='lower', aspect='auto')
+        im = axes[col].imshow(slices_diff[col].T, cmap='RdBu_r', alpha=0.6, origin='lower',
+                              aspect='auto', vmin=-vmax, vmax=vmax)
+        axes[col].set_title(slice_names[col], fontsize=12, fontweight='bold')
+        axes[col].axis('off')
+
+    cbar = fig.colorbar(im, ax=axes, fraction=0.02, pad=0.04)
+    cbar.set_label('AD - CN attribution', fontsize=10)
+    fig.suptitle(f'Differential Attribution Map (AD - CN)\n'
+                 f'Red = more important for AD, Blue = more important for CN  (seed={best_seed})',
+                 fontsize=13, fontweight='bold')
+    plt.tight_layout()
+    fig.savefig(out_path, dpi=200, bbox_inches='tight')
+    plt.close()
+
+
+def _plot_summary_figure(ad_examples, cn_examples, avg_ad, avg_cn, diff_map, mri_template, best_seed, out_path):
+    """Paper-ready summary: 2 AD + 2 CN individuals, group averages, difference map."""
+    fig = plt.figure(figsize=(18, 20))
+    # Layout: 6 rows x 3 cols
+    # Row 0-1: AD individuals, Row 2-3: CN individuals, Row 4: group avg AD & CN, Row 5: difference
+    gs = fig.add_gridspec(6, 3, hspace=0.35, wspace=0.05)
+
+    d, h, w = mri_template.shape
+
+    def _draw_row(row_idx, mri, attr, cmap, alpha, label_text, color):
         slices_mri = [mri[d // 2, :, :], mri[:, h // 2, :], mri[:, :, w // 2]]
-        slices_cam = [cam[d // 2, :, :], cam[:, h // 2, :], cam[:, :, w // 2]]
-
+        slices_attr = [attr[d // 2, :, :], attr[:, h // 2, :], attr[:, :, w // 2]]
+        slice_names = ['Sagittal', 'Coronal', 'Axial']
         for col in range(3):
-            ax = axes[row, col]
+            ax = fig.add_subplot(gs[row_idx, col])
             ax.imshow(slices_mri[col].T, cmap='gray', origin='lower', aspect='auto')
-            ax.imshow(slices_cam[col].T, cmap='jet', alpha=0.4, origin='lower', aspect='auto')
+            ax.imshow(slices_attr[col].T, cmap=cmap, alpha=alpha, origin='lower', aspect='auto')
             ax.axis('off')
             if col == 0:
-                color = 'green' if cat in ('TP', 'TN') else 'red'
-                ax.set_ylabel(f'{cat}\nTrue={true_label}\nPred={pred_label}\np(AD)={ex["prob"]:.2f}',
-                              fontsize=9, fontweight='bold', color=color, rotation=0,
-                              labelpad=80, verticalalignment='center')
-            if row == 0:
+                ax.set_ylabel(label_text, fontsize=10, fontweight='bold', color=color,
+                              rotation=0, labelpad=70, verticalalignment='center')
+            if row_idx == 0:
                 ax.set_title(slice_names[col], fontsize=12, fontweight='bold')
 
-    plt.suptitle(f'GradCAM - ResNet3D Early Fusion (best seed={best_seed})\n'
-                 '(Red = high AD-related activation)',
-                 fontsize=14, fontweight='bold')
+    # AD individuals (rows 0-1)
+    for i, ex in enumerate(ad_examples[:2]):
+        _draw_row(i, ex['mri'], ex['ig'], 'hot', 0.5,
+                  f"AD #{i+1}\np(AD)={ex['prob']:.2f}", 'darkred')
+
+    # CN individuals (rows 2-3)
+    for i, ex in enumerate(cn_examples[:2]):
+        _draw_row(2 + i, ex['mri'], ex['ig'], 'hot', 0.5,
+                  f"CN #{i+1}\np(AD)={ex['prob']:.2f}", 'darkblue')
+
+    # Group average AD (row 4, left half) + CN (row 4, right... actually use full row for each)
+    # Row 4: Group avg AD
+    _draw_row(4, mri_template, avg_ad, 'hot', 0.55, 'Group avg\nAD (n=50)', 'darkred')
+
+    # Row 5: Difference map
+    vmax = np.percentile(np.abs(diff_map), 99)
+    slice_names = ['Sagittal', 'Coronal', 'Axial']
+    slices_mri = [mri_template[d // 2, :, :], mri_template[:, h // 2, :], mri_template[:, :, w // 2]]
+    slices_diff = [diff_map[d // 2, :, :], diff_map[:, h // 2, :], diff_map[:, :, w // 2]]
+    for col in range(3):
+        ax = fig.add_subplot(gs[5, col])
+        ax.imshow(slices_mri[col].T, cmap='gray', origin='lower', aspect='auto')
+        im = ax.imshow(slices_diff[col].T, cmap='RdBu_r', alpha=0.6, origin='lower',
+                       aspect='auto', vmin=-vmax, vmax=vmax)
+        ax.axis('off')
+        if col == 0:
+            ax.set_ylabel('AD - CN\ndifference', fontsize=10, fontweight='bold', color='purple',
+                          rotation=0, labelpad=70, verticalalignment='center')
+
+    fig.suptitle(f'Integrated Gradients — ResNet3D Early Fusion (seed={best_seed})\n'
+                 'Individual examples, group averages, and differential attribution',
+                 fontsize=15, fontweight='bold')
     plt.tight_layout()
-    fig.savefig(REPORT_DIR / "gradcam_examples.png", dpi=200, bbox_inches='tight')
+    fig.savefig(out_path, dpi=200, bbox_inches='tight')
     plt.close()
-    print(f"Saved: {REPORT_DIR / 'gradcam_examples.png'}")
+
+
+def interpretability_analysis(all_preds, y_true):
+    """Full interpretability: individual IG maps + group averages + difference map."""
+    import torch
+    from scipy.ndimage import gaussian_filter
+
+    print("\n" + "=" * 60)
+    print("Interpretability: Integrated Gradients (best seed)")
+    print("=" * 60)
+
+    ctx = _load_model_and_data(all_preds, y_true)
+    if ctx is None:
+        return
+
+    model = ctx['model']
+    device = ctx['device']
+    test_dataset = ctx['test_dataset']
+    best_seed = ctx['best_seed']
+
+    # Create output directory
+    ig_dir = REPORT_DIR / "interpretability"
+    ig_dir.mkdir(exist_ok=True)
+    (ig_dir / "individual").mkdir(exist_ok=True)
+
+    # ── Phase 1: Classify all test samples ──
+    print("\n  Phase 1: Classifying all test samples...")
+    sample_info = []
+    for idx in range(len(test_dataset)):
+        mri, tabular, label_val = test_dataset[idx]
+        mri_gpu = mri.unsqueeze(0).to(device)
+        tabular_gpu = tabular.unsqueeze(0).to(device)
+        with torch.no_grad():
+            output = model(mri_gpu, tabular_gpu)
+        prob = torch.softmax(output, dim=1)[0, 1].item()
+        pred = output.argmax(dim=1).item()
+        sample_info.append({'idx': idx, 'label': label_val, 'pred': pred, 'prob': prob})
+
+    # Sort by confidence for picking good examples
+    ad_correct = sorted([s for s in sample_info if s['label'] == 1 and s['pred'] == 1],
+                        key=lambda x: x['prob'], reverse=True)
+    cn_correct = sorted([s for s in sample_info if s['label'] == 0 and s['pred'] == 0],
+                        key=lambda x: x['prob'])
+
+    n_individual = 5
+    n_group = 50
+
+    print(f"  Found {len(ad_correct)} correct AD, {len(cn_correct)} correct CN")
+    print(f"  Will compute IG for: {n_individual} AD + {n_individual} CN individual")
+    print(f"                       {min(n_group, len(ad_correct))} AD + {min(n_group, len(cn_correct))} CN for group average")
+
+    # ── Phase 2: Individual examples (5 AD + 5 CN) ──
+    print("\n  Phase 2: Individual Integrated Gradients (5 AD + 5 CN)...")
+    ad_examples = []
+    for i, s in enumerate(ad_correct[:n_individual]):
+        print(f"    AD {i+1}/{n_individual} (idx={s['idx']}, p(AD)={s['prob']:.3f})...")
+        mri, tabular, label_val = test_dataset[s['idx']]
+        mri_gpu = mri.unsqueeze(0).to(device)
+        tabular_gpu = tabular.unsqueeze(0).to(device)
+        ig = _compute_ig(model, mri_gpu, tabular_gpu, device, n_steps=100)
+        ex = {'mri': mri.squeeze().numpy(), 'ig': ig, 'label': label_val, 'prob': s['prob']}
+        ad_examples.append(ex)
+        _plot_individual(ex['mri'], ig, label_val, s['prob'],
+                         ig_dir / "individual" / f"AD_{i+1:02d}.png")
+
+    cn_examples = []
+    for i, s in enumerate(cn_correct[:n_individual]):
+        print(f"    CN {i+1}/{n_individual} (idx={s['idx']}, p(AD)={s['prob']:.3f})...")
+        mri, tabular, label_val = test_dataset[s['idx']]
+        mri_gpu = mri.unsqueeze(0).to(device)
+        tabular_gpu = tabular.unsqueeze(0).to(device)
+        ig = _compute_ig(model, mri_gpu, tabular_gpu, device, n_steps=100)
+        ex = {'mri': mri.squeeze().numpy(), 'ig': ig, 'label': label_val, 'prob': s['prob']}
+        cn_examples.append(ex)
+        _plot_individual(ex['mri'], ig, label_val, s['prob'],
+                         ig_dir / "individual" / f"CN_{i+1:02d}.png")
+
+    print(f"  Saved {n_individual} AD + {n_individual} CN individual maps")
+
+    # ── Phase 3: Group averages (50 AD + 50 CN) ──
+    n_ad_group = min(n_group, len(ad_correct))
+    n_cn_group = min(n_group, len(cn_correct))
+    target_shape = ctx['target_shape']
+
+    print(f"\n  Phase 3: Group average IG ({n_ad_group} AD + {n_cn_group} CN)...")
+    # Use a reference MRI as template (first CN)
+    mri_template = cn_examples[0]['mri']
+
+    # Accumulate AD attributions
+    ad_accum = np.zeros(target_shape, dtype=np.float64)
+    for i, s in enumerate(ad_correct[:n_ad_group]):
+        if i < n_individual:
+            # Reuse already computed
+            ad_accum += ad_examples[i]['ig']
+        else:
+            if (i + 1) % 10 == 0:
+                print(f"    AD group: {i+1}/{n_ad_group}...")
+            mri, tabular, label_val = test_dataset[s['idx']]
+            mri_gpu = mri.unsqueeze(0).to(device)
+            tabular_gpu = tabular.unsqueeze(0).to(device)
+            ig = _compute_ig(model, mri_gpu, tabular_gpu, device, n_steps=50)
+            ad_accum += ig
+
+    avg_ad = ad_accum / n_ad_group
+    avg_ad = (avg_ad - avg_ad.min()) / (avg_ad.max() - avg_ad.min() + 1e-8)
+
+    # Accumulate CN attributions
+    cn_accum = np.zeros(target_shape, dtype=np.float64)
+    for i, s in enumerate(cn_correct[:n_cn_group]):
+        if i < n_individual:
+            cn_accum += cn_examples[i]['ig']
+        else:
+            if (i + 1) % 10 == 0:
+                print(f"    CN group: {i+1}/{n_cn_group}...")
+            mri, tabular, label_val = test_dataset[s['idx']]
+            mri_gpu = mri.unsqueeze(0).to(device)
+            tabular_gpu = tabular.unsqueeze(0).to(device)
+            ig = _compute_ig(model, mri_gpu, tabular_gpu, device, n_steps=50)
+            cn_accum += ig
+
+    avg_cn = cn_accum / n_cn_group
+    avg_cn = (avg_cn - avg_cn.min()) / (avg_cn.max() - avg_cn.min() + 1e-8)
+
+    # Difference map (AD - CN) on raw accumulations before normalization
+    diff_raw = (ad_accum / n_ad_group) - (cn_accum / n_cn_group)
+    diff_map = gaussian_filter(diff_raw, sigma=2.0)
+
+    # ── Phase 4: Save group plots ──
+    print("\n  Phase 4: Saving group average and difference maps...")
+    _plot_group_average(avg_ad, mri_template,
+                        f'Group Average Attribution — AD patients (n={n_ad_group}, seed={best_seed})',
+                        ig_dir / "group_average_AD.png")
+    _plot_group_average(avg_cn, mri_template,
+                        f'Group Average Attribution — CN patients (n={n_cn_group}, seed={best_seed})',
+                        ig_dir / "group_average_CN.png")
+    _plot_difference_map(diff_map, mri_template, best_seed,
+                         ig_dir / "group_difference_AD_minus_CN.png")
+
+    # Summary figure
+    _plot_summary_figure(ad_examples, cn_examples, avg_ad, avg_cn, diff_map,
+                         mri_template, best_seed,
+                         ig_dir / "summary_figure.png")
+
+    # Save raw numpy arrays for further analysis
+    np.save(ig_dir / "group_avg_AD.npy", avg_ad)
+    np.save(ig_dir / "group_avg_CN.npy", avg_cn)
+    np.save(ig_dir / "group_diff_AD_minus_CN.npy", diff_map)
+
+    print(f"\n  All interpretability outputs saved to {ig_dir}/")
 
     del model
     if torch.cuda.is_available():
@@ -760,7 +951,7 @@ def gradcam_resnet3d(all_preds, y_true):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Multi-seed analysis')
-    parser.add_argument('--gradcam', action='store_true', help='Include GradCAM (needs GPU)')
+    parser.add_argument('--gradcam', action='store_true', help='Include interpretability maps (Integrated Gradients + GradCAM, needs GPU)')
     args = parser.parse_args()
 
     print(f"ResNet3D Fusion - Multi-Seed Analysis ({EXPECTED_SEEDS} seeds)")
@@ -789,11 +980,11 @@ if __name__ == '__main__':
     # 5. Confusion matrices
     plot_confusion_matrices(y_true, mean_preds)
 
-    # 6. GradCAM
+    # 6. Interpretability (Integrated Gradients + GradCAM)
     if args.gradcam:
-        gradcam_resnet3d(all_preds, y_true)
+        interpretability_analysis(all_preds, y_true)
     else:
-        print("\nSkipping GradCAM (use --gradcam to include)")
+        print("\nSkipping interpretability (use --gradcam to include)")
 
     print("\n" + "=" * 60)
     print(f"All outputs saved to {REPORT_DIR}/")
