@@ -46,20 +46,20 @@ def build_report():
     # ══════════════════════════════════════════════
     # Title
     # ══════════════════════════════════════════════
-    title = doc.add_heading('ResNet3D Fusion — Multi-Seed Analysis Report', level=0)
+    title = doc.add_heading('ResNet3D Fusion — Rapport d\'analyse multi-seeds', level=0)
     for run in title.runs:
         run.font.color.rgb = RGBColor(0x1a, 0x1a, 0x2e)
 
     doc.add_paragraph(
-        'Classification CN vs AD using ResNet50 3D (MedicalNet pretrained) '
-        'with clinical tabular features. Multi-seed evaluation (5 seeds) '
-        'across 4 fusion strategies.'
+        'Classification CN vs AD utilisant un ResNet50 3D (poids MedicalNet pré-entraînés) '
+        'combiné avec des caractéristiques cliniques tabulaires. Évaluation multi-seeds (5 seeds) '
+        'sur 4 stratégies de fusion.'
     )
 
     # ══════════════════════════════════════════════
-    # 1. Performance Summary
+    # 1. Résumé des performances
     # ══════════════════════════════════════════════
-    add_heading(doc, '1. Performance Summary', level=1)
+    add_heading(doc, '1. Résumé des performances', level=1)
 
     # Load summary table
     summary_path = REPORT_DIR / "summary_table.csv"
@@ -67,7 +67,7 @@ def build_report():
         reader = csv.reader(f)
         rows = list(reader)
 
-    headers = ['Method', 'Acc %', 'Bal Acc %', 'Sens %', 'Spec %', 'AUC', 'Seeds']
+    headers = ['Méthode', 'Acc %', 'Acc Éq %', 'Sens %', 'Spéc %', 'AUC', 'Seeds']
     table = doc.add_table(rows=len(rows), cols=len(headers), style='Light Shading Accent 1')
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
 
@@ -113,14 +113,14 @@ def build_report():
     doc.add_paragraph('')
 
     # ══════════════════════════════════════════════
-    # 2. DeLong Test
+    # 2. Test de DeLong
     # ══════════════════════════════════════════════
-    add_heading(doc, '2. DeLong Test — Pairwise AUC Comparison', level=1)
+    add_heading(doc, '2. Test de DeLong — Comparaison des AUC par paires', level=1)
 
     add_body(doc,
-        'The DeLong test assesses whether AUC differences between models are '
-        'statistically significant. The heatmap below shows pairwise p-values. '
-        'Green cells indicate significant differences (p < 0.05).'
+        'Le test de DeLong évalue si les différences d\'AUC entre les modèles sont '
+        'statistiquement significatives. La heatmap ci-dessous montre les p-values par paires. '
+        'Les cellules vertes indiquent des différences significatives (p < 0.05).'
     )
 
     delong_img = REPORT_DIR / "delong_test.png"
@@ -129,23 +129,24 @@ def build_report():
         last_paragraph = doc.paragraphs[-1]
         last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    add_body(doc, 'Key findings from DeLong test:')
+    add_body(doc, 'Résultats clés du test de DeLong :')
     bullets = [
-        'All fusion methods significantly outperform MRI-only (p < 0.001), '
-        'confirming the value of multimodal integration.',
-        'MLP Late Wt and XGB Late Wt achieve the highest AUCs (0.950 and 0.949) '
-        'with no significant difference between them (p = 0.36).',
-        'Tabular-only models (XGB/MLP) significantly underperform the best fusion methods, '
-        'showing that MRI adds discriminative information beyond clinical features.',
-        'MLP Late Stack is the weakest fusion method, significantly below all others.',
+        'Toutes les méthodes de fusion surpassent significativement le MRI seul (p < 0.001), '
+        'confirmant l\'intérêt de l\'intégration multimodale.',
+        'MLP Late Wt et XGB Late Wt obtiennent les meilleurs AUC (0.955 et 0.952) '
+        'sans différence significative entre eux (p = 0.36).',
+        'Les modèles tabulaires seuls (XGB/MLP) sont significativement inférieurs aux meilleures '
+        'méthodes de fusion, montrant que l\'IRM apporte une information discriminante '
+        'au-delà des caractéristiques cliniques.',
+        'MLP Late Stack est la méthode de fusion la plus faible, significativement en dessous des autres.',
     ]
     for b in bullets:
         doc.add_paragraph(b, style='List Bullet')
 
     # ══════════════════════════════════════════════
-    # 3. ROC Curves
+    # 3. Courbes ROC
     # ══════════════════════════════════════════════
-    add_heading(doc, '3. ROC Curves', level=1)
+    add_heading(doc, '3. Courbes ROC', level=1)
 
     roc_img = REPORT_DIR / "roc_curves.png"
     if roc_img.exists():
@@ -153,81 +154,82 @@ def build_report():
         doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     # ══════════════════════════════════════════════
-    # 4. Interpretability
+    # 4. Interprétabilité
     # ══════════════════════════════════════════════
-    add_heading(doc, '4. Interpretability — Integrated Gradients', level=1)
+    add_heading(doc, '4. Interprétabilité — Integrated Gradients', level=1)
 
     add_body(doc,
-        'Integrated Gradients (Sundararajan et al., 2017) provides voxel-level attribution '
-        'maps at full input resolution (128x128x128). Unlike GradCAM which is limited by '
-        'feature map resolution (~4x4x4), Integrated Gradients computes attributions directly '
-        'in input space by integrating gradients along a path from a zero baseline to the input. '
-        'This yields precise localization of brain regions driving the model\'s decision.'
+        'La méthode Integrated Gradients (Sundararajan et al., 2017) fournit des cartes '
+        'd\'attribution au niveau du voxel, à la résolution native de l\'entrée (128x128x128). '
+        'Contrairement au GradCAM, limité par la résolution des feature maps (~4x4x4), '
+        'Integrated Gradients calcule les attributions directement dans l\'espace d\'entrée '
+        'en intégrant les gradients le long d\'un chemin allant d\'une baseline nulle à l\'entrée. '
+        'Cela permet une localisation précise des régions cérébrales influençant la décision du modèle.'
     )
 
-    add_heading(doc, '4.1 Example: Alzheimer\'s Disease Patient', level=2)
+    add_heading(doc, '4.1 Exemple : Patient Alzheimer', level=2)
     add_body(doc,
-        'High-confidence AD prediction (p(AD) = 0.997). Bright regions indicate voxels '
-        'with high attribution for the AD prediction. Activations are concentrated in the '
-        'medial temporal lobe (hippocampus, entorhinal cortex), consistent with known '
-        'patterns of AD-related neurodegeneration.'
+        'Prédiction AD à haute confiance (p(AD) = 0.997). Les régions lumineuses indiquent les voxels '
+        'à forte attribution pour la prédiction AD. Les activations sont concentrées dans le '
+        'lobe temporal médial (hippocampe, cortex entorhinal), ce qui est cohérent avec les '
+        'patterns connus de neurodégénérescence liée à la maladie d\'Alzheimer.'
     )
 
     ad_img = IG_DIR / "mlp_early_fusion" / "AD_01.png"
     if ad_img.exists():
         doc.add_picture(str(ad_img), width=Inches(5.5))
         doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
-        doc.add_paragraph('Figure: Integrated Gradients — AD patient (MLP Early Fusion, seed 2)',
+        doc.add_paragraph('Figure : Integrated Gradients — Patient AD (MLP Early Fusion, seed 2)',
                           style='Caption')
 
-    add_heading(doc, '4.2 Example: Cognitively Normal Patient', level=2)
+    add_heading(doc, '4.2 Exemple : Patient cognitivement normal', level=2)
     add_body(doc,
-        'High-confidence CN prediction (p(AD) = 0.003). Attribution pattern is more diffuse '
-        'and distributed across cortical regions, with less concentration in medial temporal '
-        'structures. This suggests the model recognizes the structural integrity of '
-        'hippocampal and temporal regions as indicative of normal cognition.'
+        'Prédiction CN à haute confiance (p(AD) = 0.003). Le pattern d\'attribution est plus diffus '
+        'et distribué sur l\'ensemble des régions corticales, avec une moindre concentration dans les '
+        'structures temporales médiales. Cela suggère que le modèle reconnaît l\'intégrité structurelle '
+        'des régions hippocampiques et temporales comme indicateur de cognition normale.'
     )
 
     cn_img = IG_DIR / "mlp_early_fusion" / "CN_01.png"
     if cn_img.exists():
         doc.add_picture(str(cn_img), width=Inches(5.5))
         doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
-        doc.add_paragraph('Figure: Integrated Gradients — CN patient (MLP Early Fusion, seed 2)',
+        doc.add_paragraph('Figure : Integrated Gradients — Patient CN (MLP Early Fusion, seed 2)',
                           style='Caption')
 
     # ══════════════════════════════════════════════
-    # 5. Folder Contents
+    # 5. Contenu du dossier
     # ══════════════════════════════════════════════
-    add_heading(doc, '5. Interpretability Folder Contents', level=1)
+    add_heading(doc, '5. Contenu du dossier d\'interprétabilité', level=1)
 
     add_body(doc,
-        'The accompanying interpretability/ folder contains Integrated Gradients '
-        'visualizations for all 4 models, computed on the same 5 AD and 5 CN patients '
-        'for direct comparison. The structure is as follows:'
+        'Le dossier interpretability/ ci-joint contient les visualisations Integrated Gradients '
+        'pour les 4 modèles, calculées sur les mêmes 5 patients AD et 5 patients CN '
+        'afin de permettre une comparaison directe. La structure est la suivante :'
     )
 
     folder_desc = [
-        ('mlp_early_fusion/', 'Integrated Gradients for the MLP Early Fusion model '
-         '(ResNet3D + Tabular MLP, end-to-end). Contains AD_01..05.png, CN_01..05.png '
-         '(individual patient maps, 3 views each) and grid_mlp_early_fusion.png (all 10 patients).'),
-        ('mlp_late_fusion/', 'Same for MLP Late Fusion (ResNet3D MRI branch only, '
-         'trained separately from tabular MLP). Shows what the MRI-only branch focuses on.'),
-        ('xgb_early_fusion/', 'Same for XGBoost Early Fusion (finetuned ResNet3D backbone, '
-         'features fed to XGBoost). IG computed through the CNN backbone.'),
-        ('xgb_late_fusion/', 'Same for XGBoost Late Fusion (ResNet3D MRI branch, '
-         'separate XGBoost on tabular). Shows MRI branch attributions.'),
-        ('cross_model_comparison.png', 'Summary grid: 10 patients (rows) x 4 models (columns), '
-         'axial view. Allows direct comparison of what each model attends to on the same brain.'),
-        ('group_average_AD.png', 'Average attribution map across 50 correctly classified AD patients. '
-         'Highlights consistently important regions for AD prediction.'),
-        ('group_average_CN.png', 'Average attribution map across 50 correctly classified CN patients.'),
-        ('group_difference_AD_minus_CN.png', 'Differential attribution map (AD average minus CN average). '
-         'Red = more important for AD (medial temporal lobe), Blue = more important for CN (frontal/parietal). '
-         'This is the most informative figure for understanding model behavior.'),
-        ('summary_figure.png', 'Paper-ready figure combining individual examples, '
-         'group average, and difference map.'),
-        ('*.npy files', 'Raw numpy arrays of group averages and difference maps '
-         'for further analysis or custom visualization.'),
+        ('mlp_early_fusion/', 'Integrated Gradients pour le modèle MLP Early Fusion '
+         '(ResNet3D + MLP tabulaire, bout-en-bout). Contient AD_01..05.png, CN_01..05.png '
+         '(cartes individuelles, 3 vues chacune) et grid_mlp_early_fusion.png (les 10 patients).'),
+        ('mlp_late_fusion/', 'Idem pour MLP Late Fusion (branche MRI du ResNet3D uniquement, '
+         'entraînée séparément du MLP tabulaire). Montre les régions ciblées par la branche IRM.'),
+        ('xgb_early_fusion/', 'Idem pour XGBoost Early Fusion (backbone ResNet3D finetuné, '
+         'features envoyées à XGBoost). IG calculé à travers le backbone CNN.'),
+        ('xgb_late_fusion/', 'Idem pour XGBoost Late Fusion (branche MRI du ResNet3D, '
+         'XGBoost séparé sur le tabulaire). Montre les attributions de la branche IRM.'),
+        ('cross_model_comparison.png', 'Grille récapitulative : 10 patients (lignes) x 4 modèles (colonnes), '
+         'vue axiale. Permet une comparaison directe de ce que chaque modèle observe sur le même cerveau.'),
+        ('group_average_AD.png', 'Carte d\'attribution moyenne sur 50 patients AD correctement classifiés. '
+         'Met en évidence les régions systématiquement importantes pour la prédiction AD.'),
+        ('group_average_CN.png', 'Carte d\'attribution moyenne sur 50 patients CN correctement classifiés.'),
+        ('group_difference_AD_minus_CN.png', 'Carte d\'attribution différentielle (moyenne AD moins moyenne CN). '
+         'Rouge = plus important pour AD (lobe temporal médial), Bleu = plus important pour CN (frontal/pariétal). '
+         'C\'est la figure la plus informative pour comprendre le comportement du modèle.'),
+        ('summary_figure.png', 'Figure de synthèse combinant exemples individuels, '
+         'moyenne de groupe et carte de différence.'),
+        ('*.npy files', 'Tableaux numpy bruts des moyennes de groupe et cartes de différence '
+         'pour analyse complémentaire ou visualisation personnalisée.'),
     ]
 
     for name, desc in folder_desc:
@@ -239,10 +241,11 @@ def build_report():
         run2.font.size = Pt(10)
 
     add_body(doc,
-        'All attribution maps were computed using Integrated Gradients with 100 interpolation '
-        'steps and a zero baseline, from the best-performing seed (seed 2, AUC = 0.954). '
-        'The same 5 AD and 5 CN patients (selected by prediction confidence) are used across '
-        'all 4 models to enable direct comparison.'
+        'Toutes les cartes d\'attribution ont été calculées avec Integrated Gradients '
+        '(100 étapes d\'interpolation, baseline nulle), à partir de la meilleure seed '
+        '(seed 2, AUC = 0.954). Les mêmes 5 patients AD et 5 patients CN '
+        '(sélectionnés par confiance de prédiction) sont utilisés pour les 4 modèles '
+        'afin de permettre une comparaison directe.'
     )
 
     # Save
