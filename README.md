@@ -1,214 +1,131 @@
-# Alzheimer's Disease Research Project
+# Alzheimer's Disease Classification — Multi-Cohort Multimodal Fusion
 
-Comprehensive neuroimaging and machine learning pipeline for Alzheimer's disease classification and MCI progression prediction using ADNI dataset.
-
-## Project Overview
-
-This project combines medical image processing with machine learning to:
-
-1. **Preprocess Brain MRI Scans** - DICOM to NIfTI conversion, bias correction, registration, and skull stripping
-2. **Extract Clinical Features** - Neuropsychological assessments and cognitive test scores
-3. **Classify CN vs AD** - Binary classification using XGBoost (99.6% accuracy)
-4. **Predict MCI Direction** - Classify MCI patients as CN-like (stable) or AD-like (at risk)
-
-## Dataset
-
-### ADNI (Alzheimer's Disease Neuroimaging Initiative)
-
-- **Total**: 1,980 MRI scans from 1,472 unique patients
-- **CN (Cognitively Normal)**: 859 scans (564 patients)
-- **MCI (Mild Cognitive Impairment)**: 845 scans (681 patients)
-- **AD (Alzheimer's Disease)**: 276 scans (234 patients)
-
-### NPPY Preprocessed Dataset (CN/MCI/AD - Stable Patients)
-
-A quality-filtered dataset of NPPY (Neural Preprocessing Python) preprocessed MRI scans for stable patients with baseline-only diagnosis:
-
-- **Archive**: `adni_stable_cn481_mci394_ad204_nppy.tar.gz` (1.79 GB)
-- **Total**: 1,079 scans from stable patients
-- **CN (Cognitively Normal)**: 481 scans
-- **MCI (Mild Cognitive Impairment)**: 394 scans
-- **AD (Alzheimer's Disease)**: 204 scans
-
-**Quality Filtering Applied**:
-- Dimension whitelist: 176×240×256, 160×192×192, 240×256×208
-- File size filter: ≤20MB
-- Manual blacklist: 1 patient (073_S_4230)
-- Stable diagnosis: baseline visit only (diagnosis never changes)
-
-**Preprocessing Pipeline**:
-- NPPY (Neural Preprocessing Python) - End-to-end learned preprocessing
-- Spatial normalization to MNI template
-- Intensity normalization
-- Output format: `*_mni_norm.nii.gz`
-
-**Archive Structure**:
-```
-patient_id/scan_name
-├── 018_S_0043/MPRAGE_Repeat_2009-01-21_10_42_57_mni_norm.nii.gz
-├── 023_S_0058/MPRAGE_2008-10-10_10_35_48_mni_norm.nii.gz
-└── ...
-```
-
-**Dataset Creation**:
-```bash
-python3 utils/create_nppy_dataset.py \
-  --patient-list experiments/cn_mci_ad_3dhcct/required_patients.txt \
-  --nppy-dir /Volumes/KINGSTON/ADNI_nppy \
-  --dxsum /Volumes/KINGSTON/dxsum.csv \
-  --blacklist experiments/cn_mci_ad_3dhcct/blacklist.txt
-```
-
-**Diagnosis Labels**: Obtained from `dxsum.csv` using `groupby('PTID').first()` - since patients are stable, the first visit diagnosis applies to all timepoints.
-
-## Project Structure
-
-```text
-alzheimer/
-├── docs/                              # Documentation
-│   ├── README.md                      # Documentation index
-│   ├── tabular/                       # Tabular ML documentation
-│   │   ├── quickstart.md              # 5-minute getting started
-│   │   └── features.md                # Clinical features guide
-│   └── datasets/                      # Dataset documentation
-│       ├── adni-dataset.md            # ADNI dataset overview
-│       ├── diagnosis-progression-analysis.md  # Longitudinal analysis
-│       └── data-analysis-guide.md     # Analysis guide
-│
-├── data/                              # Clinical and tabular data
-│   ├── AD_CN_clinical_data.csv       # Clean training data (CN vs AD)
-│   └── clinical_data_all_groups.csv  # Full dataset (CN, MCI, AD)
-│
-├── data_analysis/                     # Data analysis scripts
-│   ├── adni_analysis.py               # ADNI directory analysis
-│   ├── analyze_dxsum.py               # Diagnosis progression analysis
-│   └── create_docs_visualization.py  # Generate documentation visualizations
-│
-├── preprocessing/                     # MRI preprocessing pipeline
-│   ├── dicom_to_nifti.py             # DICOM conversion
-│   ├── image_enhancement.py          # N4 bias correction
-│   ├── registration.py               # MNI template registration
-│   └── skull_stripping.py            # Brain extraction (SynthStrip)
-│
-├── tabular/                           # Tabular ML analysis
-│   └── xgboost/                      # XGBoost implementation
-│       ├── train.py                  # Train CN vs AD classifier
-│       └── run.py                    # Predict MCI direction
-│
-└── outputs/                           # Organized outputs
-    └── tabular/
-        ├── models/                    # Trained models
-        ├── predictions/               # CSV predictions
-        ├── visualizations/            # Charts and plots
-        └── reports/                   # Analysis reports
-```
-
-## Quick Start
-
-### Prerequisites
-
-```bash
-# Activate virtual environment
-source env/bin/activate
-
-# Ensure dependencies are installed
-pip install xgboost scikit-learn pandas numpy matplotlib seaborn
-```
-
-### Train XGBoost Model
-
-```bash
-cd tabular/xgboost
-python3 train.py
-```
-
-**Output**: Model achieves 99.6% accuracy on CN vs AD classification
-
-### Predict MCI Direction
-
-```bash
-cd tabular/xgboost
-python3 run.py
-```
-
-**Output**: Classifies 845 MCI patients as CN-like (60%) or AD-like (40%)
+CN (Cognitively Normal) vs AD (Alzheimer's Disease) classification using 3D brain MRI and clinical tabular features from 3 cohorts (ADNI, OASIS, NACC).
 
 ## Key Results
 
-### Binary Classification (CN vs AD)
+Best model: **MLP Late Weighted Fusion** — AUC 0.950 +/- 0.003 (5 seeds)
 
-- **Accuracy**: 99.6%
-- **Precision**: 98.9%
-- **Recall**: 100% (perfect AD detection)
-- **F1 Score**: 99.4%
+| Method | Acc % | Bal Acc % | AUC | Seeds |
+|--------|-------|-----------|-----|-------|
+| MLP Late Wt | 90.9 +/- 1.5 | 89.1 +/- 0.5 | 0.950 +/- 0.003 | 4 |
+| XGB Late Wt | 92.0 +/- 0.8 | 88.6 +/- 0.7 | 0.949 +/- 0.002 | 5 |
+| MLP Early | 91.9 +/- 0.8 | 89.1 +/- 0.7 | 0.946 +/- 0.006 | 5 |
+| XGB Early | 89.6 +/- 1.3 | 85.3 +/- 2.3 | 0.931 +/- 0.018 | 5 |
+| Tab only (XGB) | 88.8 +/- 0.2 | 86.0 +/- 0.3 | 0.937 +/- 0.002 | 5 |
+| MRI only | 86.7 +/- 0.7 | 82.7 +/- 0.6 | 0.901 +/- 0.010 | 5 |
 
-### MCI Progression Prediction
+Full results: [`experiments/report_multi_seed/`](experiments/report_multi_seed/)
 
-- **CN-like (Stable)**: 509/845 patients (60.2%)
-- **AD-like (At Risk)**: 336/845 patients (39.8%)
+## Datasets
 
-### Top Predictive Features
+| Cohort | Patients | MRI Scans | CN | MCI | AD |
+|--------|----------|-----------|-----|-----|-----|
+| ADNI | 2,311 | 17,827 | 39% | 42% | 19% |
+| OASIS | 1,340 | 7,794 | 68% | 3% | 16% |
+| NACC | 55,004 | 8,163 | 49% | 18% | 29% |
 
-1. **TRABSCOR** (37.3%) - Trail Making Test B (executive function)
-2. **CATANIMSC** (10.1%) - Category fluency (semantic memory)
-3. **DSPANBAC** (7.6%) - Digit span backward (working memory)
+Combined test set: 910 samples (78.2% CN, 21.8% AD)
 
-## Documentation
+## Architecture
 
-Comprehensive documentation in [`docs/`](docs/):
+4 fusion strategies combining ResNet50 3D (MedicalNet pretrained) with 16 clinical features:
 
-### Tabular Machine Learning
+- **MLP Early Fusion**: ResNet3D (2048-d) + Tabular MLP (32-d) → concat → MLP classifier
+- **MLP Late Fusion**: ResNet3D classifier + Tabular MLP → probability fusion
+- **XGBoost Early Fusion**: ResNet3D features + tabular → XGBoost
+- **XGBoost Late Fusion**: ResNet3D classifier + Tabular XGBoost → probability fusion
 
-- **[Quick Start Guide](docs/tabular/quickstart.md)** - Get started with XGBoost in 5 minutes
-- **[Clinical Features Reference](docs/tabular/features.md)** - Complete guide to all 13 cognitive test features
+### 16 Tabular Features
 
-### Dataset Documentation
+| Category | Features |
+|----------|----------|
+| Demographics | AGE, PTGENDER, PTEDUCAT, PTMARRY |
+| Cognitive tests | CATANIMSC, TRAASCOR, TRABSCOR, DSPANFOR, DSPANBAC, BNTTOTAL |
+| Medical history | MH14ALCH, MH16SMOK, MH4CARD, MH2NEURL |
+| Physical | VSWEIGHT, BMI |
 
-- **[ADNI Dataset Overview](docs/datasets/adni-dataset.md)** - Complete dataset reference with statistics
-- **[Diagnosis Progression Analysis](docs/datasets/diagnosis-progression-analysis.md)** - Longitudinal progression patterns
-- **[Data Analysis Guide](docs/datasets/data-analysis-guide.md)** - How to analyze the data with code examples
+## Project Structure
 
-## Preprocessing Pipeline
+```
+alzheimer/
+├── experiments/
+│   ├── resnet3d_mlp/                  # MLP Early + Late Fusion
+│   │   ├── model.py                   # ResNet3DBackbone + EarlyFusionModel
+│   │   ├── train.py                   # Early fusion training
+│   │   ├── train_late_fusion.py       # Late fusion training
+│   │   └── config.yaml
+│   ├── resnet3d_xgboost/             # XGBoost Early + Late Fusion
+│   │   ├── train_finetuned.py         # Early fusion (finetune + XGB)
+│   │   ├── train_late_fusion.py       # Late fusion
+│   │   └── config.yaml
+│   ├── multimodal_fusion/             # Dataset + preprocessing
+│   │   ├── dataset.py                 # MultiModalDataset (MRI + tabular)
+│   │   └── data/combined_trajectory/  # Train/val/test CSV splits
+│   ├── analyze_multi_seed.py          # Multi-seed analysis + Integrated Gradients
+│   ├── generate_ig_all_models.py      # IG for all 4 models
+│   ├── generate_report_docx.py        # Word report generator
+│   ├── run_all_seeds.sh               # Run all experiments (15 seeds)
+│   └── report_multi_seed/             # Results and reports
+│       ├── summary_table.csv
+│       ├── per_seed_metrics.csv
+│       ├── delong_pvalues.csv
+│       ├── boxplots.png
+│       ├── roc_curves.png
+│       ├── confusion_matrices.png
+│       ├── delong_test.png
+│       ├── resnet3d_fusion_report.docx
+│       └── interpretability/          # Integrated Gradients maps
+│           ├── mlp_early_fusion/      # 5 AD + 5 CN individual maps
+│           ├── mlp_late_fusion/
+│           ├── xgb_early_fusion/
+│           ├── xgb_late_fusion/
+│           ├── cross_model_comparison.png
+│           ├── group_average_AD.png
+│           ├── group_average_CN.png
+│           ├── group_difference_AD_minus_CN.png
+│           └── summary_figure.png
+├── preprocessing/                     # MRI preprocessing pipelines
+├── data/                              # Clinical/tabular CSV data
+│   ├── adni/, oasis/, nacc/
+│   └── combined/
+└── paper/                             # Research paper (LaTeX)
+```
 
-Located in `preprocessing/`:
+## Reports
 
-1. **DICOM to NIfTI** - Convert medical scans to standard format
-2. **N4 Bias Correction** - Remove intensity artifacts
-3. **MNI Registration** - Register to standard brain template
-4. **Skull Stripping** - Extract brain-only images using SynthStrip
+- **Word report**: [`experiments/report_multi_seed/resnet3d_fusion_report.docx`](experiments/report_multi_seed/resnet3d_fusion_report.docx) — Performance summary, DeLong tests, interpretability examples
+- **Interpretability**: [`experiments/report_multi_seed/interpretability/`](experiments/report_multi_seed/interpretability/) — Integrated Gradients for all 4 models (same 5 AD + 5 CN patients), group averages, differential map (AD - CN)
 
-See [CLAUDE.md](CLAUDE.md) for detailed pipeline commands.
+## Quick Start
+
+```bash
+source env/bin/activate
+
+# Train MLP Early Fusion (single seed)
+cd experiments/resnet3d_mlp
+python train.py --config config.yaml --output-dir results_early/seed_0 --seed 0
+
+# Train MLP Late Fusion
+python train_late_fusion.py --config config.yaml --output-dir results_late_fusion/seed_0 --seed 0
+
+# Run multi-seed analysis
+cd experiments
+python analyze_multi_seed.py --gradcam
+
+# Generate Integrated Gradients for all 4 models
+cd experiments/resnet3d_mlp
+python ../generate_ig_all_models.py --seed 2 --n-individual 5 --n-steps 100
+
+# Generate Word report
+cd experiments
+python generate_report_docx.py
+```
 
 ## Technology Stack
 
 - **Python 3.12** with virtual environment
-- **Medical Imaging**: SimpleITK, nibabel, MONAI, ANTs, nilearn, dicom2nifti
-- **Machine Learning**: XGBoost, scikit-learn
-- **Data Processing**: NumPy, pandas, matplotlib, seaborn
-
-## Clinical Significance
-
-### For Research
-
-- Early detection of cognitive decline
-- MCI progression risk assessment
-- Treatment response prediction
-
-### For Clinical Practice
-
-- Risk stratification for MCI patients
-- Personalized monitoring strategies
-- Early intervention planning
-
-## Research Context
-
-- **Primary Goal**: Early Alzheimer's detection through hippocampus morphometry
-- **Secondary Goal**: MCI progression prediction using cognitive assessments
-- **Classification**: CN (Cognitively Normal) vs MCI (Mild Cognitive Impairment) vs AD (Alzheimer's Disease)
-
-## References
-
-- **ADNI**: [Alzheimer's Disease Neuroimaging Initiative](http://adni.loni.usc.edu/)
-- **Dataset**: 1,472 unique patients, 1,980 MRI scans
-- **Model**: XGBoost with 300 estimators, early stopping
-- **Training**: 70/10/20 split (train/val/test)
+- **Deep Learning**: PyTorch, MONAI (ResNet50 3D, MedicalNet pretrained)
+- **ML**: XGBoost, scikit-learn
+- **Medical Imaging**: SimpleITK, nibabel, ANTsPy, nilearn
+- **Interpretability**: Integrated Gradients (custom implementation)
