@@ -13,13 +13,72 @@ from docx import Document
 from docx.shared import Inches, Pt, Cm, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
+from sklearn.metrics import roc_auc_score
 
 BASE = Path(__file__).parent
+MLP_DIR = BASE / "resnet3d_mlp"
+XGB_DIR = BASE / "resnet3d_xgboost"
 REPORT_DIR = BASE / "report_multi_seed"
 # Handle nested interpretability dir (from scp -r)
 IG_DIR = REPORT_DIR / "interpretability" / "interpretability"
 if not (IG_DIR / "mlp_early_fusion").exists():
     IG_DIR = REPORT_DIR / "interpretability"
+
+MAX_SEED = 20
+EXPECTED_SEEDS = 5
+
+
+def compute_ensemble_aucs():
+    """Compute AUC on mean probabilities (ensemble) for each method."""
+    all_preds = {}
+    y_true = None
+
+    def _add(method, proba, yt):
+        nonlocal y_true
+        y_true = yt
+        if method not in all_preds:
+            all_preds[method] = []
+        if len(all_preds[method]) >= EXPECTED_SEEDS:
+            return
+        all_preds[method].append(proba)
+
+    for seed in range(MAX_SEED):
+        p = MLP_DIR / "results_early" / f"seed_{seed}"
+        if (p / "y_true_test.npy").exists():
+            yt = np.load(p / "y_true_test.npy")
+            _add("MLP Early", np.load(p / "y_proba_test.npy"), yt)
+
+    for seed in range(MAX_SEED):
+        p = MLP_DIR / "results_late_fusion" / f"seed_{seed}"
+        if (p / "y_true_test.npy").exists():
+            yt = np.load(p / "y_true_test.npy")
+            _add("Tab only (MLP)", np.load(p / "y_proba_tab_test.npy"), yt)
+            _add("MLP Late Avg", np.load(p / "y_proba_avg_test.npy"), yt)
+            _add("MLP Late Wt", np.load(p / "y_proba_weighted_test.npy"), yt)
+            _add("MLP Late Stack", np.load(p / "y_proba_stacking_test.npy"), yt)
+
+    for seed in range(MAX_SEED):
+        p = XGB_DIR / "results_finetuned" / f"seed_{seed}"
+        if (p / "y_true_test.npy").exists():
+            yt = np.load(p / "y_true_test.npy")
+            _add("XGB Early", np.load(p / "y_proba_test.npy"), yt)
+
+    for seed in range(MAX_SEED):
+        p = XGB_DIR / "results_late_fusion" / f"seed_{seed}"
+        if (p / "y_true_test.npy").exists():
+            yt = np.load(p / "y_true_test.npy")
+            _add("MRI only", np.load(p / "y_proba_mri_test.npy"), yt)
+            _add("Tab only (XGB)", np.load(p / "y_proba_tab_test.npy"), yt)
+            _add("XGB Late Avg", np.load(p / "y_proba_avg_test.npy"), yt)
+            _add("XGB Late Wt", np.load(p / "y_proba_weighted_test.npy"), yt)
+            _add("XGB Late Stack", np.load(p / "y_proba_stacking_test.npy"), yt)
+
+    ensemble_aucs = {}
+    for method, proba_list in all_preds.items():
+        mean_proba = np.mean(proba_list, axis=0)
+        ensemble_aucs[method] = roc_auc_score(y_true, mean_proba)
+
+    return ensemble_aucs
 
 
 def add_heading(doc, text, level=1):
@@ -67,7 +126,11 @@ def build_report():
         reader = csv.reader(f)
         rows = list(reader)
 
-    headers = ['Méthode', 'Acc %', 'Acc Éq %', 'Sens %', 'Spéc %', 'AUC', 'Seeds']
+    # Compute ensemble AUCs
+    ensemble_aucs = compute_ensemble_aucs()
+
+    headers = ['Méthode', 'Acc %', 'Acc Éq %', 'Sens %', 'Spéc %',
+               'AUC\n(moy. seeds)', 'AUC\n(ensemble)', 'Seeds']
     table = doc.add_table(rows=len(rows), cols=len(headers), style='Light Shading Accent 1')
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
 
@@ -79,7 +142,7 @@ def build_report():
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
             for run in p.runs:
                 run.bold = True
-                run.font.size = Pt(9)
+                run.font.size = Pt(8)
 
     # Data rows
     for i, row in enumerate(rows[1:], start=1):
@@ -92,6 +155,7 @@ def build_report():
         spec_m, spec_s = float(row[7]), float(row[8])
         auc_m, auc_s = float(row[9]), float(row[10])
         n_seeds = row[11]
+        ens_auc = ensemble_aucs.get(method, 0.0)
 
         values = [
             method,
@@ -100,6 +164,7 @@ def build_report():
             f'{sens_m:.1f} +/- {sens_s:.1f}',
             f'{spec_m:.1f} +/- {spec_s:.1f}',
             f'{auc_m:.3f} +/- {auc_s:.3f}',
+            f'{ens_auc:.3f}',
             str(n_seeds),
         ]
         for j, val in enumerate(values):
@@ -108,7 +173,16 @@ def build_report():
             for p in cell.paragraphs:
                 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
                 for run in p.runs:
-                    run.font.size = Pt(9)
+                    run.font.size = Pt(8)
+
+    add_body(doc,
+        'Le tableau présente deux colonnes d\'AUC :\n'
+        '- AUC (moy. seeds) : moyenne des AUC calculées indépendamment pour chaque seed. '
+        'Mesure la performance typique et la stabilité du modèle.\n'
+        '- AUC (ensemble) : AUC calculée sur les probabilités moyennées sur les 5 seeds. '
+        'Bénéficie d\'un effet d\'ensemble qui réduit le bruit de prédiction. '
+        'C\'est cette valeur qui est utilisée pour le test de DeLong et les matrices de confusion.'
+    )
 
     doc.add_paragraph('')
 
@@ -159,24 +233,28 @@ def build_report():
     add_heading(doc, '4. Matrices de confusion', level=1)
 
     add_body(doc,
-        'Les matrices de confusion ci-dessous sont calculées à partir des probabilités '
-        'moyennes sur les 5 seeds (seuil de décision = 0.5). Le jeu de test contient '
-        '712 patients CN et 198 patients AD.'
+        'Les matrices de confusion ci-dessous sont calculées selon la procédure suivante :'
     )
+
+    steps = [
+        'Pour chaque méthode, on dispose des probabilités de prédiction p(AD) issues de 5 seeds '
+        'indépendantes (5 entraînements avec des initialisations aléatoires différentes).',
+        'On calcule la probabilité moyenne sur les 5 seeds pour chaque patient : '
+        'p_ensemble(AD) = (p_seed0 + p_seed1 + ... + p_seed4) / 5.',
+        'On applique un seuil de décision de 0.5 : si p_ensemble(AD) >= 0.5, '
+        'le patient est prédit AD, sinon CN.',
+        'La matrice de confusion est construite à partir de ces prédictions ensemblistes '
+        'comparées aux vraies étiquettes du jeu de test (712 CN, 198 AD).',
+        'L\'AUC affichée est calculée directement sur les probabilités moyennées '
+        '(colonne "AUC ensemble" du tableau section 1).',
+    ]
+    for s in steps:
+        doc.add_paragraph(s, style='List Number')
 
     conf_img = REPORT_DIR / "confusion_matrices.png"
     if conf_img.exists():
         doc.add_picture(str(conf_img), width=Inches(6.0))
         doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-    add_body(doc,
-        'Note : les AUC affichées sur les matrices de confusion correspondent aux AUC '
-        'calculées sur les probabilités moyennées (utilisées pour le test de DeLong). '
-        'Elles diffèrent légèrement des AUC du tableau de performances (section 1), '
-        'qui sont la moyenne des AUC individuelles par seed. Les deux métriques sont '
-        'complémentaires : la moyenne par seed mesure la stabilité, tandis que l\'AUC '
-        'sur probabilités moyennées bénéficie de l\'effet d\'ensemble.'
-    )
 
     # ══════════════════════════════════════════════
     # 5. Interprétabilité
