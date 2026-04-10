@@ -154,9 +154,34 @@ def build_report():
         doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     # ══════════════════════════════════════════════
-    # 4. Interprétabilité
+    # 4. Matrices de confusion
     # ══════════════════════════════════════════════
-    add_heading(doc, '4. Interprétabilité — Integrated Gradients', level=1)
+    add_heading(doc, '4. Matrices de confusion', level=1)
+
+    add_body(doc,
+        'Les matrices de confusion ci-dessous sont calculées à partir des probabilités '
+        'moyennes sur les 5 seeds (seuil de décision = 0.5). Le jeu de test contient '
+        '712 patients CN et 198 patients AD.'
+    )
+
+    conf_img = REPORT_DIR / "confusion_matrices.png"
+    if conf_img.exists():
+        doc.add_picture(str(conf_img), width=Inches(6.0))
+        doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    add_body(doc,
+        'Note : les AUC affichées sur les matrices de confusion correspondent aux AUC '
+        'calculées sur les probabilités moyennées (utilisées pour le test de DeLong). '
+        'Elles diffèrent légèrement des AUC du tableau de performances (section 1), '
+        'qui sont la moyenne des AUC individuelles par seed. Les deux métriques sont '
+        'complémentaires : la moyenne par seed mesure la stabilité, tandis que l\'AUC '
+        'sur probabilités moyennées bénéficie de l\'effet d\'ensemble.'
+    )
+
+    # ══════════════════════════════════════════════
+    # 5. Interprétabilité
+    # ══════════════════════════════════════════════
+    add_heading(doc, '5. Interprétabilité — Integrated Gradients', level=1)
 
     add_body(doc,
         'La méthode Integrated Gradients (Sundararajan et al., 2017) fournit des cartes '
@@ -167,7 +192,7 @@ def build_report():
         'Cela permet une localisation précise des régions cérébrales influençant la décision du modèle.'
     )
 
-    add_heading(doc, '4.1 Exemple : Patient Alzheimer', level=2)
+    add_heading(doc, '5.1 Exemple : Patient Alzheimer', level=2)
     add_body(doc,
         'Prédiction AD à haute confiance (p(AD) = 0.997). Les régions lumineuses indiquent les voxels '
         'à forte attribution pour la prédiction AD. Les activations sont concentrées dans le '
@@ -182,7 +207,7 @@ def build_report():
         doc.add_paragraph('Figure : Integrated Gradients — Patient AD (MLP Early Fusion, seed 2)',
                           style='Caption')
 
-    add_heading(doc, '4.2 Exemple : Patient cognitivement normal', level=2)
+    add_heading(doc, '5.2 Exemple : Patient cognitivement normal', level=2)
     add_body(doc,
         'Prédiction CN à haute confiance (p(AD) = 0.003). Le pattern d\'attribution est plus diffus '
         'et distribué sur l\'ensemble des régions corticales, avec une moindre concentration dans les '
@@ -200,7 +225,7 @@ def build_report():
     # ══════════════════════════════════════════════
     # 5. Contenu du dossier
     # ══════════════════════════════════════════════
-    add_heading(doc, '5. Contenu du dossier d\'interprétabilité', level=1)
+    add_heading(doc, '6. Contenu du dossier d\'interprétabilité', level=1)
 
     add_body(doc,
         'Le dossier interpretability/ ci-joint contient les visualisations Integrated Gradients '
