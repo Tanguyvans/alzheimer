@@ -487,6 +487,17 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
             # Train
             model, best_val_acc = trainer.train(model, train_loader, val_loader, optimizer, scheduler, criterion)
 
+            # Save best-val-acc checkpoint for this fold (enables post-hoc interpretability)
+            ckpt_path = fold_dir / "model.pth"
+            torch.save(model.state_dict(), ckpt_path)
+            scaler_path = fold_dir / "scaler.pkl"
+            scaler = train_loader.dataset.get_scaler() if hasattr(train_loader.dataset, 'get_scaler') else None
+            if scaler is not None:
+                import pickle
+                with open(scaler_path, 'wb') as f:
+                    pickle.dump(scaler, f)
+            logger.info(f"  Saved checkpoint: {ckpt_path}")
+
             # Test on trajectory test set
             test_metrics = trainer.validate(model, test_loader, criterion)
 
