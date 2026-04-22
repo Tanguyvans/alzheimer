@@ -94,9 +94,10 @@ def main():
         / f"seed_{args.seed}" / f"fold_{args.fold}"
     )
     train_csv = fold_dir / "train.csv"
+    val_csv = fold_dir / "val.csv"
     test_csv = fold_dir / "test.csv"
     cn_ad_csv = fold_dir / "cn_ad_test.csv"
-    for x in (ckpt_path, train_csv, test_csv, cn_ad_csv):
+    for x in (ckpt_path, train_csv, val_csv, test_csv, cn_ad_csv):
         if not x.exists():
             raise FileNotFoundError(f"missing: {x}")
 
@@ -126,7 +127,10 @@ def main():
     print(f"    missing (excl. vit alias)={len(miss)}  unexpected={len(unexp)}")
     model.to(device)
 
-    for name, csv in [("AD-trajectory", test_csv), ("Established AD", cn_ad_csv)]:
+    # Eval val first to confirm checkpoint identity vs cv_summary.json
+    for name, csv in [("Val (identity check)", val_csv),
+                       ("AD-trajectory", test_csv),
+                       ("Established AD", cn_ad_csv)]:
         print(f"\n[*] Evaluating on {name} ({csv.name})")
         ds = MultiModalDataset(
             str(csv),
@@ -153,9 +157,10 @@ def main():
         print(f"    specificity       : {m['specificity']:.2f}%")
         print(f"    AUC               : {m['auc']:.4f}")
 
-    print("\n[*] Expected paper values (fold 1, seed 42):")
-    print("    traj : acc=93.57%  sens=79.85%  spec=97.37%  AUC=0.9677")
-    print("    cn_ad: acc=94.08%  AUC=0.9662")
+    print("\n[*] Expected paper values (cv_summary.json, fold 1, seed 42):")
+    print("    val   : acc=92.99% (identity check — if ~equal, checkpoint matches the paper run)")
+    print("    traj  : acc=93.57%  sens=79.85%  spec=97.37%  AUC=0.9677")
+    print("    cn_ad : acc=94.08%  AUC=0.9662")
 
 
 if __name__ == "__main__":
