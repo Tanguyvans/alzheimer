@@ -86,18 +86,51 @@ def main():
     p.add_argument("--batch-size", type=int, default=4)
     p.add_argument("--num-workers", type=int, default=4)
     p.add_argument("--no-tta", action="store_true")
+    p.add_argument(
+        "--preset",
+        choices=["new-cv", "old-fixed"],
+        default="new-cv",
+        help=(
+            "new-cv: eval on ablation_mri_only/cv_results/seed_S/fold_F/ CSVs "
+            "(post 'fix cross val' splits, contaminated for orphan checkpoints). "
+            "old-fixed: eval on data/combined_trajectory/{train,val,test}.csv "
+            "(pre-fix logic, the proper held-out test for orphan checkpoints)."
+        ),
+    )
     args = p.parse_args()
 
     ckpt_path = EXP / "cross_task_cv_results" / f"model_seed{args.seed}_fold{args.fold}.pth"
-    fold_dir = (
-        REPO / "experiments" / "ablation_mri_only" / "cv_results"
-        / f"seed_{args.seed}" / f"fold_{args.fold}"
-    )
-    train_csv = fold_dir / "train.csv"
-    val_csv = fold_dir / "val.csv"
-    test_csv = fold_dir / "test.csv"
-    cn_ad_csv = fold_dir / "cn_ad_test.csv"
-    for x in (ckpt_path, train_csv, val_csv, test_csv, cn_ad_csv):
+
+    if args.preset == "new-cv":
+        fold_dir = (
+            REPO / "experiments" / "ablation_mri_only" / "cv_results"
+            / f"seed_{args.seed}" / f"fold_{args.fold}"
+        )
+        train_csv = fold_dir / "train.csv"
+        val_csv = fold_dir / "val.csv"
+        test_csv = fold_dir / "test.csv"
+        cn_ad_csv = fold_dir / "cn_ad_test.csv"
+        eval_pairs = [
+            ("Val (identity check)", val_csv),
+            ("AD-trajectory", test_csv),
+            ("Established AD", cn_ad_csv),
+        ]
+    else:
+        # old-fixed preset: use combined_trajectory/ as the proper test for orphan ckpts
+        data_dir = EXP / "data" / "combined_trajectory"
+        train_csv = data_dir / "train.csv"
+        val_csv = data_dir / "val.csv"
+        test_csv = data_dir / "test.csv"
+        cn_ad_data_dir = EXP / "data" / "combined_cn_ad"
+        cn_ad_csv = cn_ad_data_dir / "test.csv" if cn_ad_data_dir.exists() else None
+        eval_pairs = [
+            ("Val (old fixed)", val_csv),
+            ("Test (old fixed, held-out)", test_csv),
+        ]
+        if cn_ad_csv is not None and cn_ad_csv.exists():
+            eval_pairs.append(("CN vs Established AD (old fixed)", cn_ad_csv))
+
+    for x in (ckpt_path, train_csv, val_csv, test_csv):
         if not x.exists():
             raise FileNotFoundError(f"missing: {x}")
 
@@ -127,10 +160,7 @@ def main():
     print(f"    missing (excl. vit alias)={len(miss)}  unexpected={len(unexp)}")
     model.to(device)
 
-    # Eval val first to confirm checkpoint identity vs cv_summary.json
-    for name, csv in [("Val (identity check)", val_csv),
-                       ("AD-trajectory", test_csv),
-                       ("Established AD", cn_ad_csv)]:
+    for name, csv in eval_pairs:
         print(f"\n[*] Evaluating on {name} ({csv.name})")
         ds = MultiModalDataset(
             str(csv),
@@ -157,10 +187,15 @@ def main():
         print(f"    specificity       : {m['specificity']:.2f}%")
         print(f"    AUC               : {m['auc']:.4f}")
 
-    print("\n[*] Expected paper values (cv_summary.json, fold 1, seed 42):")
-    print("    val   : acc=92.99% (identity check — if ~equal, checkpoint matches the paper run)")
-    print("    traj  : acc=93.57%  sens=79.85%  spec=97.37%  AUC=0.9677")
-    print("    cn_ad : acc=94.08%  AUC=0.9662")
+    if args.preset == "new-cv":
+        print("\n[*] Expected paper values (cv_summary.json, fold 1, seed 42):")
+        print("    val   : acc=92.99% (identity check — if ~equal, checkpoint matches the paper run)")
+        print("    traj  : acc=93.57%  sens=79.85%  spec=97.37%  AUC=0.9677")
+        print("    cn_ad : acc=94.08%  AUC=0.9662")
+    else:
+        print("\n[*] Orphan-checkpoint preset (old-fixed). No paper value to match;")
+        print("    these metrics reflect what the checkpoint actually achieves on its")
+        print("    proper held-out set (pre 'fix cross val' split logic).")
 
 
 if __name__ == "__main__":
