@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Paper figure combining ViT attention maps (qualitative) with the
-region-wise occlusion experiment (quantitative causal evidence).
+Paper figure: minimal, focused on the causal ablation result.
 
-Layout:
-    Left 2x2  -> CN/AD attention overlay on axial+coronal slices
-                 with HO temporal-lobe contour in cyan
-    Right column -> stacked 2-panel:
-        top: bar chart of ΔP(AD) mean for temporal vs frontal
-             masking on true-AD and true-CN subjects (fold 0)
-        bottom: per-subject scatter / strip of ΔP(AD) for true-AD
+Layout (single row, two panels):
+    Left (narrow)  : one coronal MRI slice with the HO temporal-lobe mask
+                     highlighted — a visual legend for "what we occluded".
+    Right (wide)   : bar chart of ΔP(AD) for temporal vs frontal occlusion,
+                     on true-AD and true-CN subjects (fold 0).
+
+No attention heatmaps — the attention/correlational result is mentioned in
+text only, so the figure can commit fully to the causal story.
 """
 
 from pathlib import Path
@@ -20,12 +20,10 @@ import nibabel as nib
 import numpy as np
 import pandas as pd
 from scipy.ndimage import zoom
-from scipy.stats import ttest_rel
 from nilearn import datasets, image as nimg
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 EXP = SCRIPT_DIR.parent
-RAW = SCRIPT_DIR / "results_new" / "02_vit_attention" / "raw_data"
 OUT_DIR = SCRIPT_DIR / "results_new" / "06_occlusion"
 OCCL_CSV = OUT_DIR / "occlusion_results.csv"
 
@@ -80,120 +78,81 @@ def normalize(vol, percentile=(5, 99)):
     return np.clip((vol - lo) / (hi - lo + 1e-6), 0, 1)
 
 
-def load_background():
+def load_background_coronal():
     test_df = pd.read_csv(EXP / "data/combined_trajectory/test.csv")
-    cn_row = test_df[test_df["label"] == 0].iloc[10]
-    img = nib.load(cn_row["scan_path"])
+    row = test_df[test_df["label"] == 0].iloc[10]
+    img = nib.load(row["scan_path"])
     vol = img.get_fdata().astype(np.float32)
     zf = [128 / s for s in vol.shape]
     return normalize(zoom(vol, zf, order=1))
 
 
-def plot_composite(bg, cn_attn, ad_attn, temporal_mask, occl_df, out_path):
-    cn_n = normalize(cn_attn)
-    ad_n = normalize(ad_attn)
+def plot(bg, temporal_mask, occl_df, out_path):
+    fig = plt.figure(figsize=(10, 4.5))
+    gs = gridspec.GridSpec(1, 2, width_ratios=[1, 2.2], wspace=0.25)
 
-    fig = plt.figure(figsize=(14, 6.5))
-    gs = gridspec.GridSpec(2, 3, width_ratios=[1, 1, 1.5],
-                           wspace=0.25, hspace=0.15)
+    # --- Left: one coronal slice with temporal lobe highlighted ---
+    ax_brain = fig.add_subplot(gs[0, 0])
+    coronal_idx = 72
+    bg_s = bg[:, coronal_idx, :]
+    mk_s = temporal_mask[:, coronal_idx, :]
+    ax_brain.imshow(bg_s.T, cmap="gray", origin="lower")
+    # Temporal mask as red semi-transparent overlay
+    mask_overlay = np.ma.masked_where(~mk_s, np.ones_like(mk_s, dtype=float))
+    ax_brain.imshow(mask_overlay.T, cmap="Reds", alpha=0.55, origin="lower", vmin=0, vmax=1.2)
+    ax_brain.set_title("Temporal lobe mask\n(coronal y=72)", fontsize=11)
+    ax_brain.set_xticks([])
+    ax_brain.set_yticks([])
 
-    # --- Left: 2x2 attention slices with temporal lobe contour ---
-    slice_specs = [("axial", 50), ("coronal", 72)]
-    rows = [("CN", cn_n), ("AD", ad_n)]
-    for r, (row_lbl, attn) in enumerate(rows):
-        for c, (plane, idx) in enumerate(slice_specs):
-            ax = fig.add_subplot(gs[r, c])
-            if plane == "axial":
-                bg_s, hm_s, mk_s = bg[:, :, idx], attn[:, :, idx], temporal_mask[:, :, idx]
-                tt = f"Axial z={idx}"
-            else:
-                bg_s, hm_s, mk_s = bg[:, idx, :], attn[:, idx, :], temporal_mask[:, idx, :]
-                tt = f"Coronal y={idx}"
-            ax.imshow(bg_s.T, cmap="gray", origin="lower")
-            ax.imshow(hm_s.T, cmap="hot", alpha=0.55, origin="lower", vmin=0, vmax=1)
-            ax.contour(mk_s.T.astype(float), levels=[0.5], colors="cyan",
-                       linewidths=1.3, origin="lower")
-            if r == 0:
-                ax.set_title(tt, fontsize=11)
-            if c == 0:
-                ax.set_ylabel(row_lbl, fontsize=12, fontweight="bold")
-            ax.set_xticks([])
-            ax.set_yticks([])
-
-    # --- Right column: occlusion results (spans both rows) ---
-    ax_occl = fig.add_subplot(gs[:, 2])
+    # --- Right: bar chart of ΔP(AD) ---
+    ax = fig.add_subplot(gs[0, 1])
     true_ad = occl_df[occl_df["label"] == 1]
     true_cn = occl_df[occl_df["label"] == 0]
 
-    # bar chart: mean ΔP(AD) for temp vs frontal, per true class
-    classes = ["True AD", "True CN"]
-    temp_means = [true_ad["delta_temp"].mean(), true_cn["delta_temp"].mean()]
-    front_means = [true_ad["delta_front"].mean(), true_cn["delta_front"].mean()]
-    temp_stds = [true_ad["delta_temp"].std(ddof=1), true_cn["delta_temp"].std(ddof=1)]
-    front_stds = [true_ad["delta_front"].std(ddof=1), true_cn["delta_front"].std(ddof=1)]
+    classes = ["True AD\n(N=263)", "True CN\n(N=950)"]
+    temp_m = [true_ad["delta_temp"].mean(), true_cn["delta_temp"].mean()]
+    temp_s = [true_ad["delta_temp"].std(ddof=1), true_cn["delta_temp"].std(ddof=1)]
+    front_m = [true_ad["delta_front"].mean(), true_cn["delta_front"].mean()]
+    front_s = [true_ad["delta_front"].std(ddof=1), true_cn["delta_front"].std(ddof=1)]
 
     x = np.arange(len(classes))
     w = 0.36
-    ax_occl.bar(x - w/2, temp_means, w, yerr=temp_stds, color="#c62828", alpha=0.88,
-                label="Temporal occluded", capsize=5, edgecolor="black", linewidth=0.5)
-    ax_occl.bar(x + w/2, front_means, w, yerr=front_stds, color="#90a4ae", alpha=0.88,
-                label="Frontal occluded (control)", capsize=5, edgecolor="black", linewidth=0.5)
-    ax_occl.axhline(0, linestyle="-", color="black", linewidth=0.5)
-    ax_occl.set_xticks(x)
-    ax_occl.set_xticklabels(classes, fontsize=11)
-    ax_occl.set_ylabel(r"$\Delta$ AD probability after occlusion", fontsize=11)
-    ax_occl.set_title(
-        "Region-wise ablation (fold 0, N=1,213)\n"
-        "Temporal-lobe masking drops AD prob on true-AD cases",
-        fontsize=11,
-    )
-    ax_occl.legend(loc="lower right", fontsize=9, frameon=False)
-    ax_occl.grid(axis="y", alpha=0.3, linestyle=":")
-    ax_occl.set_axisbelow(True)
-    ax_occl.spines["top"].set_visible(False)
-    ax_occl.spines["right"].set_visible(False)
+    ax.bar(x - w/2, temp_m, w, yerr=temp_s, color="#c62828", alpha=0.88,
+           label="Temporal occluded", capsize=5, edgecolor="black", linewidth=0.5)
+    ax.bar(x + w/2, front_m, w, yerr=front_s, color="#90a4ae", alpha=0.88,
+           label="Frontal occluded (control)", capsize=5, edgecolor="black", linewidth=0.5)
+    ax.axhline(0, color="black", linewidth=0.6)
+    ax.set_xticks(x)
+    ax.set_xticklabels(classes, fontsize=11)
+    ax.set_ylabel(r"$\Delta$ AD probability", fontsize=11)
+    ax.set_title("Causal ablation: removing temporal-lobe MRI information\ndrops AD predictions (fold 0)",
+                 fontsize=11)
+    ax.legend(loc="lower left", fontsize=9, frameon=False)
+    ax.grid(axis="y", alpha=0.3, linestyle=":")
+    ax.set_axisbelow(True)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
 
-    # Annotate p-values
-    t_ad, p_ad = ttest_rel(true_ad["delta_temp"], true_ad["delta_front"])
-    t_cn, p_cn = ttest_rel(true_cn["delta_temp"], true_cn["delta_front"])
-    ax_occl.text(0, max(temp_means[0] - temp_stds[0], -0.6) - 0.05,
-                 f"p<$10^{{-16}}$\nn={len(true_ad)}",
-                 ha="center", fontsize=10, fontweight="bold", color="#c62828")
-    ax_occl.text(1, 0.05,
-                 f"p={p_cn:.1e}\nn={len(true_cn)}",
-                 ha="center", fontsize=10, color="dimgray")
-
-    # Annotate the effect size
-    ax_occl.annotate(
-        f"−{abs(temp_means[0])*100:.1f} pts",
-        xy=(0 - w/2, temp_means[0]),
-        xytext=(0 - 0.55, temp_means[0] - 0.12),
-        fontsize=10.5, color="#c62828", fontweight="bold",
-        arrowprops=dict(arrowstyle="->", color="#c62828", lw=0.8),
+    # Single annotation: headline effect size + p-value on the True-AD temporal bar
+    ax.annotate(
+        f"{temp_m[0]*100:+.1f} pts\n$p<10^{{-16}}$",
+        xy=(0 - w/2, temp_m[0]),
+        xytext=(0 - w/2 - 0.05, temp_m[0] - 0.15),
+        ha="center", va="top",
+        fontsize=11, color="#c62828", fontweight="bold",
     )
 
-    plt.suptitle(
-        "ViT spatial attention + causal ablation: the model requires temporal-lobe information for AD.",
-        fontsize=11, y=0.995,
-    )
     plt.savefig(out_path, dpi=200, bbox_inches="tight")
     plt.close()
     print(f"[saved] {out_path}")
 
 
 def main():
-    if not OCCL_CSV.exists():
-        raise FileNotFoundError(f"Occlusion results not found: {OCCL_CSV}")
     occl = pd.read_csv(OCCL_CSV)
     print(f"[*] Loaded {len(occl)} occlusion records")
-
     temporal = load_temporal_mask()
-    cn_attn = np.load(RAW / "vit_roll_AGG_CN.npy")
-    ad_attn = np.load(RAW / "vit_roll_AGG_AD.npy")
-    bg = load_background()
-
-    out = OUT_DIR / "vit_occlusion_paper.png"
-    plot_composite(bg, cn_attn, ad_attn, temporal, occl, out)
+    bg = load_background_coronal()
+    plot(bg, temporal, occl, OUT_DIR / "vit_occlusion_paper.png")
 
 
 if __name__ == "__main__":
