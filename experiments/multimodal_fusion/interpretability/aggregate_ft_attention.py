@@ -22,7 +22,8 @@ from interpretability.ft_attention import (  # noqa: E402
 
 REPO = Path("/home/tanguy/medical/alzheimer")
 EXP = REPO / "experiments" / "multimodal_fusion"
-RESULTS = SCRIPT_DIR / "results"
+# Switched via CLI --preset; default = new-cv (paper-grade checkpoints)
+RESULTS = SCRIPT_DIR / "results_new"
 
 
 def per_fold_class_means(attn, labels):
@@ -47,10 +48,31 @@ def per_fold_rollout_means(attn, labels):
 
 
 def load_fold_labels(seed, fold, which):
-    """Read labels from the ablation fold CSV matching the given test set."""
-    fold_dir = REPO / "experiments" / "ablation_mri_only" / "cv_results" / f"seed_{seed}" / f"fold_{fold}"
-    csv_name = "test.csv" if which == "traj" else "cn_ad_test.csv"
-    return pd.read_csv(fold_dir / csv_name)["label"].values.astype(int)
+    """Read labels for the fold's test set (regenerate splits from all_df)."""
+    # Regenerate fold splits deterministically to match train_cv.py
+    from sklearn.model_selection import StratifiedKFold
+    train_df = pd.read_csv(EXP / "data/combined_trajectory/train.csv")
+    val_df = pd.read_csv(EXP / "data/combined_trajectory/val.csv")
+    test_df = pd.read_csv(EXP / "data/combined_trajectory/test.csv")
+    all_df = pd.concat([train_df, val_df, test_df], ignore_index=True)
+    labels = all_df["label"].values
+    indices = np.arange(len(all_df))
+    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
+    for fi, (_, tst_idx) in enumerate(skf.split(indices, labels)):
+        if fi == fold:
+            test_fold_df = all_df.iloc[tst_idx].reset_index(drop=True)
+            if which == "traj":
+                return test_fold_df["label"].values.astype(int)
+            # cn_ad: filter test fold to stable CN_AD subjects
+            cn_ad_dir = EXP / "data" / "combined_cn_ad"
+            stable_ids = set()
+            for n in ["train.csv", "val.csv", "test.csv"]:
+                p = cn_ad_dir / n
+                if p.exists():
+                    stable_ids |= set(pd.read_csv(p)["subject_id"].values)
+            filtered = test_fold_df[test_fold_df["subject_id"].isin(stable_ids)]
+            return filtered["label"].values.astype(int)
+    raise ValueError(f"fold {fold} not found")
 
 
 def aggregate(seed=42, folds=(0, 1, 2, 3, 4), variant="last_layer", test="traj"):

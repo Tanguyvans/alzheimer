@@ -208,33 +208,93 @@ def plot_attention(cn_attn, ad_attn, out_path, title_suffix=""):
     plt.close()
 
 
+def regenerate_fold_splits(seed, fold, n_folds=5):
+    """Regenerate the fold's train/val/test indices deterministically from all_df.
+
+    Must match train_cv.py logic exactly: concat(train, val, test) then
+    StratifiedKFold(n_folds, shuffle=True, random_state=seed), then 90/10
+    train/val split per-fold with seed = seed+fold.
+    """
+    from sklearn.model_selection import StratifiedKFold
+    train_df = pd.read_csv(EXP / "data/combined_trajectory/train.csv")
+    val_df = pd.read_csv(EXP / "data/combined_trajectory/val.csv")
+    test_df = pd.read_csv(EXP / "data/combined_trajectory/test.csv")
+    all_df = pd.concat([train_df, val_df, test_df], ignore_index=True)
+    labels = all_df["label"].values
+    indices = np.arange(len(all_df))
+    skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=seed)
+    for fi, (trn_idx, tst_idx) in enumerate(skf.split(indices, labels)):
+        if fi != fold:
+            continue
+        np.random.seed(seed + fold)
+        perm = np.random.permutation(len(trn_idx))
+        vs = int(0.1 * len(trn_idx))
+        val_local = trn_idx[perm[:vs]]
+        train_local = trn_idx[perm[vs:]]
+        return all_df.iloc[train_local].reset_index(drop=True), \
+               all_df.iloc[val_local].reset_index(drop=True), \
+               all_df.iloc[tst_idx].reset_index(drop=True)
+    raise ValueError(f"fold {fold} not found")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--fold", type=int, default=1)
+    parser.add_argument(
+        "--preset",
+        choices=["orphan", "new-cv"],
+        default="new-cv",
+        help="orphan: pre-fix checkpoints in cross_task_cv_results/. "
+             "new-cv: paper-grade checkpoints in cv_results/seed_X/fold_Y/.",
+    )
     args = parser.parse_args()
 
-    ckpt_path = EXP / "cross_task_cv_results" / f"model_seed{args.seed}_fold{args.fold}.pth"
-    fold_dir = REPO / "experiments" / "ablation_mri_only" / "cv_results" / f"seed_{args.seed}" / f"fold_{args.fold}"
-    train_csv = fold_dir / "train.csv"
-    test_csv = fold_dir / "test.csv"
-    cn_ad_test_csv = fold_dir / "cn_ad_test.csv"
-
-    out_dir = SCRIPT_DIR / "results"
+    if args.preset == "orphan":
+        ckpt_path = EXP / "cross_task_cv_results" / f"model_seed{args.seed}_fold{args.fold}.pth"
+        fold_dir = REPO / "experiments" / "ablation_mri_only" / "cv_results" / f"seed_{args.seed}" / f"fold_{args.fold}"
+        train_df = pd.read_csv(fold_dir / "train.csv")
+        test_df = pd.read_csv(fold_dir / "test.csv")
+        cn_ad_df = pd.read_csv(fold_dir / "cn_ad_test.csv")
+        scaler = None
+        out_dir = SCRIPT_DIR / "results"
+    else:
+        # new-cv: use paper-grade checkpoints + regenerate splits
+        ckpt_path = EXP / "cv_results" / f"seed_{args.seed}" / f"fold_{args.fold}" / "model.pth"
+        scaler_path = EXP / "cv_results" / f"seed_{args.seed}" / f"fold_{args.fold}" / "scaler.pkl"
+        print(f"[*] Regenerating fold splits (seed={args.seed}, fold={args.fold})...")
+        train_df, val_df, test_df = regenerate_fold_splits(args.seed, args.fold)
+        # Load saved scaler (trained on train.csv during the CV training)
+        import pickle
+        with open(scaler_path, "rb") as f:
+            scaler = pickle.load(f)
+        # Cross-task eval: filter test fold to stable CN_AD subjects
+        cn_ad_dir = EXP / "data" / "combined_cn_ad"
+        stable_ids = set()
+        for n in ["train.csv", "val.csv", "test.csv"]:
+            p = cn_ad_dir / n
+            if p.exists():
+                stable_ids |= set(pd.read_csv(p)["subject_id"].values)
+        cn_ad_df = test_df[test_df["subject_id"].isin(stable_ids)].reset_index(drop=True)
+        out_dir = SCRIPT_DIR / "results_new"
     out_dir.mkdir(exist_ok=True, parents=True)
 
-    print(f"[*] Checkpoint: {ckpt_path.name}")
-    print(f"[*] Fold dir: seed={args.seed} fold={args.fold}")
+    print(f"[*] Checkpoint: {ckpt_path}")
+    print(f"[*] Preset: {args.preset}")
+    print(f"[*] Output dir: {out_dir}")
 
-    # Data
-    train_df = pd.read_csv(train_csv)
-    test_df = pd.read_csv(test_csv)
-    cn_ad_df = pd.read_csv(cn_ad_test_csv)
     print(f"[*] Train={len(train_df)}  Test(traj)={len(test_df)}  Test(cn_ad)={len(cn_ad_df)}")
     print(f"    Test label dist (traj): {dict(test_df['label'].value_counts().sort_index())}")
     print(f"    Test label dist (cn_ad): {dict(cn_ad_df['label'].value_counts().sort_index())}")
 
-    X_test_traj, scaler = prepare_tabular(train_df, test_df, TABULAR_FEATURES)
+    if scaler is None:
+        X_test_traj, scaler = prepare_tabular(train_df, test_df, TABULAR_FEATURES)
+    else:
+        X_test_traj = scaler.transform(
+            test_df[TABULAR_FEATURES]
+            .apply(lambda col: col.fillna(col.median()))
+            .values.astype(np.float32)
+        )
     X_test_cn_ad = scaler.transform(
         cn_ad_df[TABULAR_FEATURES]
         .apply(lambda col: col.fillna(col.median()))
