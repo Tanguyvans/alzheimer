@@ -411,7 +411,7 @@ Wen \cite{wen2020} & MRI & 3 & 1k & 89$^\dag$ & --- & --- & --- \\
 {\scriptsize Acc/Sens/Spec in \%. $^\dag$Balanced accuracy; $^*$Binary subtasks.}
 \end{table}
 
-We achieve 93.3\% accuracy on established AD detection and 92.4\% on the AD-trajectory task. Most prior work evaluates on single cohorts with $<$1,000 subjects. While approaches like VECNN \cite{vecnn2024} achieve strong single-cohort performance (94.1\% accuracy on ADNI), our external validation experiments (Table~\ref{tab:external}) reveal the critical importance of multi-cohort training. Qiu et al. \cite{qiu2022} achieved similar AUC performance (0.94--0.97) using separate CNN and CatBoost models, whereas our approach employs end-to-end learning with cross-attention fusion for joint MRI-clinical representation learning.
+We achieve 93.3\% accuracy on established AD detection and 92.4\% on the AD-trajectory task. Most prior work evaluates on single cohorts with $<$1,000 subjects. While approaches like VECNN \cite{vecnn2024} achieve strong single-cohort performance (94.1\% accuracy on ADNI), our external validation experiments (Table~\ref{tab:external}) reveal the critical importance of multi-cohort training. Qiu et al. \cite{qiu2022} achieved similar AUC performance (0.94--0.97) using separate CNN and CatBoost models, whereas our approach employs end-to-end learning with cross-attention fusion for joint MRI-clinical representation learning. The attention-based MADDi framework \cite{maddi2022} reports 96.88\% on a 3-class CN/MCI/AD task, but with a 90/10 split over 239 ADNI subjects---a protocol whose small test set ($N\approx24$) is not directly comparable to our multi-cohort 5-fold CV evaluation.
 
 \section{Discussion}
 
