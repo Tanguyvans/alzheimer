@@ -160,14 +160,7 @@ This full cross-validation approach ensures every subject serves as a test sampl
 
 \subsection{MRI Preprocessing}
 
-T1-weighted MRI scans underwent standardized preprocessing (Fig.~\ref{fig:preprocessing}):
-\begin{enumerate}
-    \item Conversion from DICOM to NIfTI format
-    \item N4 bias field correction to remove intensity inhomogeneities
-    \item Non-linear registration to MNI-152 template using SyN (1.75mm isotropic)
-    \item Skull stripping using SynthStrip \cite{synthstrip}
-    \item Resampling to 128$\times$128$\times$128 voxels
-\end{enumerate}
+T1-weighted MRI scans underwent standardized preprocessing (Fig.~\ref{fig:preprocessing}): DICOM-to-NIfTI conversion, N4 bias field correction, non-linear SyN registration to MNI-152 (1.75\,mm isotropic), SynthStrip skull stripping \cite{synthstrip}, and resampling to $128^3$ voxels.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\columnwidth]{figures/preprocessing_pipeline.png}}
@@ -177,15 +170,7 @@ T1-weighted MRI scans underwent standardized preprocessing (Fig.~\ref{fig:prepro
 
 \subsection{Clinical Features}
 
-We harmonized and extracted 16 clinical features consistently available across all three cohorts (ADNI, OASIS, NACC):
-\begin{itemize}
-    \item \textbf{Demographics (4):} Age, sex, education years, marital status
-    \item \textbf{Neuropsychological tests (6):} Category fluency (animals), Trail Making Tests A/B, digit span forward/backward, Boston Naming Test
-    \item \textbf{Physical measurements (2):} Weight, BMI
-    \item \textbf{Medical history (4):} Alcohol use, smoking history, cardiovascular disease, neurological conditions
-\end{itemize}
-
-Missing values were imputed using median imputation and all features were z-score normalized. Importantly, cognitive screening scores (MMSE, CDR) were excluded.
+We harmonized 16 clinical features consistently available across all three cohorts: 4 demographics (age, sex, education, marital status), 6 neuropsychological tests (category fluency, Trail Making A/B, digit span forward/backward, Boston Naming), 2 physical (weight, BMI), and 4 medical-history (alcohol, smoking, cardiovascular, neurological). Missing values were median-imputed and features z-score normalized. Cognitive screening scores (MMSE, CDR) were excluded to avoid learning test-score proxies of the diagnostic label.
 
 \subsection{Model Architecture}
 
@@ -213,31 +198,7 @@ where LN denotes layer normalization and semicolon denotes concatenation. Auxili
 
 \subsection{Training Details}
 
-Models were trained for up to 100 epochs with early stopping (patience of 20 epochs after a minimum of 40 epochs), saving the best checkpoint based on validation accuracy.
-
-\textbf{Optimization:}
-\begin{itemize}
-    \item AdamW optimizer (weight decay = 0.01)
-    \item Learning rate: 2$\times$10$^{-5}$ with cosine annealing to 1$\times$10$^{-7}$
-    \item Linear warmup over 5 epochs
-    \item Layer-wise learning rate decay factor of 0.75 for ViT fine-tuning
-    \item Gradient clipping at norm 1.0
-\end{itemize}
-
-\textbf{Regularization:}
-\begin{itemize}
-    \item Weighted cross-entropy loss with inverse-frequency class weights and label smoothing ($\epsilon$ = 0.1)
-    \item Auxiliary losses on modality-specific branches (weight = 0.3)
-    \item Test-time augmentation with 8 geometric transformations (original volume plus 7 combinations of axial/sagittal/coronal flips)
-\end{itemize}
-
-\textbf{Implementation:}
-\begin{itemize}
-    \item Batch size: 4 (limited by 3D volume memory requirements; no gradient accumulation)
-    \item PyTorch 2.0 on NVIDIA GPU
-\end{itemize}
-
-All experiments used 5-fold cross-validation repeated with 3 random seeds (42, 123, 456), yielding 15 training runs per configuration to assess stability.
+Models were trained for up to 100 epochs with early stopping (patience 20 after min.\ 40 epochs), keeping the best-validation checkpoint. \textbf{Optimization:} AdamW ($\mathrm{wd}{=}0.01$), learning rate $2\!\times\!10^{-5}$ with 5-epoch linear warmup then cosine annealing to $10^{-7}$, layer-wise LR decay 0.75 for ViT, gradient clipping at norm 1.0. \textbf{Regularization:} weighted cross-entropy with inverse-frequency class weights and label smoothing ($\epsilon{=}0.1$), auxiliary modality-specific losses (weight 0.3), and test-time augmentation over 8 geometric transforms (original plus 7 flip combinations along axial/sagittal/coronal axes). Batch size 4 (3D-volume memory constraint), PyTorch 2.0 on a single NVIDIA GPU. All experiments used 5-fold CV repeated with 3 random seeds (42, 123, 456), yielding 15 training runs per configuration.
 
 \subsection{Evaluation Metrics}
 
