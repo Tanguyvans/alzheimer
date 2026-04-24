@@ -105,9 +105,9 @@ For tabular data, the FT-Transformer \cite{gorishniy2021} embeds each feature as
 
 \subsection{Multimodal Fusion}
 
-Combining imaging with clinical data improves classification performance. Qiu et al. \cite{qiu2020} demonstrated this with an end-to-end FCN-MLP framework that achieved 96.8\% accuracy on ADNI by integrating MRI features with age, sex, and MMSE scores. However, diagnostic scores like MMSE (median: 29 for CN vs 23.5 for AD) are strongly predictive of cognitive status, raising concerns about whether such models learn disease patterns versus cognitive assessment correlations. In a larger follow-up, Qiu et al. \cite{qiu2022} scaled to 8,916 subjects across 8 cohorts using a hybrid architecture that concatenates CNN-derived imaging features with CatBoost for tabular data fusion.
+Combining imaging with clinical data improves classification performance. Qiu et al. \cite{qiu2020} demonstrated this with an end-to-end FCN-MLP framework that achieved 96.8\% accuracy on ADNI by integrating MRI features with age, sex, and MMSE scores. However, diagnostic scores like MMSE (median: 29 for CN vs 23.5 for AD) are strongly predictive of cognitive status, raising concerns about whether such models learn disease patterns versus cognitive assessment correlations. In a larger follow-up, Qiu et al. \cite{qiu2022} scaled to 8,916 subjects across 8 cohorts using a hybrid architecture that concatenates CNN-derived imaging features with CatBoost for tabular data fusion. More recently, Golovanevsky et al.~\cite{maddi2022} introduced MADDi, which integrates imaging, clinical, and genetic features for AD diagnosis through cross-modal multi-head attention but uses 2D CNN-derived imaging features and is validated on a single cohort.
 
-We advance this line of work by combining state-of-the-art architectures for both modalities: 3D Vision Transformer with masked autoencoder pretraining for imaging and Feature Tokenizer Transformer for clinical data, integrated through bidirectional cross-attention. We exclude diagnostic scores (MMSE, CDR) to ensure the model learns from structural neuroimaging and non-cognitive clinical features rather than test-score proxies of the diagnostic label.
+We advance this line of work by combining state-of-the-art transformer architectures for \emph{both} modalities and fusing them end-to-end: a 3D Vision Transformer (rather than CNN-derived features) with MAE pretraining for imaging, a Feature Tokenizer Transformer for clinical data, and bidirectional cross-attention fusion evaluated at multi-cohort scale. We exclude diagnostic scores (MMSE, CDR) to ensure the model learns from structural neuroimaging and non-cognitive clinical features rather than test-score proxies of the diagnostic label.
 
 \section{Methods}
 
@@ -491,6 +491,8 @@ The NACC database is funded by NIA/NIH Grant U24 AG072122. NACC data are contrib
 \bibitem{abnar2020quantifying} S. Abnar and W. Zuidema, ``Quantifying attention flow in transformers,'' in \textit{Proc. 58th Annu. Meet. Assoc. Comput. Linguistics (ACL)}, 2020, pp. 4190--4197.
 
 \bibitem{lundberg2017shap} S. M. Lundberg and S.-I. Lee, ``A unified approach to interpreting model predictions,'' in \textit{Proc. NeurIPS}, 2017, pp. 4765--4774.
+
+\bibitem{maddi2022} M. Golovanevsky, C. Eickhoff, and R. Singh, ``Multimodal attention-based deep learning for Alzheimer's disease diagnosis,'' \textit{J. Am. Med. Inform. Assoc.}, vol. 29, no. 12, pp. 2129--2141, 2022.
 
 \end{thebibliography}
 
