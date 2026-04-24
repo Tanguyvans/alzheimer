@@ -502,6 +502,11 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
             trainer = MRICVTrainer(config, fold, seed, fold_dir, use_wandb=use_wandb)
             results = trainer.train(train_dataset, val_dataset, test_dataset)
 
+            # Save best-val-acc checkpoint for this fold (post-hoc interpretability)
+            ckpt_path = fold_dir / "model.pth"
+            torch.save(results["model"].state_dict(), ckpt_path)
+            logger.info(f"  Saved checkpoint: {ckpt_path}")
+
             logger.info(f"  Val: {results['val_accuracy']:.1f}% | "
                        f"Traj: Acc={results['test_accuracy']:.1f}%, BalAcc={results['test_balanced_accuracy']:.1f}%, "
                        f"Sens={results['test_sensitivity']:.1f}%, Spec={results['test_specificity']:.1f}%, "

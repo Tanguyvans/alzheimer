@@ -472,6 +472,16 @@ def run_cross_validation(config: Dict, n_folds: int, seeds: List[int], output_di
             trainer = TabularCVTrainer(config, fold, seed, fold_dir, use_wandb=use_wandb)
             results = trainer.train(train_dataset, val_dataset, test_dataset)
 
+            # Save best-val-acc checkpoint + scaler for this fold (post-hoc interpretability)
+            ckpt_path = fold_dir / "model.pth"
+            torch.save(results["model"].state_dict(), ckpt_path)
+            scaler = results.get("scaler")
+            if scaler is not None:
+                import pickle
+                with open(fold_dir / "scaler.pkl", "wb") as f:
+                    pickle.dump(scaler, f)
+            logger.info(f"  Saved checkpoint: {ckpt_path}")
+
             # Log trajectory results
             logger.info(f"  Val: {results['val_accuracy']:.1f}% | "
                        f"Traj: Acc={results['test_accuracy']:.1f}%, BalAcc={results['test_balanced_accuracy']:.1f}%, "
