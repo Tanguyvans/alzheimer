@@ -71,12 +71,76 @@ Deux modèles évalués, même fold : `seed_42 / fold_4`.
 - Modèle tabulaire : 13/13 AD + 11/13 MCI détectés. Les 2 MCI manqués (COGN0078 P=0.25 ; COGN0427 P=0.47) ont tous les deux **MTAS patho** (atrophie temporale visible à l'IRM) — cas où l'IRM aurait aidé, mais ils n'ont que du T1 2D inutilisable.
 - Concordance modèle tabulaire ↔ score MTAS radiologue : **15/25 (60%)**. Biais pro-AD attendu sur une cohorte 100% symptomatique.
 
-Fichiers de sortie :
+Fichiers de sortie (non versionnés, générés localement) :
 ```
 experiments/multimodal_fusion/results/chu_predictions.csv            (11 lignes)
 experiments/ablation_tabular_only/results/chu_predictions_tabular.csv (26 lignes)
 experiments/ablation_tabular_only/results/chu_radio_compare.csv      (26 + MTAS/Fazekas)
 ```
+
+### Prédictions multimodales (11 sujets avec IRM 3D)
+
+Modèle : `multimodal_fusion` fold_4 / seed_42. `P(AD)` = probabilité de la classe AD trajectory (softmax).
+
+| Sujet | DX réel | P(AD) | Prédiction |
+|---|---|---:|:-:|
+| COGN0006 | MCI | 1.000 | AD ✓ |
+| COGN0043 | MCI | 0.981 | AD ✓ |
+| COGN0066 | AD  | 0.997 | AD ✓ |
+| COGN0169 | MCI | 1.000 | AD ✓ |
+| COGN0403 | ?   | 1.000 | AD |
+| COGN0405 | MCI | 1.000 | AD ✓ |
+| COGN0425 | AD  | 1.000 | AD ✓ |
+| COGN0428 | AD  | 1.000 | AD ✓ |
+| COGN0464 | AD  | 1.000 | AD ✓ |
+| COGN0494 | MCI | 1.000 | AD ✓ |
+| COGN0613 | ?   | 0.014 | CN (OOD, scan gadolinium) |
+
+**Accuracy sur 9 sujets labellisés : 100%** (9/9).
+
+### Prédictions tabulaires (26 sujets avec clinique, IRM absente ou 2D)
+
+Modèle : `ablation_tabular_only` fold_4 / seed_42.
+
+| Sujet | DX | P(AD) | Prédiction |
+|---|---|---:|:-:|
+| COGN0006 | MCI | 0.975 | AD ✓ |
+| COGN0043 | MCI | 0.729 | AD ✓ |
+| COGN0065 | MCI | 0.980 | AD ✓ |
+| COGN0066 | AD  | 0.913 | AD ✓ |
+| **COGN0078** | **MCI** | **0.246** | **CN** ✗ |
+| COGN0086 | AD  | 0.986 | AD ✓ |
+| COGN0112 | AD  | 0.980 | AD ✓ |
+| COGN0133 | MCI | 0.878 | AD ✓ |
+| COGN0155 | MCI | 0.519 | AD ✓ |
+| COGN0169 | MCI | 0.986 | AD ✓ |
+| COGN0194 | AD  | 0.970 | AD ✓ |
+| COGN0199 | AD  | 0.971 | AD ✓ |
+| COGN0255 | MCI | 0.978 | AD ✓ |
+| COGN0294 | AD  | 0.890 | AD ✓ |
+| COGN0405 | MCI | 0.798 | AD ✓ |
+| COGN0425 | AD  | 0.966 | AD ✓ |
+| **COGN0427** | **MCI** | **0.474** | **CN** ✗ |
+| COGN0428 | AD  | 0.934 | AD ✓ |
+| COGN0464 | AD  | 0.984 | AD ✓ |
+| COGN0471 | MCI | 0.972 | AD ✓ |
+| COGN0480 | AD  | 0.973 | AD ✓ |
+| COGN0485 | AD  | 0.973 | AD ✓ |
+| COGN0487 | AD  | 0.985 | AD ✓ |
+| COGN0494 | MCI | 0.979 | AD ✓ |
+| COGN0644 | AD  | 0.966 | AD ✓ |
+| COGN0680 | MCI | 0.974 | AD ✓ |
+
+**Accuracy : 24/26 = 92.3%** — les 2 manqués (COGN0078, COGN0427) sont des MCI avec MMSE 25 et tests limites, mais tous deux ont un **MTAS patho** (atrophie hippocampique visible au radiologue), signal que l'IRM aurait aidé.
+
+### Concordance modèle tabulaire ↔ MTAS radiologue (25 sujets)
+
+|  | MTAS normal (rad dit CN) | MTAS patho (rad dit AD) |
+|---|:-:|:-:|
+| Modèle → CN | 0 | 2 |
+| Modèle → AD | 8 | 15 |
+
+**Agreement : 15/25 = 60%**. Biais pro-AD du modèle attendu sur une cohorte 100% symptomatique.
 
 ## Mapping Excel CHU → features ADNI
 
