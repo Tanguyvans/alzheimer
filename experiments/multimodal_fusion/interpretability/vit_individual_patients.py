@@ -123,10 +123,15 @@ def plot_patient(ax_row, patient_label, patient_id, prob, bg, heatmap_norm, slic
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--fold", type=int, default=0)
+    parser.add_argument("--seed", type=int, default=42)
+    args = parser.parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[*] Device: {device}")
 
-    fold, seed = 0, 42
+    fold, seed = args.fold, args.seed
     _, test_df = regenerate_fold_splits(seed, fold)
     ckpt_path = EXP / "cv_results" / f"seed_{seed}" / f"fold_{fold}" / "model.pth"
     scaler_path = EXP / "cv_results" / f"seed_{seed}" / f"fold_{fold}" / "scaler.pkl"
@@ -188,12 +193,12 @@ def main():
     fig.colorbar(sm, cax=cbar_ax, label="Attention (normalized)")
 
     plt.suptitle(
-        "Individual patient ViT attention — 2 CN + 2 AD (fold 0)\n"
+        f"Individual patient ViT attention — 2 CN + 2 AD (fold {fold})\n"
         "Each row shows attention from the CLS token to brain regions for one subject",
         fontsize=11, y=0.995,
     )
     plt.tight_layout(rect=[0, 0, 0.92, 0.975])
-    out_path = RESULTS / "vit_individual_patients.png"
+    out_path = RESULTS / f"vit_individual_patients_fold{fold}.png"
     plt.savefig(out_path, dpi=180, bbox_inches="tight")
     plt.close()
     print(f"[saved] {out_path.name}")
