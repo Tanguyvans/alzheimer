@@ -61,7 +61,7 @@ said.mahmoudi@umons.ac.be}
 \maketitle
 
 \begin{abstract}
-Deep learning for Alzheimer's disease (AD) classification from MRI has shown promise, yet recent reviews reveal that fewer than 20\% of studies employ external validation, with data leakage (e.g., same subjects in train and test sets) inflating reported accuracies to 95-99\%. Studies with rigorous subject-level splitting achieve 66-90\%. We present an end-to-end multimodal deep learning framework that processes both 3D MRI scans and clinical tabular data. The framework combines a Vision Transformer (ViT) for imaging analysis with a Feature Tokenizer Transformer (FT-Transformer) for clinical features, fusing both modalities through bidirectional cross-attention. This multimodal fusion enables the model to leverage complementary information from structural brain imaging and patient clinical profiles. We validate on 6,065 subjects from three independent cohorts (ADNI, OASIS, NACC-SCAN) using strict subject-level 5-fold cross-validation. Our approach achieves \textbf{92.4\% accuracy} (AUC: 0.96) for distinguishing cognitively normal subjects from AD-trajectory patients (including MCI patients who later developed AD), and \textbf{93.3\%} on established AD cases. External validation across datasets reveals that single-cohort models suffer severe performance degradation (accuracy drops of 25-43 points), while our multi-cohort approach maintains robust generalization. Interpretability analyses of the tabular and imaging branches show that the trained model attends to clinically-established AD markers (age, executive function tests, medial-temporal structures), supporting its clinical relevance.
+Deep learning for Alzheimer's disease (AD) classification from MRI has shown promise, yet recent reviews reveal that fewer than 20\% of studies employ external validation, with data leakage (e.g., same subjects in train and test sets) inflating reported accuracies to 95-99\%. Studies with rigorous subject-level splitting achieve 66-90\%. We present an end-to-end multimodal deep learning framework that processes both 3D MRI scans and clinical tabular data. The framework combines a Vision Transformer (ViT) for imaging analysis with a Feature Tokenizer Transformer (FT-Transformer) for clinical features, fusing both modalities through bidirectional cross-attention. This multimodal fusion enables the model to leverage complementary information from structural brain imaging and patient clinical profiles. We validate on 6,065 subjects from three independent cohorts (ADNI, OASIS, NACC-SCAN) using strict subject-level 5-fold cross-validation. Our approach achieves \textbf{92.4\% accuracy} (AUC: 0.96) for distinguishing cognitively normal subjects from AD-trajectory patients (including MCI patients who later developed AD), and \textbf{93.3\%} on established AD cases. External validation across datasets reveals that single-cohort models suffer severe performance degradation (accuracy drops of 25-43 points), while our multi-cohort approach maintains robust generalization. SHAP analysis of the tabular branch shows predictions are dominated by the canonical neuropsychological battery (executive function, semantic memory, working memory), while the imaging branch focalizes on medial-temporal structures, supporting the model's clinical relevance.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -336,16 +336,16 @@ The results reveal substantial cross-cohort generalization gaps for single-cohor
 \subsection{Interpretability}
 \label{subsec:interpretability}
 
-We conducted three complementary analyses on the cross-validation checkpoints (seed 42) to understand what the model attends to and how it combines modalities: (i) FT-Transformer feature attention, (ii) ViT spatial attention, and (iii) cross-modal concordance against independently-trained unimodal baselines on a representative fold.
+We conducted three complementary analyses on the cross-validation checkpoints (seed 42) to understand how the model makes its decisions and combines modalities: (i) SHAP feature importance on the tabular branch, (ii) ViT spatial attention on the imaging branch, and (iii) cross-modal concordance against independently-trained unimodal baselines on a representative fold.
 
-\subsubsection{Tabular Feature Attention}
+\subsubsection{Tabular Feature Importance via SHAP}
 
-We compute attention rollout~\cite{abnar2020quantifying} through the three FT-Transformer layers from the CLS token to the 16 feature tokens, average per class, and report the per-feature signed difference $\Delta = \text{attn}_{\text{AD}} - \text{attn}_{\text{CN}}$ across 5 folds (Fig.~\ref{fig:ft_attn}). Five features show 5/5 signed consistency: \textbf{Age}, \textbf{TMT-A/B} are attended more for AD, while \textbf{Neurological History} and \textbf{Category Fluency (animals)} dominate CN predictions. These match clinically-established AD markers---age as the primary risk factor, executive-function slowing, and semantic memory decline---supporting that the model relies on meaningful signals rather than spurious correlations.
+We apply SHAP~\cite{lundberg2017shap} (GradientExplainer, 100-sample training reference) to the tabular sub-network and report the mean $\lvert\text{SHAP}\rvert$ on the AD-class logit averaged across 5 folds (Fig.~\ref{fig:shap_tabular}); cross-fold sign consistency was too low (median 3/5) to support directional claims, so we restrict interpretation to importance magnitude. Four of the top five features---\textbf{TMT-B} (executive function), \textbf{Boston Naming} (language), \textbf{Category Fluency} (semantic memory), and \textbf{Digit Span Backward} (working memory)---constitute the canonical neuropsychological battery used in AD diagnosis. Neurological history and age contribute secondarily, while non-specific risk factors (smoking, alcohol, cardiac history, sex) rank at the bottom, supporting that the model relies on clinically-meaningful signals rather than demographic proxies.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=0.85\columnwidth]{figures/ft_attn_paper.png}}
-\caption{FT-Transformer feature discrimination across 5 folds. Bars show the per-feature attention difference $\Delta = \text{attn}_{\text{AD}} - \text{attn}_{\text{CN}}$ (mean $\pm$ std); annotations give the signed consistency \textit{k}/5.}
-\label{fig:ft_attn}
+\centerline{\includegraphics[width=0.85\columnwidth]{figures/shap_tabular_paper.png}}
+\caption{Tabular feature importance via SHAP on the AD-trajectory task. Bars show the mean $\lvert\text{SHAP}\rvert$ on the AD-class logit across 5 folds (error bars: cross-fold std). Cognitive tests (red) dominate the ranking, recovering the canonical neuropsychological battery used in AD assessment.}
+\label{fig:shap_tabular}
 \end{figure}
 
 \subsubsection{Spatial Brain Attention}
@@ -420,7 +420,7 @@ This demonstrates that training on challenging early-stage cases forces the mode
 
 \subsection{Clinical Integration}
 
-The interpretability analyses suggest a concrete deployment pathway. Tabular features can be extracted automatically from electronic health records, while MRI interpretation involves standard acquisition and radiologist reading. Our model would serve as decision support by (i) flagging high-risk tabular profiles for prioritized imaging review, (ii) providing per-subject spatial attention maps (Fig.~\ref{fig:vit_attn}) that the radiologist can corroborate or override, and (iii) exposing per-feature attention weights (Fig.~\ref{fig:ft_attn}) so clinicians verify the reasoning. When the two modalities disagree (25\% of cases), the fusion's arbitration acts as an explicit second opinion rather than a black-box prediction.
+The interpretability analyses suggest a concrete deployment pathway. Tabular features can be extracted automatically from electronic health records, while MRI interpretation involves standard acquisition and radiologist reading. Our model would serve as decision support by (i) flagging high-risk tabular profiles for prioritized imaging review, (ii) providing per-subject spatial attention maps (Fig.~\ref{fig:vit_attn}) that the radiologist can corroborate or override, and (iii) exposing per-feature SHAP importance (Fig.~\ref{fig:shap_tabular}) so clinicians verify the reasoning. When the two modalities disagree (25\% of cases), the fusion's arbitration acts as an explicit second opinion rather than a black-box prediction.
 
 \subsection{Limitations}
 
@@ -430,7 +430,7 @@ Several limitations should be acknowledged:
 
 \textbf{Missing data:} Some tabular features have incomplete coverage across cohorts (23-100\%), handled via median imputation which may lose information.
 
-\textbf{Interpretability:} Our attention analyses (Sec.~\ref{subsec:interpretability}) identify clinically-relevant features and brain regions but do not provide per-subject attribution. Future work could combine our attention visualizations with instance-level methods (e.g., SHAP, Integrated Gradients) for patient-specific explanations suitable for clinical decision support.
+\textbf{Interpretability:} Our analyses (Sec.~\ref{subsec:interpretability}) are population-level; low cross-fold sign consistency of SHAP values limits directional claims for individual features. Per-subject SHAP dependence plots or Integrated Gradients could provide patient-specific attributions for clinical decision support.
 
 \textbf{External validation:} While our cross-cohort experiment (Table~\ref{tab:external}) demonstrates the importance of multi-cohort training, all three cohorts participate in cross-validation. A fully independent held-out cohort used only for testing would provide stronger generalization evidence.
 
@@ -486,6 +486,8 @@ The NACC database is funded by NIA/NIH Grant U24 AG072122. NACC data are contrib
 \bibitem{misra2009} C. Misra, Y. Fan, and C. Davatzikos, ``Baseline and longitudinal patterns of brain atrophy in MCI patients, and their use in prediction of short-term conversion to AD: Results from ADNI,'' \textit{NeuroImage}, vol. 44, no. 4, pp. 1415--1422, 2009.
 
 \bibitem{abnar2020quantifying} S. Abnar and W. Zuidema, ``Quantifying attention flow in transformers,'' in \textit{Proc. 58th Annu. Meet. Assoc. Comput. Linguistics (ACL)}, 2020, pp. 4190--4197.
+
+\bibitem{lundberg2017shap} S. M. Lundberg and S.-I. Lee, ``A unified approach to interpreting model predictions,'' in \textit{Proc. NeurIPS}, 2017, pp. 4765--4774.
 
 \end{thebibliography}
 
