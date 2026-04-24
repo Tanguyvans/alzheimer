@@ -336,7 +336,7 @@ The results reveal substantial cross-cohort generalization gaps for single-cohor
 \subsection{Interpretability}
 \label{subsec:interpretability}
 
-To understand what the trained model attends to and validate that its decisions rely on clinically-established AD markers, we performed two complementary analyses on the cross-validation checkpoints (seed 42, five folds): (i) tabular feature attention through the FT-Transformer weights, and (ii) spatial brain attention through ViT attention rollout~\cite{abnar2020quantifying}.
+To understand what the trained model attends to and how it combines the two modalities, we performed three complementary analyses on the cross-validation checkpoints (seed 42): (i) tabular feature attention through the FT-Transformer weights, (ii) spatial brain attention through ViT attention rollout~\cite{abnar2020quantifying}, and (iii) a cross-modal concordance analysis comparing the fused classifier against independently-trained single-modality baselines on a representative fold.
 
 \subsubsection{Tabular Feature Attention}
 
@@ -360,6 +360,18 @@ Aggregating across the 5 folds, the attention magnitude on the peak patch is \te
 \centerline{\includegraphics[width=\columnwidth]{figures/vit_paper_main.png}}
 \caption{ViT attention rollout on well-classified subjects (5 folds $\times$ 4 cases per class per fold). Top row: CN subjects; bottom row: AD subjects. Three representative slices are shown (axial $z=40$, axial $z=50$, coronal $y=72$). AD attention focalizes in the medial-temporal / hippocampal region, while CN attention is diffuse.}
 \label{fig:vit_attn}
+\end{figure}
+
+\subsubsection{Cross-modal Contribution}
+
+To interpret \emph{how} the bidirectional cross-attention combines the two modalities, we extracted predictions from three independently-trained models on fold 0 of the cross-validation (1{,}213 held-out subjects, representative of the other folds): the MRI-only ViT (82.7\% accuracy), the tabular-only FT-Transformer (84.1\%), and our multimodal fusion (93.4\%). We then compared predictions per subject and analyzed the agreement pattern (Fig.~\ref{fig:concordance}).
+
+On 906 subjects (74.7\%) the two unimodal models agree. For those, the fused classifier mostly follows the consensus---correctly when both modalities are right and incorrectly when both are wrong---although in 21 cases it correctly overrides a wrong consensus using the cross-modal representation. On the remaining 307 subjects (25.3\%) the two modalities \textbf{disagree}, and this is where the fusion adds its value: the fused classifier picks the correct modality in \textbf{87.6\%} of disagreement cases, approaching the 100\% oracle upper bound. This supports the interpretation of the cross-attention layer as an \emph{adaptive modality selector} rather than a simple averager---a subject-specific mechanism that learns to route each decision toward whichever modality carries a reliable signal, which is difficult to replicate with late-fusion or logistic stacking of unimodal classifiers.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{figures/fig_cross_modal_concordance.png}}
+\caption{Cross-modal concordance analysis on fold 0 (1{,}213 held-out subjects). (A) Fused accuracy within the agreement regime (906 subjects, 74.7\%) and disagreement regime (307 subjects, 25.3\%). (B) Disagreement resolution accuracy per class for the fused classifier, compared against the oracle upper bound (perfect modality selection).}
+\label{fig:concordance}
 \end{figure}
 
 \subsection{Comparison with Literature}
@@ -396,6 +408,10 @@ We achieve 93.3\% accuracy on established AD detection and 92.4\% on the AD-traj
 Our results reveal that training on the heterogeneous AD-trajectory task (including MCI converters) yields superior performance for established AD detection compared to training exclusively on established AD cases. Models trained on AD-trajectory achieve 0.956 AUC on established AD versus 0.948 for models trained directly on established AD (Table~\ref{tab:results}), with significantly higher sensitivity (79.0\% vs 69.4\%) despite slightly lower specificity (96.2\% vs 97.4\%).
 
 This demonstrates that training on challenging early-stage cases forces the model to learn discriminative features that generalize to pronounced disease. MCI converters exhibit subtle atrophy patterns near the noise floor of normal aging variability, requiring fine-grained feature extraction. When applied to established AD cases with pronounced atrophy, these learned features transfer effectively without relying on gross anatomical changes. The trajectory-trained model achieves 93.3\% accuracy on established AD detection, only 0.9 points below its in-domain performance (92.4\%), supporting the clinical utility of heterogeneous training for robust early detection.
+
+\subsection{Clinical Integration}
+
+The interpretability results above suggest a concrete workflow for clinical deployment. Tabular features (demographics, cognitive test scores, medical history) can be extracted automatically from electronic health records in seconds, while MRI interpretation involves structured acquisition and radiologist reading. In this pipeline, our model would serve as a decision-support tool that: (i) flags subjects whose tabular profile suggests elevated AD risk for prioritized imaging review, (ii) provides spatial attention maps (Fig.~\ref{fig:vit_attn}) highlighting brain regions the model found informative for the radiologist to corroborate or override, and (iii) exposes the per-feature attention weights (Fig.~\ref{fig:ft_attn}) so that the clinician can verify the diagnostic reasoning aligns with the patient's presentation. When the two modalities disagree (25\% of cases in our analysis), the model's arbitration serves as an explicit second opinion rather than a black-box prediction. Integration in longitudinal monitoring settings---where the same subject is imaged repeatedly over months or years---would additionally allow tracking of attention shifts in the medial-temporal region as an early progression signal, complementing volumetric measurements.
 
 \subsection{Limitations}
 

@@ -133,16 +133,17 @@ def predict_tab(test_df, ckpt_path, scaler_path, device):
 
 
 def predict_mri_only(test_df, ckpt_path, device):
-    """Run MRI-only ViT model on fold test."""
-    from experiments.mri_vit_ad.model import ViT3DClassifier  # noqa: E402
+    """Run MRI-only ViT model on fold test using the same preprocessing
+    as ablation_mri_only/train_cv.py:MRIDataset (z-score normalization,
+    plain zoom to 128^3, no paper_preprocessing)."""
+    sys.path.insert(0, str(REPO / "experiments" / "mri_vit_ad"))
+    from model import ViT3DClassifier  # noqa: E402
+    sys.path.insert(0, str(ABL_MRI))
+    from train_cv import MRIDataset  # noqa: E402
+
     tmp = MM / "interpretability" / "_tmp_mri_test.csv"
     test_df.to_csv(tmp, index=False)
-    ds = MultiModalDataset(
-        str(tmp), tabular_features=TABULAR_FEATURES,
-        target_shape=(128, 128, 128), augment=False,
-        normalize_tabular=False, scaler=None,
-        use_paper_preprocessing=True, target_spacing=1.75,
-    )
+    ds = MRIDataset(str(tmp), target_size=128)
     loader = DataLoader(ds, batch_size=4, shuffle=False, num_workers=4, pin_memory=True)
     model = ViT3DClassifier(
         architecture="vit_base", num_classes=2, in_channels=1, image_size=128,
@@ -153,7 +154,7 @@ def predict_mri_only(test_df, ckpt_path, device):
     preds = []
     probs = []
     with torch.no_grad():
-        for mri, _, _ in loader:
+        for mri, _ in loader:
             mri = mri.to(device)
             logits = model(mri)
             p = torch.softmax(logits, dim=-1).cpu()
@@ -166,6 +167,7 @@ def predict_mri_only(test_df, ckpt_path, device):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--folds", type=int, nargs="+", default=[0, 1, 2, 3, 4])
     parser.add_argument("--skip-mri", action="store_true",
                         help="Skip MRI-only (use if ablation_mri_only not trained yet)")
     args = parser.parse_args()
@@ -176,7 +178,7 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
 
     all_dfs = []
-    for fold in range(5):
+    for fold in args.folds:
         print(f"\n===== FOLD {fold} =====")
         test_df = regenerate_fold_test(seed, fold)
 
