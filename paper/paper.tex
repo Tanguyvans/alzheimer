@@ -353,8 +353,8 @@ We apply SHAP~\cite{lundberg2017shap} (GradientExplainer, 100-sample training re
 For each of the 5 folds, we select the four most confidently and correctly classified CN and AD subjects (softmax probability $\geq 0.999$) and compute attention rollout~\cite{abnar2020quantifying} from the CLS token across the 12 ViT blocks to the 512 image patches, reshaped to an $8^3$ grid and upsampled trilinearly to $128^3$. Aggregating across the 5 folds, the peak attention is \textbf{3.6$\times$ higher} for AD than for CN (0.057 vs 0.016 on the normalized scale), indicating that AD predictions concentrate spatially while CN relies on a diffuse representation (Fig.~\ref{fig:vit_attn}). To test anatomical specificity we resampled the Harvard-Oxford atlas onto the model's input grid and measured attention mass per region: AD attention localizes in the temporal lobe at \textbf{1.47$\times$} the brain-mean rate vs \textbf{1.15$\times$} for CN (paired-t across 5 folds, $p=0.008$), while frontal-lobe attention shows no class differential ($1.13\times$ vs $1.13\times$, $p=0.82$)---consistent with the earliest sites of AD-related atrophy.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=0.95\columnwidth]{figures/vit_paper_main.png}}
-\caption{ViT attention rollout (5 folds $\times$ 4 cases/class), aggregated. Top: CN; bottom: AD. AD attention focalizes on temporal-lobe regions while CN spreads diffusely.}
+\centerline{\includegraphics[width=\columnwidth]{figures/vit_anatomical_paper.png}}
+\caption{ViT attention rollout with anatomical quantification. Left: CN (top) vs AD (bottom) attention overlaid on reference slices; cyan contour outlines the Harvard-Oxford temporal lobe. Right: per-ROI enrichment (ROI mean attention / brain mean), 5-fold mean $\pm$ std. Temporal lobe shows significant AD$>$CN differential ($p=0.008$, paired-t); frontal-lobe control shows none ($p=0.82$).}
 \label{fig:vit_attn}
 \end{figure}
 
