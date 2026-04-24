@@ -365,13 +365,13 @@ To isolate the contribution of the cross-attention fusion \emph{beyond} what any
 \begin{table}[htbp]
 \caption{Cross-modal fusion vs late-fusion baselines (fold 0, $N=1{,}213$). Accuracies in \%.}
 \begin{center}
-\small
-\setlength{\tabcolsep}{5pt}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}lrrccc@{}}
 \toprule
- & & & \multicolumn{2}{c}{\emph{Output-level fusion}} & \emph{Feature-level fusion} \\
+ & & & \multicolumn{2}{c}{\emph{Output-level}} & \emph{Feature-level} \\
 \cmidrule(lr){4-5}\cmidrule(lr){6-6}
-\textbf{Regime} & \textbf{N} & \textbf{\%} & Prob.\ avg & LR stack$^\dag$ & \textbf{Cross-attn} \\
+\textbf{Regime} & \textbf{N} & \textbf{\%} & Avg & Stack$^\dag$ & \textbf{Cross-attn} \\
 \midrule
 Both right       &  858 & 70.7 & 100.0 & 100.0 & \textbf{98.3} \\
 Both wrong       &   48 &  4.0 &   0.0 &   4.2 & \textbf{43.8} \\
@@ -383,7 +383,7 @@ Disagree         &  307 & 25.3 &  48.5 &  78.2 & \textbf{87.6} \\
 \label{tab:concordance}
 \end{center}
 \vspace{-2mm}
-{\scriptsize $^\dag$\emph{LR stack}: logistic regression on $(p_\mathrm{MRI}, p_\mathrm{Tab})$, 5-fold CV to avoid train-on-test. \emph{Prob.\ avg}: arithmetic mean. Both see only unimodal outputs; cross-attention operates on internal representations. \emph{Both right/wrong}: subjects where the MRI-only and tabular-only predictions agree (ground-truth correct or wrong). MRI-only ViT scores 82.7\% overall (47.2\%/52.8\% on disagreements), tabular-only FT-Transformer 84.1\% (52.8\%/47.2\%).}
+{\scriptsize $^\dag$\emph{Avg}: arithmetic mean of $p_\mathrm{MRI}, p_\mathrm{Tab}$. \emph{Stack}: logistic regression on $(p_\mathrm{MRI}, p_\mathrm{Tab})$ with 5-fold CV. Both see only the unimodal outputs; cross-attention operates on internal representations. \emph{Both right/wrong}: MRI-only and tab-only predictions agree (correct/wrong). MRI-only 82.7\%, tab-only 84.1\% overall.}
 \end{table}
 
 \subsection{Comparison with Literature}
