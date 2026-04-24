@@ -61,7 +61,7 @@ said.mahmoudi@umons.ac.be}
 \maketitle
 
 \begin{abstract}
-Deep learning for Alzheimer's disease (AD) classification from MRI has shown promise, yet recent reviews reveal that fewer than 20\% of studies employ external validation, with data leakage (e.g., same subjects in train and test sets) inflating reported accuracies to 95-99\%. Studies with rigorous subject-level splitting achieve 66-90\%. We present an end-to-end multimodal deep learning framework that processes both 3D MRI scans and clinical tabular data. The framework combines a Vision Transformer (ViT) for imaging analysis with a Feature Tokenizer Transformer (FT-Transformer) for clinical features, fusing both modalities through bidirectional cross-attention. This multimodal fusion enables the model to leverage complementary information from structural brain imaging and patient clinical profiles. We validate on 6,065 subjects from three independent cohorts (ADNI, OASIS, NACC-SCAN) using strict subject-level 5-fold cross-validation. Our approach achieves \textbf{92.4\% accuracy} (AUC: 0.96) for distinguishing cognitively normal subjects from AD-trajectory patients (including MCI patients who later developed AD), and \textbf{93.3\%} on established AD cases. External validation across datasets reveals that single-cohort models suffer severe performance degradation (accuracy drops of 25-43 points), while our multi-cohort approach maintains robust generalization.
+Deep learning for Alzheimer's disease (AD) classification from MRI has shown promise, yet recent reviews reveal that fewer than 20\% of studies employ external validation, with data leakage (e.g., same subjects in train and test sets) inflating reported accuracies to 95-99\%. Studies with rigorous subject-level splitting achieve 66-90\%. We present an end-to-end multimodal deep learning framework that processes both 3D MRI scans and clinical tabular data. The framework combines a Vision Transformer (ViT) for imaging analysis with a Feature Tokenizer Transformer (FT-Transformer) for clinical features, fusing both modalities through bidirectional cross-attention. This multimodal fusion enables the model to leverage complementary information from structural brain imaging and patient clinical profiles. We validate on 6,065 subjects from three independent cohorts (ADNI, OASIS, NACC-SCAN) using strict subject-level 5-fold cross-validation. Our approach achieves \textbf{92.4\% accuracy} (AUC: 0.96) for distinguishing cognitively normal subjects from AD-trajectory patients (including MCI patients who later developed AD), and \textbf{93.3\%} on established AD cases. External validation across datasets reveals that single-cohort models suffer severe performance degradation (accuracy drops of 25-43 points), while our multi-cohort approach maintains robust generalization. Interpretability analyses of the tabular and imaging branches show that the trained model attends to clinically-established AD markers (age, executive function tests, medial-temporal structures), supporting its clinical relevance.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -334,8 +334,9 @@ Multi & All & \textbf{92.4$\pm$1.0} & \textbf{78.8$\pm$5.5} & \textbf{96.2$\pm$1
 The results reveal substantial cross-cohort generalization gaps for single-cohort models: while ADNI-only training achieves 81.4$\pm$3.5\% accuracy in-domain, performance drops to 56.5$\pm$9.2\% on OASIS (-24.9 points) and 38.5$\pm$13.9\% on NACC (-42.9 points). The high variance on external cohorts (SD up to 13.9\%) reflects inconsistent generalization across folds. NACC exhibits notable miscalibration despite high AUC (0.89): the model achieves 98\% sensitivity but only 29\% specificity, incorrectly classifying 70\% of healthy controls as diseased. This arises from class distribution shift (ADNI: 47\% CN; NACC: 87\% CN), causing decision threshold mismatch. These results demonstrate that single-cohort models overfit to scanner-specific and population-specific patterns. By comparison, our multi-cohort approach achieves \textbf{92.4\% accuracy}---surpassing even ADNI in-domain performance by 11 points---by learning cohort-invariant features from diverse acquisition protocols and demographics, confirming that multi-cohort training is essential for clinically deployable AD classification systems.
 
 \subsection{Interpretability}
+\label{subsec:interpretability}
 
-To understand what the trained model attends to and validate that its decisions rely on clinically-established AD markers, we performed three complementary analyses on the paper-grade checkpoints (seed 42, five folds): (i) tabular feature attention through the FT-Transformer weights, (ii) spatial brain attention through ViT attention rollout~\cite{abnar2020quantifying}, and (iii) cross-modal contribution via standalone modality baselines.
+To understand what the trained model attends to and validate that its decisions rely on clinically-established AD markers, we performed two complementary analyses on the cross-validation checkpoints (seed 42, five folds): (i) tabular feature attention through the FT-Transformer weights, and (ii) spatial brain attention through ViT attention rollout~\cite{abnar2020quantifying}.
 
 \subsubsection{Tabular Feature Attention}
 
@@ -359,18 +360,6 @@ Aggregating across the 5 folds, the attention magnitude on the peak patch is \te
 \centerline{\includegraphics[width=\columnwidth]{figures/vit_paper_main.png}}
 \caption{ViT attention rollout on well-classified subjects (5 folds $\times$ 4 cases per class per fold). Top row: CN subjects; bottom row: AD subjects. Three representative slices are shown (axial $z=40$, axial $z=50$, coronal $y=72$). AD attention focalizes in the medial-temporal / hippocampal region, while CN attention is diffuse.}
 \label{fig:vit_attn}
-\end{figure}
-
-\subsubsection{Cross-modal Contribution}
-
-The ablation study in Sec.~\ref{subsec:ablation} quantifies the accuracy gain of the multimodal model over each single-modality baseline. Here we analyze \emph{how} the cross-modal fusion combines the two unimodal signals. Using the same 5-fold cross-validation splits (seed 42, all 6{,}065 subjects covered across the 5 held-out folds), we extract predictions from three independently-trained models and compare them per subject: a ViT MRI-only classifier, an FT-Transformer tabular-only classifier, and our multimodal fusion model (Fig.~\ref{fig:crossmodal}).
-
-The per-class accuracy profile shows that the two unimodal models have \textbf{complementary} rather than redundant failure modes: MRI-only favors the majority CN class (CN acc: XX\%, AD acc: XX\%), while tabular-only is balanced (CN 84.6\%, AD 83.3\%). The fused classifier combines their strengths, achieving \textbf{96.4\%} CN specificity and \textbf{79.4\%} AD sensitivity, for a mean cross-validated accuracy of \textbf{92.7 $\pm$ 1.4\%}---an improvement of \textbf{+8.4 points} over the best single modality. This supports our central architectural claim that bidirectional cross-modal attention is not a trivial ensemble: it acts as an adaptive modality selector, routing the diagnostic decision toward whichever modality carries the reliable signal for each subject.
-
-\begin{figure}[htbp]
-\centerline{\includegraphics[width=\columnwidth]{figures/fig_cross_modal_v4_real.png}}
-\caption{Per-class accuracy of the three independently-trained classifiers (MRI-only ViT, tabular-only FT-Transformer, and multimodal fusion) on the same 6{,}065 subjects covered by the 5-fold cross-validation. The fusion model adds +8.4 points over the best single modality by combining their complementary per-class strengths.}
-\label{fig:crossmodal}
 \end{figure}
 
 \subsection{Comparison with Literature}
@@ -416,7 +405,7 @@ Several limitations should be acknowledged:
 
 \textbf{Missing data:} Some tabular features have incomplete coverage across cohorts (23-100\%), handled via median imputation which may lose information.
 
-\textbf{Interpretability:} Future work could employ feature attribution methods (e.g., SHAP values) to quantify individual clinical feature contributions and identify the most predictive variables.
+\textbf{Interpretability:} Our attention analyses (Sec.~\ref{subsec:interpretability}) identify clinically-relevant features and brain regions but do not provide per-subject attribution. Future work could combine our attention visualizations with instance-level methods (e.g., SHAP, Integrated Gradients) for patient-specific explanations suitable for clinical decision support.
 
 \textbf{External validation:} While our cross-cohort experiment (Table~\ref{tab:external}) demonstrates the importance of multi-cohort training, all three cohorts participate in cross-validation. A fully independent held-out cohort used only for testing would provide stronger generalization evidence.
 
