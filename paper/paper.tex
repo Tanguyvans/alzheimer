@@ -344,8 +344,8 @@ We extract self-attention weights from each of the three FT-Transformer encoder 
 The analysis reveals a highly consistent pattern (Fig.~\ref{fig:ft_attn}): \textbf{Age}, \textbf{TMT-A}, and \textbf{TMT-B} are attended more strongly for AD-trajectory subjects (5/5 fold consistency), while \textbf{Neurological History} and \textbf{Category Fluency (animals)} drive CN classification (5/5). These features correspond to the three best-established AD signatures in the clinical literature: age as the primary non-modifiable risk factor, executive function / processing speed decline (TMT-A/B), and early impairment of semantic memory (category fluency). The absence of prior neurological conditions contributes strongly to a CN prediction, matching the exclusion criteria used in diagnostic workflows.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=\columnwidth]{figures/ft_attn_rollout_AGG_seed42_traj.png}}
-\caption{Tabular feature attention aggregated across 5 folds (seed 42, AD-trajectory test). Left: CLS-to-feature attention per class. Right: per-feature attention difference AD $-$ CN, annotated with signed consistency (\textit{k}/5 folds). Top AD markers: Age, TMT-A, TMT-B. Top CN markers: Neurological History, Category Fluency.}
+\centerline{\includegraphics[width=\columnwidth]{figures/ft_attn_paper.png}}
+\caption{Tabular feature attention discrimination aggregated across 5 folds (seed 42, AD-trajectory test). Bars show the per-feature attention difference AD $-$ CN (mean $\pm$ std), with red indicating features attended more for AD and blue for CN. Annotations give the signed fold consistency (\textit{k}/5). Top AD markers: Age, TMT-A, TMT-B. Top CN markers: Neurological History, Category Fluency.}
 \label{fig:ft_attn}
 \end{figure}
 

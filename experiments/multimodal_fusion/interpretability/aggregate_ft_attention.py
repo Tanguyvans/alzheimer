@@ -22,8 +22,11 @@ from interpretability.ft_attention import (  # noqa: E402
 
 REPO = Path("/home/tanguy/medical/alzheimer")
 EXP = REPO / "experiments" / "multimodal_fusion"
-# Switched via CLI --preset; default = new-cv (paper-grade checkpoints)
-RESULTS = SCRIPT_DIR / "results_new"
+# Post-reorg layout: raw attention tensors live in 01_ft_attention/raw_data,
+# aggregated figures/CSVs go to 01_ft_attention/aggregated.
+RAW = SCRIPT_DIR / "results_new" / "01_ft_attention" / "raw_data"
+AGG = SCRIPT_DIR / "results_new" / "01_ft_attention" / "aggregated"
+RESULTS = RAW
 
 
 def per_fold_class_means(attn, labels):
@@ -184,12 +187,12 @@ def main():
             cn_stack, ad_stack = aggregate(
                 seed=42, folds=(0, 1, 2, 3, 4), variant=variant, test=test
             )
-            out_png = RESULTS / f"ft_attn_{variant}_AGG_seed42_{test}.png"
+            out_png = AGG / f"ft_attn_{variant}_AGG_seed42_{test}.png"
             df = plot_aggregate(
                 cn_stack, ad_stack, out_png,
                 title_suffix=f" (5 folds, seed 42, {test})",
             )
-            csv_path = RESULTS / f"ft_attn_{variant}_AGG_seed42_{test}.csv"
+            csv_path = AGG / f"ft_attn_{variant}_AGG_seed42_{test}.csv"
             df.to_csv(csv_path, index=False)
             pd.set_option("display.float_format", lambda x: f"{x:.4f}")
             print(df[["feature", "diff_mean", "diff_std", "consistency"]].to_string(index=False))
