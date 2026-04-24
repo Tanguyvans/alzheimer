@@ -364,15 +364,30 @@ Aggregating across the 5 folds, the attention magnitude on the peak patch is \te
 
 \subsubsection{Cross-modal Contribution}
 
-To interpret \emph{how} the bidirectional cross-attention combines the two modalities, we extracted predictions from three independently-trained models on fold 0 of the cross-validation (1{,}213 held-out subjects, representative of the other folds): the MRI-only ViT (82.7\% accuracy), the tabular-only FT-Transformer (84.1\%), and our multimodal fusion (93.4\%). We then compared predictions per subject and analyzed the agreement pattern (Fig.~\ref{fig:concordance}).
+To interpret \emph{how} the bidirectional cross-attention combines the two modalities, we extracted predictions from three independently-trained models on fold 0 of the cross-validation (1{,}213 held-out subjects, representative of the other folds): the MRI-only ViT (82.7\% accuracy), the tabular-only FT-Transformer (84.1\%), and our multimodal fusion (93.4\%). We compared predictions per subject and analyzed the agreement pattern between the two unimodal classifiers (Table~\ref{tab:concordance}).
 
-On 906 subjects (74.7\%) the two unimodal models agree. For those, the fused classifier mostly follows the consensus---correctly when both modalities are right and incorrectly when both are wrong---although in 21 cases it correctly overrides a wrong consensus using the cross-modal representation. On the remaining 307 subjects (25.3\%) the two modalities \textbf{disagree}, and this is where the fusion adds its value: the fused classifier picks the correct modality in \textbf{87.6\%} of disagreement cases, approaching the 100\% oracle upper bound. This supports the interpretation of the cross-attention layer as an \emph{adaptive modality selector} rather than a simple averager---a subject-specific mechanism that learns to route each decision toward whichever modality carries a reliable signal, which is difficult to replicate with late-fusion or logistic stacking of unimodal classifiers.
+On 906 subjects (74.7\%) the two unimodal models agree. In this regime, the fused classifier slightly exceeds the oracle upper bound (95.4\% vs 94.7\%)---in 21 cases it correctly overrides a wrong consensus by leveraging the cross-modal representation that neither unimodal signal alone carries. On the remaining 307 subjects (25.3\%) the two modalities \textbf{disagree}, and this is where the fusion adds most of its value: the fused classifier picks the correct modality in \textbf{87.6\%} of disagreement cases, approaching the 100\% oracle that would require perfect modality selection. Together these results support the interpretation of the cross-attention layer as an \emph{adaptive modality selector} rather than a simple averager---a subject-specific mechanism that learns to route each decision toward whichever modality carries a reliable signal, with emergent override behavior in the agreement regime, both of which are difficult to replicate with late-fusion or logistic stacking of unimodal classifiers.
 
-\begin{figure}[htbp]
-\centerline{\includegraphics[width=\columnwidth]{figures/fig_cross_modal_concordance.png}}
-\caption{Cross-modal concordance analysis on fold 0 (1{,}213 held-out subjects). (A) Fused accuracy within the agreement regime (906 subjects, 74.7\%) and disagreement regime (307 subjects, 25.3\%). (B) Disagreement resolution accuracy per class for the fused classifier, compared against the oracle upper bound (perfect modality selection).}
-\label{fig:concordance}
-\end{figure}
+\begin{table}[htbp]
+\caption{Cross-modal Concordance (seed 42, fold 0, $N=1{,}213$)}
+\begin{center}
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+\textbf{Modality regime} & \textbf{N} & \textbf{\%} & \textbf{Fused} & \textbf{Oracle$^\dag$} \\
+\midrule
+MRI, Tab agree            &  906 & 74.7 & 95.4        & 94.7 \\
+MRI, Tab disagree         &  307 & 25.3 & \textbf{87.6} & 100.0 \\
+\midrule
+\textbf{Overall}          & \textbf{1{,}213} & \textbf{100} & \textbf{93.4} & \textbf{96.0} \\
+\bottomrule
+\end{tabular}
+\label{tab:concordance}
+\end{center}
+\vspace{-2mm}
+{\scriptsize $^\dag$Oracle = accuracy achievable by perfectly selecting the correct modality per subject. Values are accuracies in \%.}
+\end{table}
 
 \subsection{Comparison with Literature}
 
