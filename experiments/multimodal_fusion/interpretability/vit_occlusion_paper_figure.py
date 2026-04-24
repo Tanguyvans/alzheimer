@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-Paper figure: minimal, focused on the causal ablation result.
+Paper figure: minimal, focused on absolute AD probabilities under occlusion.
 
 Layout (single row, two panels):
     Left (narrow)  : one coronal MRI slice with the HO temporal-lobe mask
-                     highlighted — a visual legend for "what we occluded".
-    Right (wide)   : bar chart of ΔP(AD) for temporal vs frontal occlusion,
-                     on true-AD and true-CN subjects (fold 0).
+                     highlighted (visual legend for "what we occluded").
+    Right (wide)   : bar chart of mean P(AD) baseline vs temporal-masked vs
+                     frontal-masked, on true-AD and true-CN subjects.
 
-No attention heatmaps — the attention/correlational result is mentioned in
-text only, so the figure can commit fully to the causal story.
+Reporting absolute probabilities (rather than signed Δ in percentage points)
+keeps the story readable: "mean AD probability drops from 77% to 56% when
+temporal lobe is masked, stays at 78% when frontal is masked".
 """
 
 from pathlib import Path
@@ -91,55 +92,66 @@ def plot(bg, temporal_mask, occl_df, out_path):
     fig = plt.figure(figsize=(10, 4.5))
     gs = gridspec.GridSpec(1, 2, width_ratios=[1, 2.2], wspace=0.25)
 
-    # --- Left: one coronal slice with temporal lobe highlighted ---
+    # --- Left: coronal slice with temporal mask in red overlay ---
     ax_brain = fig.add_subplot(gs[0, 0])
     coronal_idx = 72
     bg_s = bg[:, coronal_idx, :]
     mk_s = temporal_mask[:, coronal_idx, :]
     ax_brain.imshow(bg_s.T, cmap="gray", origin="lower")
-    # Temporal mask as red semi-transparent overlay
     mask_overlay = np.ma.masked_where(~mk_s, np.ones_like(mk_s, dtype=float))
     ax_brain.imshow(mask_overlay.T, cmap="Reds", alpha=0.55, origin="lower", vmin=0, vmax=1.2)
     ax_brain.set_title("Temporal lobe mask\n(coronal y=72)", fontsize=11)
     ax_brain.set_xticks([])
     ax_brain.set_yticks([])
 
-    # --- Right: bar chart of ΔP(AD) ---
+    # --- Right: absolute P(AD) bars (baseline, temporal-occl, frontal-occl) ---
     ax = fig.add_subplot(gs[0, 1])
     true_ad = occl_df[occl_df["label"] == 1]
     true_cn = occl_df[occl_df["label"] == 0]
 
     classes = ["True AD\n(N=263)", "True CN\n(N=950)"]
-    temp_m = [true_ad["delta_temp"].mean(), true_cn["delta_temp"].mean()]
-    temp_s = [true_ad["delta_temp"].std(ddof=1), true_cn["delta_temp"].std(ddof=1)]
-    front_m = [true_ad["delta_front"].mean(), true_cn["delta_front"].mean()]
-    front_s = [true_ad["delta_front"].std(ddof=1), true_cn["delta_front"].std(ddof=1)]
+    baseline = [true_ad["p_base"].mean(), true_cn["p_base"].mean()]
+    temp = [true_ad["p_temp_occl"].mean(), true_cn["p_temp_occl"].mean()]
+    front = [true_ad["p_front_occl"].mean(), true_cn["p_front_occl"].mean()]
 
     x = np.arange(len(classes))
-    w = 0.36
-    ax.bar(x - w/2, temp_m, w, yerr=temp_s, color="#c62828", alpha=0.88,
-           label="Temporal occluded", capsize=5, edgecolor="black", linewidth=0.5)
-    ax.bar(x + w/2, front_m, w, yerr=front_s, color="#90a4ae", alpha=0.88,
-           label="Frontal occluded (control)", capsize=5, edgecolor="black", linewidth=0.5)
-    ax.axhline(0, color="black", linewidth=0.6)
+    w = 0.26
+    b1 = ax.bar(x - w, baseline, w, color="#455a64", alpha=0.9,
+                label="Baseline", edgecolor="black", linewidth=0.5)
+    b2 = ax.bar(x,     temp,     w, color="#c62828", alpha=0.9,
+                label="Temporal masked", edgecolor="black", linewidth=0.5)
+    b3 = ax.bar(x + w, front,    w, color="#90a4ae", alpha=0.9,
+                label="Frontal masked (control)", edgecolor="black", linewidth=0.5)
+
+    # Annotate bar heights as %
+    for bars in (b1, b2, b3):
+        for b in bars:
+            h = b.get_height()
+            ax.text(b.get_x() + b.get_width() / 2, h + 0.02,
+                    f"{h*100:.0f}%", ha="center", va="bottom",
+                    fontsize=10, fontweight="bold" if h > 0.3 else "normal")
+
     ax.set_xticks(x)
     ax.set_xticklabels(classes, fontsize=11)
-    ax.set_ylabel(r"$\Delta$ AD probability", fontsize=11)
-    ax.set_title("Causal ablation: removing temporal-lobe MRI information\ndrops AD predictions (fold 0)",
-                 fontsize=11)
-    ax.legend(loc="lower left", fontsize=9, frameon=False)
+    ax.set_ylabel("Mean P(AD)", fontsize=11)
+    ax.set_ylim(0, 1.0)
+    ax.set_title(
+        "Causal ablation: masking the temporal lobe breaks AD predictions\n"
+        "(fold 0, N=1,213, paired-t $p<10^{-16}$ on true-AD subjects)",
+        fontsize=11,
+    )
+    ax.legend(loc="upper right", fontsize=9, frameon=False)
     ax.grid(axis="y", alpha=0.3, linestyle=":")
     ax.set_axisbelow(True)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
-    # Single annotation: headline effect size + p-value on the True-AD temporal bar
+    # Curved arrow highlighting the AD-only drop from baseline to temporal-masked
     ax.annotate(
-        f"{temp_m[0]*100:+.1f} pts\n$p<10^{{-16}}$",
-        xy=(0 - w/2, temp_m[0]),
-        xytext=(0 - w/2 - 0.05, temp_m[0] - 0.15),
-        ha="center", va="top",
-        fontsize=11, color="#c62828", fontweight="bold",
+        "",
+        xy=(0, temp[0] + 0.02), xytext=(0 - w, baseline[0] + 0.02),
+        arrowprops=dict(arrowstyle="->", color="#c62828", lw=2.2,
+                        connectionstyle="arc3,rad=-0.35"),
     )
 
     plt.savefig(out_path, dpi=200, bbox_inches="tight")
