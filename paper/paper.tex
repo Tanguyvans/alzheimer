@@ -360,7 +360,7 @@ Attention rollout~\cite{abnar2020quantifying} on the most confidently-classified
 
 \subsubsection{Cross-modal Contribution}
 
-To isolate the contribution of the cross-attention fusion \emph{beyond} what any post-hoc combination of the two unimodal predictions could achieve, we compared our fusion (93.4\%) against four alternatives on fold 0's held-out subjects ($N=1{,}213$): each unimodal alone (MRI-only ViT 82.7\%, tabular-only FT-Transformer 84.1\%), probability averaging of the two, and a logistic-regression stacker trained on the two unimodal outputs via cross-validation. The per-regime breakdown (Table~\ref{tab:concordance}) shows where the gain comes from. When unimodals disagree ($N=307$), probability averaging collapses to near-chance (48.5\%) and the stacker reaches 78.2\%, while our fusion arbitrates correctly in \textbf{87.6\%} of cases. More striking, among the 48 subjects where \emph{both} unimodals are confidently wrong, the fusion still recovers \textbf{43.8\%} of the ground-truth label while late-fusion recovers 0\% and stacking 4.2\%. Post-hoc combinations only see unimodal outputs; they cannot rescue cases where both are wrong. The cross-attention, operating on internal representations, does.
+To isolate the contribution of the cross-attention fusion \emph{beyond} what any output-level combination of the two unimodal predictions could achieve, we compared our fusion (93.4\%) against four alternatives on fold 0's held-out subjects ($N=1{,}213$): each unimodal alone (MRI-only ViT 82.7\%, tabular-only FT-Transformer 84.1\%), probability averaging of the two, and a logistic-regression stacker trained on the two unimodal outputs via cross-validation. The per-regime breakdown (Table~\ref{tab:concordance}) shows where the gain comes from. When unimodals disagree ($N=307$), probability averaging collapses to near-chance (48.5\%) and the stacker reaches 78.2\%, while our fusion arbitrates correctly in \textbf{87.6\%} of cases. More striking, among the 48 subjects where \emph{both} unimodals are confidently wrong, the fusion still recovers \textbf{43.8\%} of the ground-truth label while probability averaging recovers 0\% and stacking 4.2\%. Methods that only see the unimodal outputs cannot rescue cases where both are wrong; cross-attention, operating on internal representations, can.
 
 \begin{table}[htbp]
 \caption{Cross-modal fusion vs late-fusion baselines (fold 0, $N=1{,}213$). Accuracies in \%.}
@@ -369,7 +369,7 @@ To isolate the contribution of the cross-attention fusion \emph{beyond} what any
 \setlength{\tabcolsep}{5pt}
 \begin{tabular}{@{}lrrccc@{}}
 \toprule
- & & & \multicolumn{2}{c}{\emph{Post-hoc late-fusion}} & \emph{Feature-level} \\
+ & & & \multicolumn{2}{c}{\emph{Output-level fusion}} & \emph{Feature-level fusion} \\
 \cmidrule(lr){4-5}\cmidrule(lr){6-6}
 \textbf{Regime} & \textbf{N} & \textbf{\%} & Prob.\ avg & LR stack$^\dag$ & \textbf{Cross-attn} \\
 \midrule
