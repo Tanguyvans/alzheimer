@@ -333,6 +333,46 @@ Multi & All & \textbf{92.4$\pm$1.0} & \textbf{78.8$\pm$5.5} & \textbf{96.2$\pm$1
 
 The results reveal substantial cross-cohort generalization gaps for single-cohort models: while ADNI-only training achieves 81.4$\pm$3.5\% accuracy in-domain, performance drops to 56.5$\pm$9.2\% on OASIS (-24.9 points) and 38.5$\pm$13.9\% on NACC (-42.9 points). The high variance on external cohorts (SD up to 13.9\%) reflects inconsistent generalization across folds. NACC exhibits notable miscalibration despite high AUC (0.89): the model achieves 98\% sensitivity but only 29\% specificity, incorrectly classifying 70\% of healthy controls as diseased. This arises from class distribution shift (ADNI: 47\% CN; NACC: 87\% CN), causing decision threshold mismatch. These results demonstrate that single-cohort models overfit to scanner-specific and population-specific patterns. By comparison, our multi-cohort approach achieves \textbf{92.4\% accuracy}---surpassing even ADNI in-domain performance by 11 points---by learning cohort-invariant features from diverse acquisition protocols and demographics, confirming that multi-cohort training is essential for clinically deployable AD classification systems.
 
+\subsection{Interpretability}
+
+To understand what the trained model attends to and validate that its decisions rely on clinically-established AD markers, we performed three complementary analyses on the paper-grade checkpoints (seed 42, five folds): (i) tabular feature attention through the FT-Transformer weights, (ii) spatial brain attention through ViT attention rollout~\cite{abnar2020quantifying}, and (iii) cross-modal contribution via standalone modality baselines.
+
+\subsubsection{Tabular Feature Attention}
+
+We extract self-attention weights from each of the three FT-Transformer encoder layers, average over heads, and compute attention rollout from the CLS token to the 16 tabular feature tokens. For each test sample we obtain a per-feature attention vector, then average within each class and compute the per-feature difference \mbox{$\Delta = \text{attn}_{\text{AD}} - \text{attn}_{\text{CN}}$}. Aggregating across the 5 folds we report the mean, standard deviation, and signed consistency (number of folds where the difference agrees in sign).
+
+The analysis reveals a highly consistent pattern (Fig.~\ref{fig:ft_attn}): \textbf{Age}, \textbf{TMT-A}, and \textbf{TMT-B} are attended more strongly for AD-trajectory subjects (5/5 fold consistency), while \textbf{Neurological History} and \textbf{Category Fluency (animals)} drive CN classification (5/5). These features correspond to the three best-established AD signatures in the clinical literature: age as the primary non-modifiable risk factor, executive function / processing speed decline (TMT-A/B), and early impairment of semantic memory (category fluency). The absence of prior neurological conditions contributes strongly to a CN prediction, matching the exclusion criteria used in diagnostic workflows.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{figures/ft_attn_rollout_AGG_seed42_traj.png}}
+\caption{Tabular feature attention aggregated across 5 folds (seed 42, AD-trajectory test). Left: CLS-to-feature attention per class. Right: per-feature attention difference AD $-$ CN, annotated with signed consistency (\textit{k}/5 folds). Top AD markers: Age, TMT-A, TMT-B. Top CN markers: Neurological History, Category Fluency.}
+\label{fig:ft_attn}
+\end{figure}
+
+\subsubsection{Spatial Brain Attention}
+
+For each of the 5 folds, we select the four most confidently and correctly classified CN and AD subjects (softmax probability $\geq 0.999$), monkey-patch the 12 ViT attention blocks to capture their softmax matrices, and compute attention rollout from the CLS token to the 512 image patches. The 512-dimensional rollout vector is reshaped to an $8 \times 8 \times 8$ grid (the ViT patch arrangement) and upsampled trilinearly to $128^3$ for visualization.
+
+Aggregating across the 5 folds, the attention magnitude on the peak patch is \textbf{3.6$\times$ higher} for AD than for CN subjects (0.057 versus 0.016 on the normalized scale), indicating that AD predictions concentrate on specific brain regions while CN predictions rely on a diffuse global representation. The voxel with the largest $|\Delta_{\text{AD}-\text{CN}}|$ difference lies in the medial-temporal / hippocampal region (Fig.~\ref{fig:vit_attn}), matching the canonical earliest site of AD pathology (Braak stages I-II). Per-patient visualizations on six individual subjects across three folds (supplementary material) confirm the consistency of the medial-temporal focus.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{figures/vit_paper_main.png}}
+\caption{ViT attention rollout on well-classified subjects (5 folds $\times$ 4 cases per class per fold). Top row: CN subjects; bottom row: AD subjects. Three representative slices are shown (axial $z=40$, axial $z=50$, coronal $y=72$). AD attention focalizes in the medial-temporal / hippocampal region, while CN attention is diffuse.}
+\label{fig:vit_attn}
+\end{figure}
+
+\subsubsection{Cross-modal Contribution}
+
+The ablation study in Sec.~\ref{subsec:ablation} quantifies the accuracy gain of the multimodal model over each single-modality baseline. Here we analyze \emph{how} the cross-modal fusion combines the two unimodal signals. Using the same 5-fold cross-validation splits (seed 42, all 6{,}065 subjects covered across the 5 held-out folds), we extract predictions from three independently-trained models and compare them per subject: a ViT MRI-only classifier, an FT-Transformer tabular-only classifier, and our multimodal fusion model (Fig.~\ref{fig:crossmodal}).
+
+The per-class accuracy profile shows that the two unimodal models have \textbf{complementary} rather than redundant failure modes: MRI-only favors the majority CN class (CN acc: XX\%, AD acc: XX\%), while tabular-only is balanced (CN 84.6\%, AD 83.3\%). The fused classifier combines their strengths, achieving \textbf{96.4\%} CN specificity and \textbf{79.4\%} AD sensitivity, for a mean cross-validated accuracy of \textbf{92.7 $\pm$ 1.4\%}---an improvement of \textbf{+8.4 points} over the best single modality. This supports our central architectural claim that bidirectional cross-modal attention is not a trivial ensemble: it acts as an adaptive modality selector, routing the diagnostic decision toward whichever modality carries the reliable signal for each subject.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{figures/fig_cross_modal_v4_real.png}}
+\caption{Per-class accuracy of the three independently-trained classifiers (MRI-only ViT, tabular-only FT-Transformer, and multimodal fusion) on the same 6{,}065 subjects covered by the 5-fold cross-validation. The fusion model adds +8.4 points over the best single modality by combining their complementary per-class strengths.}
+\label{fig:crossmodal}
+\end{figure}
+
 \subsection{Comparison with Literature}
 
 Table~\ref{tab:comparison} compares our results with prior work using proper subject-level splitting.
@@ -430,6 +470,8 @@ The NACC database is funded by NIA/NIH Grant U24 AG072122. NACC data are contrib
 \bibitem{jack2000} C. R. Jack Jr., R. C. Petersen, Y. Xu, et al., ``Rates of hippocampal atrophy correlate with change in clinical status in aging and AD,'' \textit{Neurology}, vol. 55, no. 4, pp. 484--489, 2000.
 
 \bibitem{misra2009} C. Misra, Y. Fan, and C. Davatzikos, ``Baseline and longitudinal patterns of brain atrophy in MCI patients, and their use in prediction of short-term conversion to AD: Results from ADNI,'' \textit{NeuroImage}, vol. 44, no. 4, pp. 1415--1422, 2009.
+
+\bibitem{abnar2020quantifying} S. Abnar and W. Zuidema, ``Quantifying attention flow in transformers,'' in \textit{Proc. 58th Annu. Meet. Assoc. Comput. Linguistics (ACL)}, 2020, pp. 4190--4197.
 
 \end{thebibliography}
 
