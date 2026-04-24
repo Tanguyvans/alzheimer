@@ -360,27 +360,28 @@ Attention rollout~\cite{abnar2020quantifying} on the most confidently-classified
 
 \subsubsection{Cross-modal Contribution}
 
-To interpret \emph{how} the fusion combines the two modalities, we extracted predictions from three independently-trained models on fold 0 (1{,}213 held-out subjects): MRI-only ViT (82.7\%), tabular-only FT-Transformer (84.1\%), and our fusion model (93.4\%). Comparing predictions per subject reveals two distinct regimes (Table~\ref{tab:concordance}). In 906 subjects (74.7\%) the unimodal models agree, and the fused classifier slightly exceeds the best-single-modality upper bound (95.4\% vs 94.7\%) by correctly overriding a wrong consensus in 21 cases. In the remaining 307 subjects (25.3\%) they \textbf{disagree}, and the fusion arbitrates correctly in \textbf{87.6\%} of cases. This supports the interpretation of the cross-attention as an \emph{adaptive modality selector} rather than a simple averager---difficult to replicate with late-fusion or stacking of unimodal classifiers.
+To isolate the contribution of the cross-attention fusion \emph{beyond} what any post-hoc combination of the two unimodal predictions could achieve, we compared our fusion (93.4\%) against four alternatives on fold 0's held-out subjects ($N=1{,}213$): each unimodal alone (MRI-only ViT 82.7\%, tabular-only FT-Transformer 84.1\%), probability averaging of the two, and a logistic-regression stacker trained on the two unimodal outputs via cross-validation. The per-regime breakdown (Table~\ref{tab:concordance}) shows where the gain comes from. When unimodals disagree ($N=307$), probability averaging collapses to near-chance (48.5\%) and the stacker reaches 78.2\%, while our fusion arbitrates correctly in \textbf{87.6\%} of cases. More striking, among the 48 subjects where \emph{both} unimodals are confidently wrong, the fusion still recovers \textbf{43.8\%} of the ground-truth label while late-fusion recovers 0\% and stacking 4.2\%. Post-hoc combinations only see unimodal outputs; they cannot rescue cases where both are wrong. The cross-attention, operating on internal representations, does.
 
 \begin{table}[htbp]
-\caption{Cross-modal Concordance (seed 42, fold 0, $N=1{,}213$)}
+\caption{Cross-modal Concordance vs Late-Fusion Baselines (seed 42, fold 0, $N=1{,}213$). Accuracies in \%.}
 \begin{center}
 \small
-\setlength{\tabcolsep}{6pt}
-\begin{tabular}{@{}lrrrr@{}}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrcccc>{\bfseries}c@{}}
 \toprule
-\textbf{Modality regime} & \textbf{N} & \textbf{\%} & \textbf{Fused} & \textbf{Best single$^\dag$} \\
+\textbf{Regime} & \textbf{N} & \textbf{\%} & \textbf{MRI} & \textbf{Tab} & \textbf{Avg} & \textbf{Stack$^\dag$} & Fusion \\
 \midrule
-MRI, Tab agree            &  906 & 74.7 & 95.4        & 94.7 \\
-MRI, Tab disagree         &  307 & 25.3 & \textbf{87.6} & 100.0 \\
+Agree, both right       &  858 & 70.7 & 100.0 & 100.0 & 100.0 & 100.0 &  98.3 \\
+Agree, both wrong       &   48 &  4.0 &   0.0 &   0.0 &   0.0 &   4.2 &  43.8 \\
+Disagree                &  307 & 25.3 &  47.2 &  52.8 &  48.5 &  78.2 &  87.6 \\
 \midrule
-\textbf{Overall}          & \textbf{1{,}213} & \textbf{100} & \textbf{93.4} & \textbf{96.0} \\
+\textbf{Overall}        & \textbf{1{,}213} & \textbf{100} & 82.7 & 84.1 & 83.0 & 90.7 & 93.4 \\
 \bottomrule
 \end{tabular}
 \label{tab:concordance}
 \end{center}
 \vspace{-2mm}
-{\scriptsize $^\dag$Best single = upper bound if one could perfectly pick the correct modality per subject (equals 100\% in the disagreement regime since the two unimodals are binary-opposite). Values are accuracies in \%.}
+{\scriptsize $^\dag$Stack: logistic-regression stacker on $(p_\mathrm{MRI}, p_\mathrm{Tab})$, 5-fold CV on fold 0's subjects to avoid train-on-test. Avg: arithmetic mean of the two unimodal probabilities.}
 \end{table}
 
 \subsection{Comparison with Literature}
