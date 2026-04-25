@@ -375,7 +375,7 @@ Several limitations should be acknowledged:
 
 \textbf{Missing data:} Some tabular features have incomplete coverage across cohorts (23-100\%), handled via median imputation which may lose information.
 
-\textbf{Interpretability:} Our analyses (Sec.~\ref{subsec:interpretability}) are population-level; low cross-fold sign consistency of SHAP values limits directional claims for individual features. Per-subject SHAP dependence plots or Integrated Gradients could provide patient-specific attributions for clinical decision support.
+\textbf{Interpretability:} Our SHAP analysis (Sec.~\ref{subsec:interpretability}) identifies \emph{which} features the model relies on, but does not reliably tell, for an individual patient, in \emph{which direction} each feature pushes the prediction---the sign of SHAP values was consistent in only 3 out of 5 folds on average. Per-subject methods such as Integrated Gradients or SHAP dependence plots would be needed for patient-level explanations supporting clinical decision-making.
 
 \textbf{External validation:} While our cross-cohort experiment (Table~\ref{tab:external}) demonstrates the importance of multi-cohort training, all three cohorts participate in cross-validation. A fully independent held-out cohort used only for testing would provide stronger generalization evidence.
 
